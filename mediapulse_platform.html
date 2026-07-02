@@ -1,0 +1,1855 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediaPulse BW — Africa's Media Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --ink:#0A0A0F; --ink2:#12121A; --surface:#1C1C28; --s2:#252534; --s3:#2E2E42;
+  --line:rgba(255,255,255,0.07); --line2:rgba(255,255,255,0.13);
+  --or:#FF5C1A; --or2:#FF8150; --or-bg:rgba(255,92,26,0.1);
+  --teal:#00D4C8; --teal-bg:rgba(0,212,200,0.1);
+  --cream:#F5F2EC; --mu:rgba(245,242,236,0.5);
+  --green:#22C55E; --red:#EF4444; --yellow:#F59E0B; --purple:#A855F7;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--ink);color:var(--cream);font-family:'Inter',sans-serif;font-weight:400;overflow-x:hidden;width:100%;}
+h1,h2,h3,h4,.num,.brandmark{font-family:'Syne',sans-serif;font-weight:800;letter-spacing:-0.03em;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,textarea,select{font-family:inherit;color:var(--cream);background:var(--s2);border:1px solid var(--line2);border-radius:8px;padding:10px 12px;font-size:13px;outline:none;}
+input:focus,textarea:focus,select:focus{border-color:var(--or);}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--s3);border-radius:8px;}
+.screen{display:none;min-height:100vh;}
+.screen.active{display:block;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:9px;font-size:13px;font-weight:600;transition:all .15s;white-space:nowrap;}
+.btn-primary{background:linear-gradient(135deg,var(--or),var(--or2));color:#fff;}
+.btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.btn-ghost{background:var(--s2);border:1px solid var(--line2);color:var(--cream);}
+.btn-ghost:hover{background:var(--s3);}
+.btn-sm{padding:6px 12px;font-size:11.5px;border-radius:7px;}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:600;letter-spacing:.02em;}
+.muted{color:var(--mu);}
+.container{max-width:1280px;margin:0 auto;padding:0 32px;}
+@media(max-width:680px){.container{padding:0 16px;}}
+
+/* ---------- NAV / LANDING ---------- */
+.nav{position:sticky;top:0;z-index:50;background:rgba(10,10,15,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;max-width:1280px;margin:0 auto;}
+.logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;font-family:'Syne',sans-serif;}
+.logo-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--or),var(--teal));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#0A0A0F;flex-shrink:0;}
+.nav-links{display:flex;gap:28px;font-size:13.5px;color:var(--mu);}
+.nav-links a:hover{color:var(--cream);}
+.nav-actions{display:flex;gap:10px;align-items:center;}
+@media(max-width:900px){.nav-links{display:none;}}
+
+.hero{padding:90px 32px 60px;max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1.1fr .9fr;gap:60px;align-items:center;}
+@media(max-width:960px){.hero{grid-template-columns:1fr;padding:50px 20px;}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:var(--teal-bg);border:1px solid rgba(0,212,200,.25);color:var(--teal);font-size:11.5px;font-weight:600;margin-bottom:22px;}
+.hero h1{font-size:52px;line-height:1.04;letter-spacing:-0.04em;margin-bottom:20px;}
+.grad-text{background:linear-gradient(120deg,var(--or),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.hero p{font-size:16px;color:var(--mu);line-height:1.6;max-width:480px;margin-bottom:30px;}
+.hero-ctas{display:flex;gap:12px;margin-bottom:36px;flex-wrap:wrap;}
+.social-proof{display:flex;align-items:center;gap:12px;}
+.avatars{display:flex;}
+.avatars span{width:30px;height:30px;border-radius:50%;background:var(--s3);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-left:-8px;}
+.avatars span:first-child{margin-left:0;}
+@media(max-width:520px){.hero h1{font-size:36px;}}
+
+.signal-card{padding:22px;margin-bottom:14px;}
+.signal-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.signal-num{font-size:38px;line-height:1;}
+.ticker-wrap{overflow:hidden;height:96px;position:relative;-webkit-mask-image:linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);mask-image:linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);}
+.ticker-track{display:flex;flex-direction:column;gap:10px;animation:tickup 12s linear infinite;}
+@keyframes tickup{0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
+.ticker-item{font-size:12.5px;padding:8px 0;border-bottom:1px dashed var(--line);color:var(--mu);}
+.ticker-item b{color:var(--cream);font-weight:500;}
+
+.marquee-band{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:22px 0;overflow:hidden;background:var(--ink2);}
+.marquee-track{display:flex;gap:52px;white-space:nowrap;animation:scrollx 32s linear infinite;width:max-content;}
+@keyframes scrollx{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.marquee-track span{font-size:14px;color:var(--mu);font-weight:600;letter-spacing:.02em;}
+
+.section{padding:90px 32px;max-width:1280px;margin:0 auto;}
+.section-head{max-width:600px;margin-bottom:44px;}
+.section-head .eyebrow{margin-bottom:14px;}
+.section-head h2{font-size:34px;letter-spacing:-0.03em;margin-bottom:12px;}
+.section-head p{color:var(--mu);font-size:15px;line-height:1.6;}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;}
+.reveal.in{opacity:1;transform:translateY(0);}
+
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:860px){.feat-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.feat-grid{grid-template-columns:1fr;}}
+.feat-cell{padding:26px;min-height:170px;display:flex;flex-direction:column;justify-content:flex-end;}
+.feat-cell.span2{grid-column:span 2;}
+@media(max-width:560px){.feat-cell.span2{grid-column:span 1;}}
+.feat-icon{width:38px;height:38px;border-radius:10px;background:var(--or-bg);color:var(--or);display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:16px;}
+.feat-cell h4{font-size:16px;margin-bottom:8px;}
+.feat-cell p{font-size:13px;color:var(--mu);line-height:1.55;}
+
+.metrics-band{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:50px 32px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);max-width:1280px;margin:0 auto;}
+@media(max-width:760px){.metrics-band{grid-template-columns:repeat(2,1fr);}}
+.metric{text-align:center;}
+.metric .num{font-size:42px;background:linear-gradient(120deg,var(--or),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.metric .lbl{font-size:12.5px;color:var(--mu);margin-top:6px;}
+
+.browser-chrome{border-radius:14px;overflow:hidden;border:1px solid var(--line2);background:var(--ink2);}
+.chrome-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--s2);border-bottom:1px solid var(--line);}
+.chrome-dot{width:9px;height:9px;border-radius:50%;background:var(--s3);}
+.chrome-url{flex:1;background:var(--ink);border-radius:6px;padding:5px 12px;font-size:11px;color:var(--mu);text-align:center;}
+.chrome-body{display:grid;grid-template-columns:210px 1fr;min-height:380px;}
+@media(max-width:700px){.chrome-body{grid-template-columns:1fr;}}
+.chrome-side{background:var(--ink2);border-right:1px solid var(--line);padding:16px;font-size:12px;}
+.chrome-side .sidenav-item{padding:9px 10px;border-radius:7px;color:var(--mu);margin-bottom:2px;}
+.chrome-side .sidenav-item.on{background:var(--or-bg);color:var(--or);font-weight:600;}
+.chrome-main{padding:22px;}
+
+.steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+@media(max-width:760px){.steps-grid{grid-template-columns:repeat(2,1fr);}}
+.step-card{padding:24px;position:relative;}
+.step-num{font-size:12px;color:var(--or);font-weight:700;margin-bottom:14px;}
+.step-card h4{font-size:16px;margin-bottom:8px;}
+.step-card p{font-size:13px;color:var(--mu);line-height:1.55;}
+
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+@media(max-width:860px){.testi-grid{grid-template-columns:1fr;}}
+.testi-card{padding:26px;}
+.stars{color:var(--yellow);font-size:13px;margin-bottom:14px;letter-spacing:2px;}
+.testi-card p{font-size:14px;line-height:1.6;color:var(--cream);margin-bottom:18px;}
+.testi-who{display:flex;align-items:center;gap:10px;}
+.testi-avatar{width:36px;height:36px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;}
+.testi-name{font-size:13px;font-weight:600;}
+.testi-role{font-size:11.5px;color:var(--mu);}
+
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+@media(max-width:860px){.pricing-grid{grid-template-columns:1fr;}}
+.price-card{padding:30px;position:relative;}
+.price-card.featured{border-color:var(--or);background:linear-gradient(180deg,var(--or-bg),var(--surface) 40%);}
+.price-badge{position:absolute;top:-11px;right:24px;background:var(--or);color:#fff;font-size:10.5px;font-weight:700;padding:4px 12px;border-radius:20px;}
+.price-tier{font-size:14px;color:var(--mu);margin-bottom:6px;}
+.price-amt{font-size:36px;margin-bottom:4px;}
+.price-amt span{font-size:14px;color:var(--mu);font-weight:400;}
+.price-feats{margin:22px 0;display:flex;flex-direction:column;gap:10px;}
+.price-feats li{list-style:none;font-size:13px;color:var(--mu);display:flex;gap:8px;}
+.price-feats li:before{content:"✓";color:var(--teal);font-weight:700;}
+
+.cta-section{position:relative;text-align:center;padding:110px 32px;overflow:hidden;}
+.cta-glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 40%, rgba(255,92,26,.18), transparent 60%);pointer-events:none;}
+.cta-section h2{font-size:38px;letter-spacing:-0.03em;margin-bottom:18px;position:relative;}
+.cta-section p{color:var(--mu);margin-bottom:28px;position:relative;}
+
+footer{border-top:1px solid var(--line);padding:60px 32px 30px;}
+.footer-grid{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:32px;margin-bottom:40px;}
+@media(max-width:760px){.footer-grid{grid-template-columns:1fr 1fr;}}
+.footer-grid h5{font-size:12px;color:var(--mu);margin-bottom:14px;text-transform:uppercase;letter-spacing:.06em;}
+.footer-grid a{display:block;font-size:13px;color:var(--mu);margin-bottom:10px;}
+.footer-grid a:hover{color:var(--cream);}
+.footer-bottom{max-width:1280px;margin:0 auto;padding-top:24px;border-top:1px solid var(--line);font-size:12px;color:var(--mu);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+
+/* ---------- LOGIN ---------- */
+#screen-login{min-height:100vh;align-items:center;justify-content:center;padding:40px 20px;background:radial-gradient(circle at 30% 20%, rgba(255,92,26,.08), transparent 50%),radial-gradient(circle at 80% 80%, rgba(0,212,200,.08), transparent 50%);}
+#screen-login.active{display:flex;}
+.login-card{width:100%;max-width:520px;padding:40px;}
+.login-card h1{font-size:26px;margin:20px 0 6px;}
+.login-card>p.muted{margin-bottom:26px;}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:26px;}
+@media(max-width:480px){.demo-grid{grid-template-columns:1fr;}}
+.demo-card{padding:14px;text-align:left;border-radius:10px;background:var(--s2);border:1px solid var(--line2);transition:all .15s;}
+.demo-card:hover{border-color:var(--or);background:var(--s3);}
+.demo-role{font-size:10px;color:var(--teal);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px;}
+.demo-name{font-size:13.5px;font-weight:600;}
+.demo-org{font-size:11.5px;color:var(--mu);margin-top:2px;}
+.form-field{margin-bottom:14px;}
+.form-field label{display:block;font-size:11.5px;color:var(--mu);margin-bottom:6px;}
+.form-field input{width:100%;}
+
+/* ---------- APP SHELL ---------- */
+#screen-app{display:none;height:100vh;flex-direction:column;}
+#screen-app.active{display:flex;}
+.topchrome{height:50px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--ink2);border-bottom:1px solid var(--line);gap:16px;}
+.topchrome-left{display:flex;align-items:center;gap:22px;}
+.demo-switcher{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mu);}
+.role-tabs{display:flex;gap:2px;background:var(--s2);border-radius:8px;padding:2px;}
+.role-tab{padding:5px 11px;border-radius:6px;font-size:11.5px;color:var(--mu);font-weight:600;}
+.role-tab.on{background:var(--or);color:#fff;}
+.topchrome-search{flex:1;max-width:340px;display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--line2);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--mu);}
+.topchrome-search kbd{background:var(--s3);padding:1px 6px;border-radius:4px;font-size:10px;}
+.topchrome-right{display:flex;align-items:center;gap:14px;}
+.bell{position:relative;font-size:16px;}
+.bell .dot{position:absolute;top:-2px;right:-2px;width:7px;height:7px;border-radius:50%;background:var(--red);}
+.userchip{display:flex;align-items:center;gap:8px;font-size:12px;}
+.userchip .av{width:26px;height:26px;border-radius:50%;background:var(--or-bg);color:var(--or);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;}
+
+.app-body{flex:1;display:flex;overflow:hidden;}
+.sidebar{width:220px;flex-shrink:0;background:var(--ink2);border-right:1px solid var(--line);padding:16px 12px;overflow-y:auto;}
+@media(max-width:680px){.sidebar{display:none;}}
+.client-box{padding:12px;border-radius:10px;background:var(--s2);margin-bottom:14px;}
+.client-box .cb-name{font-size:13px;font-weight:700;}
+.client-box .cb-plan{font-size:11px;color:var(--teal);margin-top:2px;}
+.client-box .cb-ro{font-size:10px;color:var(--yellow);margin-top:5px;font-weight:600;}
+.qsearch-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:var(--s2);border:1px solid var(--line2);font-size:12px;color:var(--mu);margin-bottom:16px;}
+.qsearch-btn kbd{background:var(--s3);padding:1px 6px;border-radius:4px;font-size:10px;}
+.navgroup{margin-bottom:14px;}
+.navgroup-lbl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;padding:0 8px;margin-bottom:6px;}
+.navitem{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:8px;font-size:12.5px;color:var(--mu);margin-bottom:1px;position:relative;}
+.navitem:hover{background:var(--s2);color:var(--cream);}
+.navitem.on{background:var(--or-bg);color:var(--or);font-weight:600;}
+.navitem .nbadge{margin-left:auto;background:var(--red);color:#fff;font-size:9.5px;padding:1px 6px;border-radius:10px;font-weight:700;}
+
+.content{flex:1;overflow-y:auto;padding:26px 30px 60px;}
+@media(max-width:680px){.content{padding:18px;}}
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+.page-head h2{font-size:24px;}
+.page-head .sub{font-size:12.5px;color:var(--mu);margin-top:4px;}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+@media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+.stat-card{padding:18px;}
+.stat-card .lbl{font-size:11.5px;color:var(--mu);margin-bottom:8px;}
+.stat-card .val{font-size:26px;}
+.stat-card .delta{font-size:11px;margin-top:6px;font-weight:600;}
+.up{color:var(--green);}.down{color:var(--red);}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.chip{padding:6px 13px;border-radius:20px;font-size:12px;background:var(--s2);border:1px solid var(--line2);color:var(--mu);font-weight:500;}
+.chip.on{background:var(--or);border-color:var(--or);color:#fff;}
+
+.hint-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:10px;background:linear-gradient(90deg,var(--teal-bg),transparent);border:1px solid rgba(0,212,200,.2);margin-bottom:18px;font-size:12.5px;}
+.hint-banner a{color:var(--teal);font-weight:600;}
+.hint-x{font-size:16px;color:var(--mu);}
+
+.story-card{padding:18px;margin-bottom:14px;}
+.story-top{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+.story-head{font-size:15.5px;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:6px;line-height:1.3;}
+.story-src{font-size:11.5px;color:var(--mu);margin-bottom:10px;}
+.brandpills{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.story-rel{font-size:12.5px;color:var(--mu);background:var(--s2);border-left:3px solid var(--teal);padding:10px 12px;border-radius:6px;margin-bottom:12px;line-height:1.5;}
+.clip-prev{background:var(--ink2);border:1px solid var(--line2);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.clip-prev-head{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;font-family:'Syne',sans-serif;}
+.clip-prev-head .pg{font-size:10.5px;color:var(--mu);font-weight:400;font-family:'Inter',sans-serif;}
+.clip-prev-body{display:flex;gap:12px;padding:12px;}
+.clip-icon{width:90px;height:68px;background:var(--s2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
+.clip-prev-txt .h{font-size:12px;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:4px;}
+.clip-prev-txt .x{font-size:10px;color:var(--mu);line-height:1.4;}
+.clip-prev-foot{display:flex;gap:8px;padding:9px 12px;border-top:1px solid var(--line);}
+.story-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.ai-result{margin-top:12px;padding:14px;background:var(--s2);border:1px solid var(--teal-bg);border-left:3px solid var(--teal);border-radius:8px;font-size:12.5px;line-height:1.6;}
+.loading-dots:after{content:'...';animation:dots 1.2s steps(4,end) infinite;}
+@keyframes dots{0%,20%{content:'.'}40%{content:'..'}60%,100%{content:'...'}}
+
+.social-post{padding:16px;margin-bottom:12px;}
+.social-post.escalated{border-color:var(--red);background:rgba(239,68,68,.05);}
+.social-top{display:flex;gap:10px;align-items:center;margin-bottom:10px;}
+.social-av{width:36px;height:36px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+.social-handle{font-size:12.5px;font-weight:600;}
+.social-plat{font-size:10.5px;color:var(--mu);}
+.social-body{font-size:13px;line-height:1.55;margin-bottom:10px;}
+.social-stats{display:flex;gap:16px;font-size:11px;color:var(--mu);}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{text-align:left;padding:10px 12px;color:var(--mu);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--line2);}
+td{padding:11px 12px;border-bottom:1px solid var(--line);}
+tr:last-child td{border-bottom:none;}
+.tbl-wrap{overflow-x:auto;}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:900px){.grid2{grid-template-columns:1fr;}}
+.chart-box{padding:18px;height:280px;position:relative;}
+.chart-box canvas{max-height:230px;}
+.section-title{font-size:15px;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:14px;}
+
+.keyword-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.kw{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;}
+.kw.brand{background:var(--or-bg);color:var(--or2);}
+.kw.comp{background:rgba(239,68,68,.12);color:#f87171;}
+.kw.watch{background:var(--teal-bg);color:var(--teal);}
+
+.heat-cell{width:34px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:var(--mu);}
+.alert-item{display:flex;gap:12px;padding:16px;margin-bottom:12px;}
+.alert-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+
+/* ---------- MODAL / CMDK / TOAST ---------- */
+.overlay{position:fixed;inset:0;background:rgba(5,5,8,.75);backdrop-filter:blur(3px);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:60px 20px;overflow-y:auto;}
+.overlay.active{display:flex;}
+.modal-box{width:100%;max-width:640px;background:var(--surface);border:1px solid var(--line2);border-radius:14px;padding:26px;margin-bottom:60px;}
+.breadcrumb{font-size:11.5px;color:var(--mu);margin-bottom:16px;}
+.modal-close{position:absolute;top:20px;right:20px;font-size:18px;color:var(--mu);}
+.modal-box{position:relative;}
+.sent-bar{height:8px;border-radius:5px;overflow:hidden;display:flex;margin:14px 0;background:var(--s2);}
+.sent-bar .g{background:var(--green);}
+.sent-bar .r{background:var(--red);}
+
+#cmdk-overlay{align-items:flex-start;padding-top:100px;}
+.cmdk-box{width:100%;max-width:560px;background:var(--surface);border:1px solid var(--line2);border-radius:14px;overflow:hidden;}
+.cmdk-input{width:100%;padding:16px 20px;font-size:15px;background:var(--s2);border:none;border-bottom:1px solid var(--line);border-radius:0;}
+.cmdk-results{max-height:400px;overflow-y:auto;padding:8px;}
+.cmdk-group-lbl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;padding:10px 12px 4px;}
+.cmdk-item{padding:10px 12px;border-radius:8px;font-size:13px;display:flex;align-items:center;gap:10px;}
+.cmdk-item.sel{background:var(--or-bg);color:var(--or2);}
+
+#welcome-overlay .modal-box{max-width:460px;text-align:center;}
+.welcome-steps{text-align:left;margin:18px 0;display:flex;flex-direction:column;gap:10px;}
+.welcome-step{display:flex;gap:10px;font-size:13px;color:var(--mu);align-items:flex-start;}
+.welcome-step b{color:var(--or);font-family:'Syne',sans-serif;}
+
+#toast-stack{position:fixed;bottom:20px;right:20px;z-index:400;display:flex;flex-direction:column;gap:10px;align-items:flex-end;}
+.toast{padding:12px 16px;border-radius:10px;background:var(--surface);border:1px solid var(--line2);font-size:12.5px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);transform:translateX(120%);opacity:0;transition:all .3s ease;max-width:320px;}
+.toast.show{transform:translateX(0);opacity:1;}
+.toast .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.toast.success .dot{background:var(--green);}
+.toast.info .dot{background:var(--teal);}
+.toast.warn .dot{background:var(--yellow);}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+@media(max-width:560px){.form-row{grid-template-columns:1fr;}}
+.check-row{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:8px;}
+.toggle{width:38px;height:22px;border-radius:20px;background:var(--s3);position:relative;flex-shrink:0;}
+.toggle.on{background:var(--or);}
+.toggle .kn{width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:all .2s;}
+.toggle.on .kn{left:19px;}
+</style>
+</head>
+<body>
+
+<!-- ============ SCREEN 1: LANDING ============ -->
+<div class="screen active" id="screen-landing">
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="logo"><div class="logo-mark">MP</div> MediaPulse BW</div>
+      <div class="nav-links">
+        <a href="#platform">Platform</a><a href="#how">How it works</a><a href="#pricing">Pricing</a>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" onclick="showLogin()">Sign in</button>
+        <button class="btn btn-primary btn-sm" onclick="showLogin()">Start free trial</button>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">🌍 Africa's media intelligence platform</div>
+      <h1>Every story. Every signal.<br><span class="grad-text">Every morning.</span></h1>
+      <p>MediaPulse BW watches 11 Botswana newspapers — print, digital and social — classifies every story with Claude AI, and delivers your team a complete briefing before 7am.</p>
+      <div class="hero-ctas">
+        <button class="btn btn-primary" onclick="showLogin()">See the platform →</button>
+        <a href="#how" class="btn btn-ghost">How it works</a>
+      </div>
+      <div class="social-proof">
+        <div class="avatars"><span>OB</span><span>FN</span><span>PN</span><span>SB</span></div>
+        <span class="muted" style="font-size:12.5px">14 brands monitoring daily</span>
+      </div>
+    </div>
+    <div>
+      <div class="card signal-card">
+        <div class="signal-top">
+          <div><div class="muted" style="font-size:11.5px">Stories indexed today</div><div class="signal-num" id="hero-counter">0</div></div>
+          <div class="pill" style="background:var(--teal-bg);color:var(--teal)">● live</div>
+        </div>
+      </div>
+      <div class="card signal-card">
+        <div class="signal-top">
+          <div><div class="muted" style="font-size:11.5px">Sentiment score</div><div class="signal-num" style="color:var(--green)">+71</div></div>
+          <div class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">▲ positive</div>
+        </div>
+      </div>
+      <div class="card" style="padding:18px;">
+        <div class="muted" style="font-size:11px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">Live ticker</div>
+        <div class="ticker-wrap"><div class="ticker-track" id="ticker-track"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee-band"><div class="marquee-track" id="marquee-track"></div></div>
+
+  <section class="section" id="platform">
+    <div class="section-head reveal">
+      <div class="eyebrow">Platform</div>
+      <h2>One platform. Every publication.</h2>
+      <p>From ingestion to insight, MediaPulse BW automates the entire PR intelligence workflow so your team spends time on strategy, not scanning newspapers.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="card feat-cell span2 reveal"><div class="feat-icon">📡</div><h4>Real-time ingestion</h4><p>Print, digital and social monitored continuously across 11 Botswana publications — PressReader, RSS, web scraping and social mirrors.</p></div>
+      <div class="card feat-cell reveal"><div class="feat-icon">🤖</div><h4>Claude AI analysis</h4><p>Every story classified for sentiment, category and brand relevance using the Anthropic Claude API.</p></div>
+      <div class="card feat-cell reveal"><div class="feat-icon">📊</div><h4>Share of voice</h4><p>Track your brand against competitors across every publication, every week.</p></div>
+      <div class="card feat-cell reveal"><div class="feat-icon">⚡</div><h4>Instant PR briefs</h4><p>One click generates a full PR-ready brief on any story — background, angle, and recommended response.</p></div>
+      <div class="card feat-cell reveal"><div class="feat-icon">🔔</div><h4>Smart alerts</h4><p>WhatsApp, email and Slack delivery the moment a negative story or competitor move breaks.</p></div>
+      <div class="card feat-cell span2 reveal"><div class="feat-icon">📄</div><h4>One-click PR reports</h4><p>Export board-ready coverage reports in PDF, Word or PowerPoint — generated by Claude in seconds, not hours.</p></div>
+      <div class="card feat-cell reveal"><div class="feat-icon">🏢</div><h4>Multi-client / multi-brand</h4><p>Agencies manage every client brand from a single dashboard with isolated data and permissions.</p></div>
+      <div class="card feat-cell reveal"><div class="feat-icon">✂️</div><h4>Article clippings</h4><p>Newspaper-accurate clippings with masthead, page and column reference for every story.</p></div>
+    </div>
+  </section>
+
+  <div class="metrics-band">
+    <div class="metric reveal"><div class="num" data-count="2400">0</div><div class="lbl">Articles / week</div></div>
+    <div class="metric reveal"><div class="num" data-count="18">0</div><div class="lbl">Publications</div></div>
+    <div class="metric reveal"><div class="num" data-count="94">0</div><div class="lbl">% sentiment accuracy</div></div>
+    <div class="metric reveal"><div class="num" data-count="12">0</div><div class="lbl">Minute morning delivery</div></div>
+  </div>
+
+  <section class="section">
+    <div class="section-head reveal"><div class="eyebrow">Preview</div><h2>Your morning briefing, live.</h2></div>
+    <div class="browser-chrome reveal">
+      <div class="chrome-bar"><div class="chrome-dot"></div><div class="chrome-dot"></div><div class="chrome-dot"></div><div class="chrome-url">app.mediapulse.bw/briefing</div></div>
+      <div class="chrome-body">
+        <div class="chrome-side">
+          <div class="sidenav-item on">📰 Daily briefing</div>
+          <div class="sidenav-item">📎 Clippings</div>
+          <div class="sidenav-item">📱 Social listening</div>
+          <div class="sidenav-item">📊 Competitor watch</div>
+          <div class="sidenav-item">🔔 My alerts</div>
+        </div>
+        <div class="chrome-main">
+          <div style="font-size:13px;font-weight:700;margin-bottom:12px;font-family:'Syne',sans-serif">Good morning, Obakeng — 8 stories today</div>
+          <div class="card" style="padding:12px;margin-bottom:10px;"><div class="pill" style="background:var(--or-bg);color:var(--or)">Telco</div> <b style="font-size:12.5px">BOCRA orders telcos to improve rural coverage by Q1 2026</b><div class="muted" style="font-size:11px;margin-top:4px">Mmegi · Today</div></div>
+          <div class="card" style="padding:12px;"><div class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Positive</div> <b style="font-size:12.5px">Orange 5G expansion reaches Francistown and Maun</b><div class="muted" style="font-size:11px;margin-top:4px">The Voice · Today</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="section-head reveal"><div class="eyebrow">How it works</div><h2>Four steps to your morning brief.</h2></div>
+    <div class="steps-grid">
+      <div class="card step-card reveal"><div class="step-num">01</div><h4>Ingest</h4><p>Every Botswana publication monitored continuously across print, digital and social.</p></div>
+      <div class="card step-card reveal"><div class="step-num">02</div><h4>Analyse</h4><p>Claude classifies sentiment, category and brand relevance for every story.</p></div>
+      <div class="card step-card reveal"><div class="step-num">03</div><h4>Prioritise</h4><p>Stories ranked by PR relevance so nothing urgent slips through.</p></div>
+      <div class="card step-card reveal"><div class="step-num">04</div><h4>Brief</h4><p>Delivered to your team via app, email, WhatsApp or Slack before 7am.</p></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head reveal"><div class="eyebrow">Trusted by</div><h2>What our clients say</h2></div>
+    <div class="testi-grid">
+      <div class="card testi-card reveal"><div class="stars">★★★★★</div><p>"MediaPulse BW cut our morning press review from two hours to twelve minutes. The AI briefs are genuinely board-ready."</p><div class="testi-who"><div class="testi-avatar">OM</div><div><div class="testi-name">Obakeng M.</div><div class="testi-role">Orange Botswana</div></div></div></div>
+      <div class="card testi-card reveal"><div class="stars">★★★★★</div><p>"We caught a regulator story on Mascom before it hit our desk anywhere else. The alerting alone paid for the subscription."</p><div class="testi-who"><div class="testi-avatar">TK</div><div><div class="testi-name">Thabo K.</div><div class="testi-role">FNB Botswana</div></div></div></div>
+      <div class="card testi-card reveal"><div class="stars">★★★★★</div><p>"Finally a media monitoring tool built for Botswana, not repurposed from a South African platform. The clippings are perfect."</p><div class="testi-who"><div class="testi-avatar">DN</div><div><div class="testi-name">Dimpho N.</div><div class="testi-role">Stanbic Botswana</div></div></div></div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="section-head reveal"><div class="eyebrow">Pricing</div><h2>Simple, transparent plans.</h2></div>
+    <div class="pricing-grid">
+      <div class="card price-card reveal"><div class="price-tier">Starter</div><div class="price-amt">P2,500<span>/mo</span></div><div class="muted" style="font-size:12.5px">1 brand · 5 publications</div>
+        <ul class="price-feats"><li>Daily briefing</li><li>Article clippings</li><li>Email delivery</li><li>Basic sentiment</li></ul>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="showLogin()">Start free trial</button></div>
+      <div class="card price-card featured reveal"><div class="price-badge">Most popular</div><div class="price-tier">Professional</div><div class="price-amt">P6,500<span>/mo</span></div><div class="muted" style="font-size:12.5px">3 brands · 15 publications + social</div>
+        <ul class="price-feats"><li>Everything in Starter</li><li>Social listening</li><li>Competitor watch</li><li>WhatsApp + Slack alerts</li><li>AI PR reports</li></ul>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="showLogin()">Start free trial</button></div>
+      <div class="card price-card reveal"><div class="price-tier">Enterprise</div><div class="price-amt">Custom</div><div class="muted" style="font-size:12.5px">Unlimited brands & publications</div>
+        <ul class="price-feats"><li>Everything in Professional</li><li>White-label portal</li><li>Dedicated analyst</li><li>API access</li></ul>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="showLogin()">Talk to sales</button></div>
+    </div>
+  </section>
+
+  <section class="cta-section reveal">
+    <div class="cta-glow"></div>
+    <h2>Your morning briefing starts tomorrow.</h2>
+    <p>No credit card required. Cancel anytime.</p>
+    <button class="btn btn-primary" onclick="showLogin()" style="position:relative">Start free trial →</button>
+  </section>
+
+  <footer>
+    <div class="footer-grid">
+      <div><div class="logo" style="margin-bottom:14px"><div class="logo-mark">MP</div> MediaPulse BW</div><p class="muted" style="font-size:13px;line-height:1.6;max-width:280px">AI-native media intelligence for Botswana's PR and communications industry. Built by Obakeng Kokwe.</p></div>
+      <div><h5>Platform</h5><a href="#platform">Features</a><a href="#pricing">Pricing</a><a href="#how">How it works</a></div>
+      <div><h5>Company</h5><a href="#">About</a><a href="#">Careers</a><a href="#">Blog</a></div>
+      <div><h5>Contact</h5><a href="#">hello@mediapulse.bw</a><a href="#">Gaborone, Botswana</a><a href="#">+267 71 234 567</a></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 MediaPulse BW. Built by Obakeng Kokwe · Orange Digital Centre Botswana · DS Communications</span><span>Privacy · Terms</span></div>
+  </footer>
+</div>
+
+<!-- ============ SCREEN 2: LOGIN ============ -->
+<div class="screen" id="screen-login">
+  <div class="card login-card">
+    <div class="logo"><div class="logo-mark">MP</div> MediaPulse BW</div>
+    <h1>Welcome back</h1>
+    <p class="muted">Sign in to your media intelligence dashboard.</p>
+    <div class="demo-grid" id="demo-cards"></div>
+    <div class="form-field"><label>Email</label><input type="email" id="login-email" placeholder="you@company.co.bw"></div>
+    <div class="form-field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:6px" onclick="doLogin()">Sign in →</button>
+    <div style="text-align:center;margin-top:16px"><a class="muted" style="font-size:12px" onclick="showLanding()">← Back to home</a></div>
+  </div>
+</div>
+
+<!-- ============ SCREEN 3: APP ============ -->
+<div class="screen" id="screen-app">
+  <div class="topchrome">
+    <div class="topchrome-left">
+      <div class="logo" style="font-size:13px"><div class="logo-mark" style="width:26px;height:26px;font-size:10px">MP</div> MediaPulse BW</div>
+      <div class="demo-switcher">Demo · view as
+        <div class="role-tabs" id="role-tabs"></div>
+      </div>
+    </div>
+    <div class="topchrome-search" onclick="openCmdk()">🔍 Search stories, pages, brands... <kbd style="margin-left:auto">⌘K</kbd></div>
+    <div class="topchrome-right">
+      <div class="bell" onclick="bellClick()">🔔<span class="dot"></span></div>
+      <div class="userchip" id="userchip"></div>
+      <button class="btn btn-ghost btn-sm" onclick="showLogin()">Switch</button>
+    </div>
+  </div>
+  <div class="app-body">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- ============ CLIPPING MODAL ============ -->
+<div class="overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<!-- ============ CMDK ============ -->
+<div class="overlay" id="cmdk-overlay" onclick="if(event.target===this)closeCmdk()">
+  <div class="cmdk-box">
+    <input class="cmdk-input" id="cmdk-input" placeholder="Search pages, stories, brands..." oninput="renderCmdkResults()">
+    <div class="cmdk-results" id="cmdk-results"></div>
+  </div>
+</div>
+
+<!-- ============ WELCOME OVERLAY ============ -->
+<div class="overlay" id="welcome-overlay">
+  <div class="modal-box" id="welcome-box"></div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script>
+/* =====================================================================
+   DATA
+===================================================================== */
+const STORIES = [
+  {icon:'📡',page:4,col:'B',pub:'Mmegi',date:'Today',category:'Regulator',sentiment:'neutral',brands:['Orange','Mascom','BTC'],
+   headline:'BOCRA orders telcos to improve rural coverage by Q1 2026',
+   body:'The Botswana Communications Regulatory Authority has issued a directive requiring all three mobile network operators to submit rural coverage improvement plans within 30 days. The regulator cited persistent complaints from constituencies in the Kgalagadi and Ngamiland districts. Non-compliance could result in spectrum licence review.',
+   pr:'Orange should proactively publish its rural rollout roadmap to get ahead of the narrative before competitors do.'},
+  {icon:'📶',page:6,col:'A',pub:'The Voice',date:'Today',category:'Telco',sentiment:'positive',brands:['Orange'],
+   headline:'Orange 5G expansion reaches Francistown and Maun',
+   body:'Orange Botswana switched on 5G service in Francistown and Maun this week, extending its next-generation network beyond Gaborone for the first time. The company says coverage will reach 60% of the urban population by year-end.',
+   pr:'Strong positive coverage — amplify via social and consider a customer testimonial campaign in the newly-covered towns.'},
+  {icon:'💰',page:9,col:'C',pub:'Sunday Standard',date:'Yesterday',category:'Fintech',sentiment:'positive',brands:['Orange Money','MyZaka'],
+   headline:'Mobile money transaction volumes hit P4.2bn in May — NBFIRA',
+   body:'The Non-Bank Financial Institutions Regulatory Authority reported that mobile money transaction values crossed P4.2 billion in May, a 14% increase year-on-year, with Orange Money and MyZaka accounting for the bulk of consumer transfers.',
+   pr:'Cite this NBFIRA data in the next Orange Money investor and media update to reinforce category leadership.'},
+  {icon:'📉',page:3,col:'B',pub:'Guardian',date:'Yesterday',category:'Competition',sentiment:'negative',brands:['Mascom'],
+   headline:'Mascom Summa Summer draws consumer complaints over speed claims',
+   body:'Several customers have taken to social media alleging that Mascom\'s "Summa Summer" data promotion delivered speeds well below advertised rates. The Botswana Consumer Protection agency confirmed it has received a formal complaint.',
+   pr:'Competitor weakness — an opportunity to highlight Orange network transparency tools in owned channels, without directly naming Mascom.'},
+  {icon:'🔐',page:2,col:'A',pub:'Daily News',date:'2 days ago',category:'Cyber-Tech',sentiment:'negative',brands:['BTC','Orange','Mascom'],
+   headline:'Parliament raises cybersecurity concerns over mobile banking apps',
+   body:'A parliamentary committee questioned all three mobile network operators on data protection standards for banking-linked apps, following a regional spike in SIM-swap fraud attempts. Operators have been given 14 days to respond in writing.',
+   pr:'Prepare a joint statement with Orange\'s security team ahead of the 14-day deadline to control the response narrative.'},
+  {icon:'💳',page:7,col:'D',pub:'Business Weekly',date:'2 days ago',category:'Fintech',sentiment:'positive',brands:['Orange','Maxit'],
+   headline:'Orange Maxit app loan disbursements top P12 million in Q1',
+   body:'Orange\'s Maxit micro-lending app disbursed over P12 million in Q1 2026, according to figures shared at a fintech industry briefing, positioning it as one of the fastest-growing digital lenders in Botswana.',
+   pr:'Strong quarter — package into a milestone press release and pitch a founder interview on financial inclusion.'},
+  {icon:'🎓',page:5,col:'B',pub:'The Voice',date:'3 days ago',category:'Telco',sentiment:'positive',brands:['Orange','Atlega'],
+   headline:'Atlega student programme: Orange and Conexus celebrate top learners',
+   body:'Orange Botswana and partner Conexus Botswana hosted a ceremony recognising the top-performing students in the Atlega digital skills programme, which has now trained over 3,000 young people in coding and digital literacy since 2023.',
+   pr:'CSR win — use for ESG reporting and pitch human-interest features around individual student stories.'},
+  {icon:'♻️',page:8,col:'C',pub:'Guardian',date:'3 days ago',category:'Competition',sentiment:'positive',brands:['BTC'],
+   headline:'BTC champions copper recycling and green infrastructure drive',
+   body:'Botswana Telecommunications Corporation announced a copper-cable recycling initiative as part of its 2026 sustainability commitments, alongside plans to convert 40% of base stations to solar power by 2027.',
+   pr:'Competitor ESG move — worth monitoring in case Orange\'s own sustainability messaging needs to accelerate in response.'}
+];
+const SOCIAL = [
+  {platform:'Facebook',handle:'@OrangeBotswana',avatar:'OB',body:'Massive shoutout to the Orange team for the new 5G rollout in Maun! Speeds are incredible 🚀',likes:342,comments:28,shares:19,sentiment:'positive',escalate:false},
+  {platform:'X',handle:'@thabo_gt',avatar:'TG',body:'@OrangeBotswana my Maxit loan application has been "pending" for 6 days now. This is unacceptable customer service.',likes:12,comments:34,shares:8,sentiment:'negative',escalate:true},
+  {platform:'Instagram',handle:'@dsconnect.bw',avatar:'DS',body:'Loved seeing the Atlega graduation ceremony today — such a great initiative for youth in tech 👏',likes:198,comments:11,shares:6,sentiment:'positive',escalate:false},
+  {platform:'X',handle:'@kefilwe_m',avatar:'KM',body:'Orange network has been down in Tlokweng since this morning. Anyone else experiencing this? Third time this month.',likes:56,comments:41,shares:22,sentiment:'negative',escalate:true},
+  {platform:'LinkedIn',handle:'Botswana Fintech Assoc.',avatar:'BF',body:'Congratulations to Orange Botswana on the Maxit lending milestone — a strong signal for digital financial inclusion in the region.',likes:87,comments:9,shares:14,sentiment:'positive',escalate:false},
+  {platform:'Facebook',handle:'@mma_pearl',avatar:'MP',body:'Customer care at the Orange Airport Junction branch was so helpful today, sorted my SIM swap in 10 minutes!',likes:64,comments:5,shares:2,sentiment:'positive',escalate:false}
+];
+const CLIENTS = [
+  {name:'Orange Botswana',sector:'Telco',plan:'Enterprise',mrr:9500,users:12,stories:487,sentiment:71,status:'Healthy'},
+  {name:'FNB Botswana',sector:'Banking',plan:'Professional',mrr:6500,users:6,stories:203,sentiment:64,status:'Healthy'},
+  {name:'BDO Botswana',sector:'Professional Services',plan:'Starter',mrr:2500,users:3,stories:58,sentiment:80,status:'Healthy'},
+  {name:'Pick n Pay BW',sector:'Retail',plan:'Professional',mrr:6500,users:5,stories:164,sentiment:52,status:'Attention'},
+  {name:'Stanbic Botswana',sector:'Banking',plan:'Professional',mrr:6500,users:7,stories:178,sentiment:68,status:'Healthy'}
+];
+const ALERTS_DATA = [
+  {client:'Orange Botswana',title:'Negative sentiment spike — Mobile banking app security',title2:'Escalation',icon:'⚠️',color:'var(--red)',body:'Sentiment on Orange dropped 18 points in 24h following the parliamentary cybersecurity questioning.',time:'2h ago',status:'active'},
+  {client:'Orange Botswana',title:'Competitor BOCRA investigation — Mascom named',icon:'🔎',color:'var(--yellow)',body:'BOCRA rural coverage directive names Mascom and BTC alongside Orange — monitor for differentiated treatment.',time:'6h ago',status:'active'},
+  {client:'FNB Botswana',title:'Negative review cluster on mobile app store',icon:'⚠️',color:'var(--red)',body:'12 new 1-star reviews in the last 48h citing app crashes after the latest update.',time:'1d ago',status:'active'},
+  {client:'Pick n Pay BW',title:'Pricing complaint trending on X',icon:'📉',color:'var(--yellow)',body:'Multiple posts alleging price increases above inflation — approaching 200 mentions.',time:'2d ago',status:'active'},
+  {client:'Stanbic Botswana',title:'ATM downtime complaints — resolved',icon:'✅',color:'var(--green)',body:'Network outage affecting 40 ATMs nationwide has been resolved; sentiment recovering.',time:'4d ago',status:'resolved'}
+];
+const INGESTION_SOURCES = [
+  {name:'Mmegi',method:'PressReader',days:'Mon–Sat',window:'05:00–07:00',active:'5 min',idle:'60 min',social:true,last:'6 min ago',status:'ok'},
+  {name:'The Voice',method:'RSS',days:'Mon–Fri',window:'06:00–08:00',active:'10 min',idle:'45 min',social:true,last:'12 min ago',status:'ok'},
+  {name:'Sunday Standard',method:'PDF',days:'Sun',window:'07:00–09:00',active:'15 min',idle:'6 hr',social:false,last:'3 hr ago',status:'ok'},
+  {name:'Guardian',method:'Web scrape',days:'Mon–Fri',window:'06:00–09:00',active:'10 min',idle:'50 min',social:true,last:'9 min ago',status:'ok'},
+  {name:'Daily News',method:'RSS',days:'Mon–Fri',window:'05:30–07:30',active:'5 min',idle:'40 min',social:false,last:'4 min ago',status:'ok'},
+  {name:'Business Weekly',method:'PDF',days:'Fri',window:'08:00–10:00',active:'20 min',idle:'12 hr',social:false,last:'1 d ago',status:'ok'},
+  {name:'Botswana Gazette',method:'Web scrape',days:'Wed',window:'06:00–08:00',active:'15 min',idle:'8 hr',social:true,last:'5 hr ago',status:'ok'},
+  {name:'The Patriot',method:'Web scrape',days:'Mon–Fri',window:'06:00–08:00',active:'10 min',idle:'50 min',social:false,last:'2 d ago',status:'error'},
+  {name:'Voice Weekend',method:'RSS',days:'Sat',window:'07:00–09:00',active:'15 min',idle:'10 hr',social:true,last:'18 hr ago',status:'ok'},
+  {name:'Botswana Guardian FM',method:'Social',days:'Daily',window:'All day',active:'15 min',idle:'15 min',social:true,last:'2 min ago',status:'ok'},
+  {name:'Facebook — Public Pages',method:'Social',days:'Daily',window:'All day',active:'10 min',idle:'10 min',social:true,last:'1 min ago',status:'ok'},
+  {name:'X (Twitter) Firehose',method:'Social',days:'Daily',window:'All day',active:'5 min',idle:'5 min',social:true,last:'40 sec ago',status:'ok'}
+];
+const DEMO_ACCOUNTS = {
+  client:{name:'Obakeng Molefe',email:'obakeng@orange.co.bw',pass:'demo123',org:'Orange Botswana',role:'Client'},
+  agency:{name:'Naledi Kgosimore',email:'naledi@dscoms.co.bw',pass:'demo123',org:'DS Communications',role:'Agency'},
+  admin:{name:'System Administrator',email:'admin@mediapulse.bw',pass:'admin123',org:'MediaPulse BW',role:'Admin'},
+  viewer:{name:'Tsogo Kedibone',email:'tsogo@orange.co.bw',pass:'demo123',org:'Orange Botswana',role:'Viewer'}
+};
+
+const ROLE_CONFIG = {
+  client:{
+    clientBox:{name:'Orange Botswana',plan:'Enterprise Plan',ro:false},
+    groups:[
+      {label:'Overview',items:[{id:'briefing',icon:'📰',label:'Daily briefing'},{id:'clippings',icon:'📎',label:'Article clippings'},{id:'social',icon:'📱',label:'Social listening'}]},
+      {label:'Intelligence',items:[{id:'competitor',icon:'📊',label:'Competitor watch'},{id:'alerts',icon:'🔔',label:'My alerts',badge:2},{id:'reports',icon:'📄',label:'PR report generator'},{id:'heatmap',icon:'🗺️',label:'Coverage heatmap'},{id:'spend',icon:'💰',label:'Media spend tracker'}]},
+      {label:'Settings',items:[{id:'keywords',icon:'🏷️',label:'Keywords & brands'},{id:'notifications',icon:'⚙️',label:'Notifications'},{id:'account',icon:'👤',label:'Account settings'}]}
+    ]
+  },
+  agency:{
+    clientBox:{name:'DS Communications',plan:'Agency Plan',ro:false},
+    groups:[
+      {label:'Overview',items:[{id:'agency-dash',icon:'🏢',label:'Agency dashboard'},{id:'agency-clients',icon:'👥',label:'Client accounts'},{id:'agency-campaigns',icon:'📣',label:'Campaign monitor'},{id:'agency-calendar',icon:'📅',label:'Content calendar'}]},
+      {label:'Operations',items:[{id:'agency-reports',icon:'📄',label:'Report builder'},{id:'agency-alerts',icon:'🔔',label:'All alerts'},{id:'agency-sources',icon:'📡',label:'Source management'},{id:'agency-intel',icon:'📊',label:'Market intelligence'}]},
+      {label:'Agency',items:[{id:'agency-team',icon:'🧑‍💼',label:'Team & access'},{id:'agency-settings',icon:'⚙️',label:'Agency settings'}]}
+    ]
+  },
+  admin:{
+    clientBox:{name:'System Administrator',plan:'Full Access',ro:false},
+    groups:[
+      {label:'System',items:[{id:'admin-health',icon:'💚',label:'System health'},{id:'admin-clients',icon:'🏢',label:'All clients'},{id:'admin-users',icon:'👥',label:'User management'}]},
+      {label:'Ingestion',items:[{id:'admin-ingestion',icon:'📡',label:'Ingestion pipeline'},{id:'admin-schedule',icon:'🗓️',label:'Ingestion schedule'},{id:'admin-upload',icon:'⬆️',label:'Upload content'},{id:'admin-processing',icon:'⚙️',label:'Processing schedule'}]},
+      {label:'AI & Billing',items:[{id:'admin-logs',icon:'🧾',label:'AI processing logs'},{id:'admin-templates',icon:'📝',label:'Prompt templates'},{id:'admin-billing',icon:'💳',label:'Billing & plans'},{id:'admin-config',icon:'🛠️',label:'Platform config'},{id:'admin-syslogs',icon:'📋',label:'System logs'}]}
+    ]
+  },
+  viewer:{
+    clientBox:{name:'Orange Botswana',plan:'Viewer',ro:true},
+    groups:[
+      {label:'Overview',items:[{id:'briefing',icon:'📰',label:'Daily briefing'},{id:'clippings',icon:'📎',label:'Article clippings'}]},
+      {label:'Intelligence',items:[{id:'heatmap',icon:'🗺️',label:'Coverage heatmap'},{id:'competitor',icon:'📊',label:'Competitor watch'},{id:'viewer-reports',icon:'📄',label:'Saved reports'}]}
+    ]
+  }
+};
+
+const CMDK_PAGES = {
+  client:['briefing','clippings','social','competitor','alerts','reports','heatmap','spend','keywords','notifications','account'],
+  agency:['agency-dash','agency-clients','agency-campaigns','agency-calendar','agency-reports','agency-alerts','agency-sources','agency-intel','agency-team','agency-settings'],
+  admin:['admin-health','admin-clients','admin-users','admin-ingestion','admin-schedule','admin-upload','admin-processing','admin-logs','admin-templates','admin-billing','admin-config','admin-syslogs'],
+  viewer:['briefing','clippings','heatmap','competitor','viewer-reports']
+};
+const PAGE_LABELS = {};
+Object.keys(ROLE_CONFIG).forEach(function(r){
+  ROLE_CONFIG[r].groups.forEach(function(g){
+    g.items.forEach(function(it){ PAGE_LABELS[it.id] = it.label; });
+  });
+});
+
+/* =====================================================================
+   STATE
+===================================================================== */
+let state = { role:'client', apiKey:null, storiesFiltered:STORIES.slice(), storyFilter:'All', socialFiltered:SOCIAL.slice(), socialFilter:'All', welcomeShown:{} };
+let chartInst = {};
+let cmdkSel = 0;
+
+/* =====================================================================
+   UTILITIES
+===================================================================== */
+function el(id){ return document.getElementById(id); }
+function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function toast(msg, type){
+  type = type || 'info';
+  const stack = el('toast-stack');
+  const t = document.createElement('div');
+  t.className = 'toast '+type;
+  t.innerHTML = '<div class="dot"></div><div>'+escapeHtml(msg)+'</div>';
+  stack.appendChild(t);
+  requestAnimationFrame(function(){ t.classList.add('show'); });
+  setTimeout(function(){
+    t.classList.remove('show');
+    setTimeout(function(){ t.remove(); }, 350);
+  }, 3600);
+}
+
+function mdFormat(text){
+  let h = escapeHtml(text);
+  h = h.replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>');
+  h = h.replace(/\\n\\n/g, '<br><br>').replace(/\\n/g, '<br>');
+  return h;
+}
+
+/* =====================================================================
+   SCREEN NAVIGATION
+===================================================================== */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  el(id).classList.add('active');
+}
+function showLanding(){
+  showScreen('screen-landing');
+  window.scrollTo(0,0);
+  initLandingAnimations();
+}
+function showLogin(){
+  showScreen('screen-login');
+  renderDemoCards();
+}
+function showApp(){
+  showScreen('screen-app');
+  renderRoleTabs();
+  renderSidebar();
+  showPage(CMDK_PAGES[state.role][0]);
+  renderUserChip();
+  if(!state.welcomeShown[state.role]){
+    showWelcome();
+  }
+}
+
+/* =====================================================================
+   LANDING PAGE ANIMATIONS
+===================================================================== */
+let landingInit = false;
+function initLandingAnimations(){
+  if(landingInit) return;
+  landingInit = true;
+
+  // hero counter
+  let heroVal = 0;
+  const heroEl = el('hero-counter');
+  const heroInt = setInterval(function(){
+    heroVal += Math.ceil(487/40);
+    if(heroVal >= 487){ heroVal = 487; clearInterval(heroInt); }
+    heroEl.textContent = heroVal;
+  }, 40);
+
+  // ticker
+  const headlines = STORIES.slice(0,3).map(function(s){ return '<div class="ticker-item"><b>'+escapeHtml(s.pub)+'</b> — '+escapeHtml(s.headline)+'</div>'; });
+  el('ticker-track').innerHTML = headlines.join('') + headlines.join('');
+
+  // marquee
+  const brands = ['Orange Botswana','First National Bank','Mascom Wireless','BTC Botswana','Absa Botswana','Stanbic Bank','Pick n Pay BW','Choppies','Standard Chartered','Botswana Insurance'];
+  const marqueeHtml = brands.map(function(b){ return '<span>'+b+'</span>'; }).join('');
+  el('marquee-track').innerHTML = marqueeHtml + marqueeHtml;
+
+  // reveal + metric counters
+  const observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('in');
+        if(entry.target.classList.contains('metric')){
+          animateMetric(entry.target.querySelector('.num'));
+        }
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {threshold:0.15});
+  document.querySelectorAll('.reveal, .metric').forEach(function(node){ observer.observe(node); });
+}
+function animateMetric(node){
+  const target = parseInt(node.getAttribute('data-count'),10);
+  let cur = 0;
+  const step = Math.max(1, Math.ceil(target/40));
+  const timer = setInterval(function(){
+    cur += step;
+    if(cur >= target){ cur = target; clearInterval(timer); }
+    node.textContent = cur;
+  }, 30);
+}
+
+/* =====================================================================
+   LOGIN
+===================================================================== */
+function renderDemoCards(){
+  const wrap = el('demo-cards');
+  const keys = ['client','agency','admin','viewer'];
+  wrap.innerHTML = keys.map(function(k){
+    const a = DEMO_ACCOUNTS[k];
+    return '<button class="demo-card" onclick="fillDemo(\''+k+'\')">'+
+      '<div class="demo-role">'+a.role+'</div>'+
+      '<div class="demo-name">'+a.name+'</div>'+
+      '<div class="demo-org">'+a.org+'</div>'+
+      '</button>';
+  }).join('');
+}
+function fillDemo(key){
+  const a = DEMO_ACCOUNTS[key];
+  el('login-email').value = a.email;
+  el('login-pass').value = a.pass;
+  state.pendingRole = key;
+}
+function doLogin(){
+  const email = el('login-email').value.trim().toLowerCase();
+  let match = null;
+  Object.keys(DEMO_ACCOUNTS).forEach(function(k){
+    if(DEMO_ACCOUNTS[k].email.toLowerCase() === email) match = k;
+  });
+  if(!match) match = state.pendingRole || 'client';
+  state.role = match;
+  showApp();
+}
+
+/* =====================================================================
+   APP SHELL: ROLE TABS / SIDEBAR / USER CHIP
+===================================================================== */
+function renderRoleTabs(){
+  const roles = ['agency','client','admin','viewer'];
+  const labelMap = {agency:'Agency',client:'Client',admin:'Admin',viewer:'Viewer'};
+  el('role-tabs').innerHTML = roles.map(function(r){
+    return '<div class="role-tab'+(r===state.role?' on':'')+'" onclick="switchRole(\''+r+'\')">'+labelMap[r]+'</div>';
+  }).join('');
+}
+function renderUserChip(){
+  const a = DEMO_ACCOUNTS[state.role];
+  const initials = a.name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2);
+  el('userchip').innerHTML = '<div class="av">'+initials+'</div><div><div style="font-weight:600">'+a.name+'</div><div class="muted" style="font-size:10.5px">'+a.role+' · '+a.org+'</div></div>';
+}
+function switchRole(role){
+  if(role === state.role) return;
+  state.role = role;
+  renderRoleTabs();
+  renderSidebar();
+  showPage(CMDK_PAGES[role][0]);
+  renderUserChip();
+  const a = DEMO_ACCOUNTS[role];
+  const firstName = a.name.split(' ')[0] + ' ' + a.name.split(' ')[1][0] + '.';
+  toast('Now viewing as '+firstName+' — '+a.role+' · '+a.org, 'info');
+  if(!state.welcomeShown[role]) showWelcome();
+}
+function renderSidebar(){
+  const cfg = ROLE_CONFIG[state.role];
+  const cb = cfg.clientBox;
+  let html = '<div class="client-box"><div class="cb-name">'+cb.name+'</div><div class="cb-plan">'+cb.plan+'</div>'+(cb.ro?'<div class="cb-ro">🔒 Read-only access</div>':'')+'</div>';
+  html += '<div class="qsearch-btn" onclick="openCmdk()"><span>🔍 Quick search</span><kbd>⌘K</kbd></div>';
+  cfg.groups.forEach(function(g){
+    html += '<div class="navgroup"><div class="navgroup-lbl">'+g.label+'</div>';
+    g.items.forEach(function(it){
+      html += '<div class="navitem" id="nav-'+it.id+'" onclick="showPage(\''+it.id+'\')"><span>'+it.icon+'</span><span>'+it.label+'</span>'+(it.badge?'<span class="nbadge">'+it.badge+'</span>':'')+'</div>';
+    });
+    html += '</div>';
+  });
+  el('sidebar').innerHTML = html;
+}
+
+/* =====================================================================
+   PAGE ROUTER
+===================================================================== */
+function destroyCharts(){
+  Object.keys(chartInst).forEach(function(k){
+    if(chartInst[k]) chartInst[k].destroy();
+  });
+  chartInst = {};
+}
+function showPage(id){
+  destroyCharts();
+  state.currentPage = id;
+  const readonly = state.role === 'viewer';
+  document.querySelectorAll('.navitem').forEach(function(n){ n.classList.remove('on'); });
+  const navEl = el('nav-'+id);
+  if(navEl) navEl.classList.add('on');
+  const content = el('content');
+  content.scrollTop = 0;
+  const fn = PAGES[id];
+  if(fn){
+    fn(content, readonly);
+  } else {
+    content.innerHTML = '<div class="card" style="padding:24px">Page not found.</div>';
+  }
+}
+
+/* =====================================================================
+   SHARED RENDER HELPERS
+===================================================================== */
+function statCard(label,val,delta,deltaCls){
+  return '<div class="card stat-card"><div class="lbl">'+label+'</div><div class="val">'+val+'</div>'+(delta?'<div class="delta '+(deltaCls||'')+'">'+delta+'</div>':'')+'</div>';
+}
+function sentPill(s){
+  if(s==='positive') return '<span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Positive</span>';
+  if(s==='negative') return '<span class="pill" style="background:rgba(239,68,68,.12);color:var(--red)">Negative</span>';
+  return '<span class="pill" style="background:var(--s3);color:var(--mu)">Neutral</span>';
+}
+function catPill(c){
+  return '<span class="pill" style="background:var(--or-bg);color:var(--or2)">'+c+'</span>';
+}
+function brandPills(brands){
+  return brands.map(function(b){ return '<span class="pill" style="background:var(--teal-bg);color:var(--teal)">'+b+'</span>'; }).join('');
+}
+function hintBanner(id, html){
+  return '<div class="hint-banner" id="hint-'+id+'"><div>'+html+'</div><div class="hint-x" onclick="dismissHint(\''+id+'\')">✕</div></div>';
+}
+function dismissHint(id){
+  const n = el('hint-'+id);
+  if(n) n.remove();
+}
+function storyCardHtml(s, idx, readonly){
+  return '<div class="card story-card">'+
+    '<div class="story-top">'+catPill(s.category)+sentPill(s.sentiment)+'<span class="muted" style="font-size:11.5px">'+s.pub+' · '+s.date+'</span></div>'+
+    '<div class="brandpills">'+brandPills(s.brands)+'</div>'+
+    '<div class="story-head">'+s.headline+'</div>'+
+    '<div class="story-rel">'+s.pr+'</div>'+
+    clippingPreviewHtml(s, idx, readonly)+
+    '<div id="story-ai-'+idx+'"></div>'+
+    '</div>';
+}
+function clippingPreviewHtml(s, idx, readonly){
+  const foot = readonly ? '' :
+    '<button class="btn btn-primary btn-sm" onclick="openClipping('+idx+')">Open clipping ↗</button>'+
+    '<button class="btn btn-ghost btn-sm" onclick="storyAI('+idx+',this)">AI brief ↗</button>'+
+    '<button class="btn btn-ghost btn-sm" onclick="toast(\'Clipping exported.\',\'success\')">↓ Export</button>';
+  return '<div class="clip-prev">'+
+    '<div class="clip-prev-head"><span>'+s.pub+'</span><span class="pg">Pg '+s.page+' · '+s.date+'</span></div>'+
+    '<div class="clip-prev-body">'+
+      '<div class="clip-icon">'+s.icon+'</div>'+
+      '<div class="clip-prev-txt"><div class="h">'+s.headline+'</div><div class="x">'+s.body.slice(0,90)+'…</div></div>'+
+    '</div>'+
+    (foot? '<div class="clip-prev-foot">'+foot+'</div>' : '')+
+    '</div>';
+}
+function renderStories(container){
+  const list = state.storiesFiltered;
+  container.innerHTML = list.map(function(s,i){
+    const realIdx = STORIES.indexOf(s);
+    return storyCardHtml(s, realIdx, state.role==='viewer');
+  }).join('') || '<div class="card" style="padding:24px" class="muted">No stories match this filter.</div>';
+}
+function filterStories(cat){
+  state.storyFilter = cat;
+  document.querySelectorAll('.story-filter-chip').forEach(function(c){
+    c.classList.toggle('on', c.dataset.cat === cat);
+  });
+  if(cat === 'All'){ state.storiesFiltered = STORIES.slice(); }
+  else if(cat === 'Positive' || cat === 'Negative'){
+    state.storiesFiltered = STORIES.filter(function(s){ return s.sentiment === cat.toLowerCase(); });
+  } else {
+    state.storiesFiltered = STORIES.filter(function(s){ return s.category === cat; });
+  }
+  const target = el('stories-list');
+  if(target) renderStories(target);
+}
+function socialCardHtml(p, idx, readonly){
+  const esc = p.escalate;
+  return '<div class="card social-post'+(esc?' escalated':'')+'">'+
+    '<div class="social-top"><div class="social-av">'+p.avatar+'</div><div><div class="social-handle">'+p.handle+'</div><div class="social-plat">'+p.platform+(esc?' · <span style="color:var(--red)">Escalation</span>':'')+'</div></div></div>'+
+    '<div class="social-body">'+p.body+'</div>'+
+    '<div class="social-stats"><span>♥ '+p.likes+'</span><span>💬 '+p.comments+'</span><span>↻ '+p.shares+'</span></div>'+
+    (esc && !readonly ? '<div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="socialReply('+idx+',this)">Draft reply ↗</button></div><div id="social-ai-'+idx+'"></div>' : '')+
+    '</div>';
+}
+function renderSocial(container){
+  container.innerHTML = state.socialFiltered.map(function(p){
+    const idx = SOCIAL.indexOf(p);
+    return socialCardHtml(p, idx, false);
+  }).join('');
+}
+function filterSocial(plat){
+  state.socialFilter = plat;
+  document.querySelectorAll('.social-filter-chip').forEach(function(c){
+    c.classList.toggle('on', c.dataset.plat === plat);
+  });
+  if(plat === 'All') state.socialFiltered = SOCIAL.slice();
+  else if(plat === 'Escalations') state.socialFiltered = SOCIAL.filter(function(p){ return p.escalate; });
+  else state.socialFiltered = SOCIAL.filter(function(p){ return p.platform === plat; });
+  const target = el('social-list');
+  if(target) renderSocial(target);
+}
+
+/* =====================================================================
+   CHART HELPERS
+===================================================================== */
+const CHART_BASE = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{legend:{labels:{color:'rgba(245,242,236,0.45)',font:{size:10}}}},
+  scales:{
+    x:{grid:{display:false},ticks:{color:'rgba(245,242,236,0.4)',font:{size:9}}},
+    y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(245,242,236,0.4)',font:{size:9}}}
+  }
+};
+function makeChart(id, type, data, extraOpts){
+  const ctx = el(id);
+  if(!ctx) return;
+  const opts = JSON.parse(JSON.stringify(CHART_BASE));
+  if(extraOpts && extraOpts.scales === null) delete opts.scales;
+  if(type === 'doughnut' || type === 'pie'){ delete opts.scales; }
+  chartInst[id] = new Chart(ctx, { type:type, data:data, options: Object.assign(opts, extraOpts && extraOpts.merge ? extraOpts.merge : {}) });
+}
+
+/* =====================================================================
+   AI CALLS
+===================================================================== */
+function ensureApiKey(){
+  if(state.apiKey) return state.apiKey;
+  const key = prompt('Enter your Anthropic API key to enable live AI features (stored only for this session):');
+  if(key){ state.apiKey = key.trim(); }
+  return state.apiKey;
+}
+async function aiCall(prompt, targetId, label){
+  const key = ensureApiKey();
+  const target = el(targetId);
+  if(!target) return;
+  if(!key){ target.innerHTML = '<div class="ai-result">No API key provided — AI feature cancelled.</div>'; return; }
+  target.innerHTML = '<div class="ai-result"><span class="loading-dots">'+(label||'Generating')+'</span></div>';
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:800,
+        messages:[{role:'user', content: prompt}]
+      })
+    });
+    const data = await res.json();
+    if(data.error){
+      target.innerHTML = '<div class="ai-result">Error: '+escapeHtml(data.error.message||'Request failed')+'</div>';
+      toast('AI request failed', 'warn');
+      return;
+    }
+    const text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : 'No response generated.';
+    target.innerHTML = '<div class="ai-result">'+mdFormat(text)+'</div>';
+    toast('AI brief generated', 'success');
+  }catch(err){
+    target.innerHTML = '<div class="ai-result">Network error contacting Claude API: '+escapeHtml(err.message)+'</div>';
+    toast('AI request failed', 'warn');
+  }
+}
+function storyAI(idx, btn){
+  const s = STORIES[idx];
+  const targetId = 'story-ai-'+idx;
+  const prompt = 'You are a PR analyst for Orange Botswana. Write a short PR brief (max 150 words) for this news story, including: 1) why it matters, 2) recommended tone/response, 3) one suggested action. Story headline: "'+s.headline+'". Body: "'+s.body+'". Category: '+s.category+'. Sentiment: '+s.sentiment+'.';
+  aiCall(prompt, targetId, 'Generating PR brief');
+}
+function socialReply(idx, btn){
+  const p = SOCIAL[idx];
+  const targetId = 'social-ai-'+idx;
+  const prompt = 'You are a social media manager for Orange Botswana. Draft a short, empathetic public reply (max 60 words) to this customer complaint on '+p.platform+': "'+p.body+'". Acknowledge the issue and offer a clear next step without over-promising.';
+  aiCall(prompt, targetId, 'Drafting reply');
+}
+function aiCallModal(){
+  const idx = state.modalStoryIdx;
+  const s = STORIES[idx];
+  const prompt = 'You are a PR analyst for Orange Botswana. Write a full PR brief (200 words) for this story: "'+s.headline+'" — "'+s.body+'". Include background, recommended tone, and a specific next action.';
+  aiCall(prompt, 'modal-ai-result', 'Generating PR brief');
+}
+function genericAI(promptText, targetId, label){
+  aiCall(promptText, targetId, label);
+}
+
+/* =====================================================================
+   CLIPPING MODAL
+===================================================================== */
+function openClipping(idx){
+  state.modalStoryIdx = idx;
+  const s = STORIES[idx];
+  const readonly = state.role === 'viewer';
+  const pageLabel = PAGE_LABELS[state.currentPage] || 'Briefing';
+  const posShare = s.sentiment === 'positive' ? 80 : (s.sentiment === 'negative' ? 20 : 50);
+  const borderColor = s.sentiment === 'negative' ? 'var(--red)' : (s.sentiment === 'positive' ? 'var(--green)' : 'var(--mu)');
+  el('modal-box').innerHTML =
+    '<div class="modal-close" onclick="closeModal()">✕</div>'+
+    '<div class="breadcrumb">'+pageLabel+' / '+s.pub+'</div>'+
+    '<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:14px">'+
+      '<div class="clip-icon" style="width:70px;height:70px;font-size:36px">'+s.icon+'</div>'+
+      '<div><div style="font-family:Syne,sans-serif;font-weight:700;font-size:13px">'+s.pub+'</div><div class="muted" style="font-size:11.5px">Pg '+s.page+' · Col '+s.col+' · '+s.date+'</div>'+
+      '<h3 style="font-size:19px;margin-top:8px;line-height:1.3">'+s.headline+'</h3></div>'+
+    '</div>'+
+    '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">'+catPill(s.category)+sentPill(s.sentiment)+brandPills(s.brands)+'</div>'+
+    '<div class="sent-bar"><div class="g" style="width:'+posShare+'%"></div><div class="r" style="width:'+(100-posShare)+'%"></div></div>'+
+    '<p style="font-size:13.5px;line-height:1.65;margin:14px 0">'+s.body+'</p>'+
+    '<div class="card" style="padding:14px;border-left:3px solid '+borderColor+';margin-bottom:16px"><div style="font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">PR relevance</div><div style="font-size:13px;line-height:1.55">'+s.pr+'</div></div>'+
+    (readonly ? '' :
+      '<div class="story-actions">'+
+      '<button class="btn btn-primary btn-sm" onclick="aiCallModal()">AI PR brief ↗</button>'+
+      '<button class="btn btn-ghost btn-sm" onclick="toast(\'Clipping exported.\',\'success\')">↓ Export clipping</button>'+
+      '<button class="btn btn-ghost btn-sm" onclick="toast(\'Share link copied.\',\'success\')">Share link</button>'+
+      '</div>'
+    )+
+    '<div id="modal-ai-result"></div>';
+  el('modal-overlay').classList.add('active');
+}
+function closeModal(){
+  el('modal-overlay').classList.remove('active');
+}
+
+/* =====================================================================
+   COMMAND PALETTE
+===================================================================== */
+function openCmdk(){
+  el('cmdk-overlay').classList.add('active');
+  el('cmdk-input').value = '';
+  cmdkSel = 0;
+  renderCmdkResults();
+  setTimeout(function(){ el('cmdk-input').focus(); }, 30);
+}
+function closeCmdk(){
+  el('cmdk-overlay').classList.remove('active');
+}
+function cmdkResultList(){
+  const q = el('cmdk-input').value.toLowerCase();
+  const pages = CMDK_PAGES[state.role].filter(function(id){
+    return !q || (PAGE_LABELS[id]||id).toLowerCase().indexOf(q) > -1;
+  }).map(function(id){ return {type:'page', id:id, label:PAGE_LABELS[id]||id}; });
+  const stories = STORIES.filter(function(s){
+    return !q || s.headline.toLowerCase().indexOf(q) > -1 || s.pub.toLowerCase().indexOf(q) > -1;
+  }).map(function(s){ return {type:'story', idx:STORIES.indexOf(s), label:s.headline}; });
+  return pages.concat(stories.slice(0,6));
+}
+function renderCmdkResults(){
+  const results = cmdkResultList();
+  cmdkSel = Math.min(cmdkSel, Math.max(0,results.length-1));
+  let html = '';
+  const pages = results.filter(function(r){ return r.type==='page'; });
+  const stories = results.filter(function(r){ return r.type==='story'; });
+  let counter = 0;
+  if(pages.length){
+    html += '<div class="cmdk-group-lbl">Pages</div>';
+    pages.forEach(function(r){
+      html += '<div class="cmdk-item'+(counter===cmdkSel?' sel':'')+'" onclick="cmdkGo('+counter+')">📄 '+r.label+'</div>';
+      counter++;
+    });
+  }
+  if(stories.length){
+    html += '<div class="cmdk-group-lbl">Stories</div>';
+    stories.forEach(function(r){
+      html += '<div class="cmdk-item'+(counter===cmdkSel?' sel':'')+'" onclick="cmdkGo('+counter+')">📰 '+r.label+'</div>';
+      counter++;
+    });
+  }
+  el('cmdk-results').innerHTML = html || '<div style="padding:16px" class="muted">No results.</div>';
+  state.cmdkResultsCache = results;
+}
+function cmdkGo(index){
+  const r = state.cmdkResultsCache[index];
+  if(!r) return;
+  closeCmdk();
+  if(r.type === 'page'){ showPage(r.id); }
+  else { showPage('briefing'); setTimeout(function(){ openClipping(r.idx); }, 60); }
+}
+document.addEventListener('keydown', function(e){
+  const isMod = e.metaKey || e.ctrlKey;
+  if(isMod && e.key.toLowerCase() === 'k'){
+    e.preventDefault();
+    if(el('screen-app').classList.contains('active')){
+      if(el('cmdk-overlay').classList.contains('active')) closeCmdk(); else openCmdk();
+    }
+    return;
+  }
+  if(el('cmdk-overlay').classList.contains('active')){
+    if(e.key === 'Escape'){ closeCmdk(); }
+    if(e.key === 'ArrowDown'){ e.preventDefault(); cmdkSel = Math.min(cmdkSel+1, (state.cmdkResultsCache||[]).length-1); renderCmdkResults(); }
+    if(e.key === 'ArrowUp'){ e.preventDefault(); cmdkSel = Math.max(cmdkSel-1, 0); renderCmdkResults(); }
+    if(e.key === 'Enter'){ e.preventDefault(); cmdkGo(cmdkSel); }
+    return;
+  }
+  if(e.key === 'Escape' && el('modal-overlay').classList.contains('active')){ closeModal(); }
+});
+
+/* =====================================================================
+   WELCOME OVERLAY
+===================================================================== */
+function showWelcome(){
+  const a = DEMO_ACCOUNTS[state.role];
+  const roleInfo = {
+    client:{stat:'8 stories today · sentiment +71', steps:['Review your daily briefing','Open a clipping and generate an AI PR brief','Check My Alerts for anything urgent']},
+    agency:{stat:'5 client accounts · 2 alerts today', steps:['Review the agency dashboard','Check client health scores','Generate a report from the Report builder']},
+    admin:{stat:'99.8% uptime · 12 sources live', steps:['Review system health','Open the ingestion schedule','Check AI processing logs']},
+    viewer:{stat:'Read-only access to Orange Botswana', steps:['Browse the daily briefing','Open clippings and the coverage heatmap','No edit/generate actions are available']}
+  };
+  const info = roleInfo[state.role];
+  el('welcome-box').innerHTML =
+    '<div class="logo" style="justify-content:center;margin-bottom:10px"><div class="logo-mark">MP</div> MediaPulse BW</div>'+
+    '<h2 style="font-size:20px">Welcome, '+a.name.split(' ')[0]+'</h2>'+
+    '<p class="muted" style="font-size:12.5px;margin-top:6px">'+info.stat+'</p>'+
+    '<div class="welcome-steps">'+
+      info.steps.map(function(s,i){ return '<div class="welcome-step"><b>'+(i+1)+'.</b><span>'+s+'</span></div>'; }).join('')+
+    '</div>'+
+    '<button class="btn btn-primary" style="width:100%;justify-content:center" onclick="closeWelcome()">Open my briefing →</button>';
+  el('welcome-overlay').classList.add('active');
+}
+function closeWelcome(){
+  state.welcomeShown[state.role] = true;
+  el('welcome-overlay').classList.remove('active');
+  setTimeout(function(){ toast('Tip: press ⌘K anytime to jump to any page or story.', 'info'); }, 300);
+}
+
+/* =====================================================================
+   NOTIFICATION BELL
+===================================================================== */
+function bellClick(){
+  const alertPage = { client:'alerts', agency:'agency-alerts', admin:'admin-syslogs', viewer:'briefing' }[state.role];
+  showPage(alertPage);
+  toast('Showing latest alerts', 'info');
+}
+
+/* =====================================================================
+   REPORT GENERATION
+===================================================================== */
+function genReport(targetId, clientName){
+  const prompt = 'You are a PR reporting analyst. Generate a concise executive PR coverage report (250 words) for '+(clientName||'Orange Botswana')+' covering the last 7 days. Include: overall sentiment trend, top 3 stories, one risk to watch, and one recommended action. Use clear section headers with ** bold markdown **.';
+  aiCall(prompt, targetId, 'Generating report');
+}
+
+/* =====================================================================
+   PAGES
+===================================================================== */
+const PAGES = {};
+
+PAGES.briefing = function(p, readonly){
+  state.storiesFiltered = STORIES.slice();
+  const cats = ['All','Telco','Fintech','Regulator','Competition','Cyber-Tech','Positive','Negative'];
+  p.innerHTML =
+    '<div class="page-head"><div><h2>Good morning'+(readonly?', Tsogo':', Obakeng')+'</h2><div class="sub">Tuesday, 2 July 2026 · 8 stories today</div></div></div>'+
+    (readonly? '' : hintBanner('briefing-alert', '2 alerts need your attention. <a onclick="showPage(\'alerts\')">View alerts →</a>'))+
+    '<div class="stat-grid">'+
+      statCard('Stories today','8')+
+      statCard('Positive','5','+62%','up')+
+      statCard('Negative','2','−25%','down')+
+      statCard('Brand mentions','14')+
+    '</div>'+
+    '<div class="chips">'+cats.map(function(c){ return '<div class="chip story-filter-chip'+(c==='All'?' on':'')+'" data-cat="'+c+'" onclick="filterStories(\''+c+'\')">'+c+'</div>'; }).join('')+'</div>'+
+    '<div id="stories-list"></div>';
+  renderStories(el('stories-list'));
+};
+
+PAGES.clippings = function(p, readonly){
+  state.storiesFiltered = STORIES.slice();
+  const cats = ['All','Telco','Fintech','Regulator','Competition','Cyber-Tech'];
+  p.innerHTML =
+    '<div class="page-head"><div><h2>Article clippings</h2><div class="sub">487 clippings archived · searchable by keyword, brand or publication</div></div>'+
+    (readonly?'':'<input placeholder="Search clippings..." style="width:240px" oninput="toast(\'Search applied.\',\'info\')">')+
+    '</div>'+
+    '<div class="chips">'+cats.map(function(c){ return '<div class="chip story-filter-chip'+(c==='All'?' on':'')+'" data-cat="'+c+'" onclick="filterStories(\''+c+'\')">'+c+'</div>'; }).join('')+'</div>'+
+    '<div id="stories-list"></div>';
+  renderStories(el('stories-list'));
+};
+
+PAGES.social = function(p){
+  state.socialFiltered = SOCIAL.slice();
+  const plats = ['All','Facebook','X','Instagram','LinkedIn','Escalations'];
+  const totalLikes = SOCIAL.reduce(function(a,s){ return a+s.likes; },0);
+  p.innerHTML =
+    '<div class="page-head"><h2>Social listening</h2></div>'+
+    '<div class="stat-grid">'+
+      statCard('Posts today','6')+
+      statCard('Total reach', (totalLikes*14).toLocaleString())+
+      statCard('Net sentiment','+58','up','up')+
+      statCard('Escalations','2','needs response','down')+
+    '</div>'+
+    '<div class="chips">'+plats.map(function(c){ return '<div class="chip social-filter-chip'+(c==='All'?' on':'')+'" data-plat="'+c+'" onclick="filterSocial(\''+c+'\')">'+c+'</div>'; }).join('')+'</div>'+
+    '<div id="social-list"></div>';
+  renderSocial(el('social-list'));
+};
+
+PAGES.competitor = function(p, readonly){
+  const data = [{name:'BTC',val:174464,share:36,color:'#A855F7'},{name:'Mascom',val:161847,share:33,color:'#F59E0B'},{name:'Orange',val:151547,share:31,color:'#FF5C1A'}];
+  p.innerHTML =
+    '<div class="page-head"><h2>Competitor watch</h2><div class="sub">Share of voice — last 30 days</div></div>'+
+    '<div class="grid2" style="margin-bottom:16px">'+
+      '<div class="card" style="padding:18px">'+
+        '<div class="section-title">Share of voice</div>'+
+        data.map(function(d){ return '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><span>'+d.name+'</span><span class="muted">P'+d.val.toLocaleString()+' · '+d.share+'%</span></div><div style="height:8px;background:var(--s2);border-radius:5px;overflow:hidden"><div style="height:100%;width:'+d.share+'%;background:'+d.color+'"></div></div></div>'; }).join('')+
+      '</div>'+
+      '<div class="card chart-box"><div class="section-title">Weekly spend cadence</div><canvas id="chart-competitor"></canvas></div>'+
+    '</div>'+
+    '<div class="grid2" style="margin-bottom:16px">'+
+      '<div class="card" style="padding:18px"><div class="section-title">BTC — competitor intelligence</div><p style="font-size:12.5px;color:var(--mu);line-height:1.6">BTC has leaned into ESG and sustainability messaging this quarter, alongside consistent copper-recycling PR. Ad spend concentrated in Guardian and Daily News.</p></div>'+
+      '<div class="card" style="padding:18px"><div class="section-title">Mascom — competitor intelligence</div><p style="font-size:12.5px;color:var(--mu);line-height:1.6">Mascom faced consumer backlash on the Summa Summer promotion this week; a window to reinforce Orange network transparency messaging.</p></div>'+
+    '</div>'+
+    (readonly ? '' :
+    '<div class="card" style="padding:18px">'+
+      '<div class="section-title">Competitive intelligence Q&A</div>'+
+      '<textarea id="comp-q" rows="3" style="width:100%;margin-bottom:10px" placeholder="Ask about competitor positioning, e.g. How is BTC framing its sustainability strategy?"></textarea>'+
+      '<button class="btn btn-primary btn-sm" onclick="compAnalyse()">Analyse ↗</button>'+
+      '<div id="comp-ai-result"></div>'+
+    '</div>');
+  setTimeout(function(){
+    makeChart('chart-competitor','bar',{
+      labels:['Wk1','Wk2','Wk3','Wk4','Wk5'],
+      datasets:[
+        {label:'Orange',data:[28,31,26,34,33],backgroundColor:'#FF5C1A',borderRadius:5},
+        {label:'Mascom',data:[30,29,33,31,32],backgroundColor:'#F59E0B',borderRadius:5},
+        {label:'BTC',data:[33,35,32,36,35],backgroundColor:'#A855F7',borderRadius:5}
+      ]
+    });
+  }, 100);
+};
+function compAnalyse(){
+  const q = el('comp-q').value || 'Summarise BTC and Mascom competitive positioning this month.';
+  genericAI('You are a competitive intelligence analyst for Orange Botswana. Answer this question using plausible Botswana telecom market context: "'+q+'". Keep it under 150 words.', 'comp-ai-result', 'Analysing');
+}
+
+PAGES.alerts = function(p, readonly){
+  const active = ALERTS_DATA.filter(function(a){ return a.client==='Orange Botswana'; });
+  p.innerHTML =
+    '<div class="page-head"><h2>My alerts</h2><div class="sub">'+active.length+' active alerts for Orange Botswana</div></div>'+
+    active.map(function(a,i){
+      return '<div class="card alert-item"><div class="alert-icon" style="background:'+a.color+'22;color:'+a.color+'">'+a.icon+'</div>'+
+        '<div style="flex:1"><div style="font-weight:700;font-size:13.5px;margin-bottom:4px">'+a.title+'</div><p style="font-size:12.5px;color:var(--mu);line-height:1.5;margin-bottom:8px">'+a.body+'</p><div class="muted" style="font-size:11px;margin-bottom:8px">'+a.time+'</div>'+
+        (readonly?'':'<button class="btn btn-ghost btn-sm" onclick="alertPlan('+i+')">AI response plan</button><div id="alert-ai-'+i+'"></div>')+
+        '</div></div>';
+    }).join('')+
+    '<div class="card" style="padding:18px;margin-top:16px"><div class="section-title">Configured alert rules</div>'+
+    '<div class="tbl-wrap"><table><tr><th>Trigger</th><th>Threshold</th><th>Channel</th><th>Status</th></tr>'+
+    '<tr><td>Sentiment drop</td><td>&gt;15pt in 24h</td><td>Email + WhatsApp</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Active</span></td></tr>'+
+    '<tr><td>Competitor mention</td><td>Any BOCRA action</td><td>Slack</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Active</span></td></tr>'+
+    '<tr><td>Social escalation</td><td>Negative + &gt;20 engagements</td><td>WhatsApp</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Active</span></td></tr>'+
+    '</table></div></div>';
+  window._activeAlertsRef = active;
+};
+function alertPlan(i){
+  const a = window._activeAlertsRef[i];
+  genericAI('You are a crisis communications advisor for Orange Botswana. Write a short response action plan (120 words) for this alert: "'+a.title+'" — '+a.body, 'alert-ai-'+i, 'Building response plan');
+}
+
+PAGES.reports = function(p, readonly){
+  p.innerHTML =
+    '<div class="page-head"><h2>PR report generator</h2></div>'+
+    '<div class="grid2" style="align-items:start">'+
+      '<div class="card" style="padding:18px">'+
+        '<div class="section-title">Settings</div>'+
+        '<div class="form-row"><div><label class="muted" style="font-size:11px">Brand</label><select id="rep-brand"><option>Orange Botswana</option></select></div>'+
+        '<div><label class="muted" style="font-size:11px">Period</label><select id="rep-period"><option>Last 7 days</option><option>Last 30 days</option><option>This quarter</option></select></div></div>'+
+        '<div class="form-row"><div><label class="muted" style="font-size:11px">Format</label><select id="rep-format"><option>PDF</option><option>Word</option><option>PowerPoint</option></select></div>'+
+        '<div><label class="muted" style="font-size:11px">Tone</label><select id="rep-tone"><option>Executive</option><option>Detailed</option><option>Board</option></select></div></div>'+
+        '<div class="check-row"><input type="checkbox" checked> Sentiment trend</div>'+
+        '<div class="check-row"><input type="checkbox" checked> Top stories</div>'+
+        '<div class="check-row"><input type="checkbox" checked> Competitor comparison</div>'+
+        '<div class="check-row"><input type="checkbox"> Social listening summary</div>'+
+        (readonly?'':'<button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" onclick="genReport(\'rep-ai-result\',\'Orange Botswana\')">Generate report ↗</button>')+
+        '<div id="rep-ai-result"></div>'+
+      '</div>'+
+      '<div class="card" style="padding:18px">'+
+        '<div class="section-title">Previous reports</div>'+
+        '<table><tr><th>Report</th><th>Period</th><th>Date</th></tr>'+
+        '<tr><td>Weekly PR Brief</td><td>Last 7 days</td><td>29 Jun 2026</td></tr>'+
+        '<tr><td>Monthly Coverage Report</td><td>June 2026</td><td>1 Jul 2026</td></tr>'+
+        '<tr><td>Quarterly Board Deck</td><td>Q2 2026</td><td>30 Jun 2026</td></tr>'+
+        '</table>'+
+      '</div>'+
+    '</div>';
+};
+
+PAGES.heatmap = function(p){
+  const pubs = ['Mmegi','The Voice','Guardian','Daily News','Sunday Standard','Business Weekly'];
+  const weeks = ['Wk1','Wk2','Wk3','Wk4'];
+  let grid = '<div class="tbl-wrap"><table><tr><th>Publication</th>'+weeks.map(function(w){ return '<th>'+w+'</th>'; }).join('')+'</tr>';
+  pubs.forEach(function(pub){
+    grid += '<tr><td>'+pub+'</td>';
+    weeks.forEach(function(){
+      const v = Math.floor(Math.random()*6);
+      const alpha = (v/5*0.9+0.1).toFixed(2);
+      grid += '<td><div class="heat-cell" style="background:rgba(255,92,26,'+alpha+')">'+v+'</div></td>';
+    });
+    grid += '</tr>';
+  });
+  grid += '</table></div>';
+  p.innerHTML =
+    '<div class="page-head"><h2>Coverage heatmap</h2><div class="sub">Publication × week story volume (0–5 scale)</div></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:16px">'+grid+'</div>'+
+    '<div class="grid2">'+
+      '<div class="card chart-box"><div class="section-title">Stories by publication</div><canvas id="chart-heat-bar"></canvas></div>'+
+      '<div class="card chart-box"><div class="section-title">By vertical</div><canvas id="chart-heat-pie"></canvas></div>'+
+    '</div>';
+  setTimeout(function(){
+    makeChart('chart-heat-bar','bar',{
+      labels:pubs,
+      datasets:[{label:'Stories',data:pubs.map(function(){ return Math.floor(Math.random()*20)+5; }),backgroundColor:'#00D4C8',borderRadius:5}]
+    },{merge:{plugins:{legend:{display:false}}}});
+    makeChart('chart-heat-pie','doughnut',{
+      labels:['Telco','Fintech','Regulator','Competition','Cyber-Tech'],
+      datasets:[{data:[30,22,18,17,13],backgroundColor:['#FF5C1A','#00D4C8','#A855F7','#F59E0B','#EF4444']}]
+    });
+  }, 100);
+};
+
+PAGES.spend = function(p){
+  const rows = [
+    {camp:'5G Launch — Francistown/Maun',pub:'The Voice',spend:48500},
+    {camp:'Maxit Awareness Q1',pub:'Business Weekly',spend:36200},
+    {camp:'Atlega CSR Feature',pub:'The Voice',spend:18900},
+    {camp:'Brand Sponsorship',pub:'Mmegi',spend:52700},
+    {camp:'Network Reliability Push',pub:'Daily News',spend:24300},
+    {camp:'Orange Money Explainer',pub:'Sunday Standard',spend:31100}
+  ];
+  const total = rows.reduce(function(a,r){ return a+r.spend; },0);
+  p.innerHTML =
+    '<div class="page-head"><h2>Media spend tracker</h2><div class="sub">October 2025 campaign breakdown · Total P'+total.toLocaleString()+'</div></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:16px">'+
+      '<div class="tbl-wrap"><table><tr><th>Campaign</th><th>Publication</th><th>Spend (P)</th></tr>'+
+      rows.map(function(r){ return '<tr><td>'+r.camp+'</td><td>'+r.pub+'</td><td>P'+r.spend.toLocaleString()+'</td></tr>'; }).join('')+
+      '</table></div>'+
+    '</div>'+
+    '<div class="card chart-box" style="height:320px"><div class="section-title">Spend by publication</div><canvas id="chart-spend"></canvas></div>';
+  setTimeout(function(){
+    const byPub = {};
+    rows.forEach(function(r){ byPub[r.pub] = (byPub[r.pub]||0)+r.spend; });
+    makeChart('chart-spend','bar',{
+      labels:Object.keys(byPub),
+      datasets:[{label:'Spend (P)',data:Object.values(byPub),backgroundColor:'#FF5C1A',borderRadius:5}]
+    },{merge:{indexAxis:'y',plugins:{legend:{display:false}}}});
+  }, 100);
+};
+
+PAGES.keywords = function(p, readonly){
+  p.innerHTML =
+    '<div class="page-head"><h2>Keywords & brands</h2></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:14px"><div class="section-title">Brand keywords</div><div class="keyword-pills">'+
+    ['Orange Botswana','Orange Money','Maxit','Atlega','Orange 5G'].map(function(k){ return '<span class="kw brand">'+k+'</span>'; }).join('')+
+    '</div></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:14px"><div class="section-title">Competitor keywords</div><div class="keyword-pills">'+
+    ['Mascom','BTC','Summa Summer','beMobile'].map(function(k){ return '<span class="kw comp">'+k+'</span>'; }).join('')+
+    '</div></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:14px"><div class="section-title">Industry watchlist</div><div class="keyword-pills">'+
+    ['BOCRA','NBFIRA','5G rollout','Mobile money','Cybersecurity'].map(function(k){ return '<span class="kw watch">'+k+'</span>'; }).join('')+
+    '</div></div>'+
+    (readonly ? '' :
+    '<div class="card" style="padding:18px"><div class="section-title">Add new keyword</div>'+
+    '<div class="form-row"><input placeholder="Keyword"><select><option>Brand</option><option>Competitor</option><option>Watchlist</option></select></div>'+
+    '<button class="btn btn-primary btn-sm" onclick="toast(\'Keyword added.\',\'success\')">Add keyword</button></div>');
+};
+
+PAGES.notifications = function(p){
+  const channels = [{name:'Morning email',on:true},{name:'WhatsApp',on:true},{name:'SMS',on:false},{name:'Slack',on:true}];
+  p.innerHTML =
+    '<div class="page-head"><h2>Notifications</h2></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:14px"><div class="section-title">Delivery channels</div>'+
+    channels.map(function(c,i){ return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)"><span style="font-size:13px">'+c.name+'</span><div class="toggle'+(c.on?' on':'')+'" onclick="toggleChannel(this)"><div class="kn"></div></div></div>'; }).join('')+
+    '</div>'+
+    '<div class="card" style="padding:18px"><div class="section-title">Alert thresholds</div>'+
+    '<div class="form-row"><div><label class="muted" style="font-size:11px">Sentiment drop trigger</label><input value="15 points / 24h"></div>'+
+    '<div><label class="muted" style="font-size:11px">Escalation engagement threshold</label><input value="20 interactions"></div></div>'+
+    '<button class="btn btn-primary btn-sm" onclick="toast(\'Notification settings saved.\',\'success\')">Save settings</button></div>';
+};
+function toggleChannel(node){
+  node.classList.toggle('on');
+  toast('Channel preference updated.', 'success');
+}
+
+PAGES.account = function(p){
+  p.innerHTML =
+    '<div class="page-head"><h2>Account settings</h2></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:14px"><div class="section-title">Brand profile</div>'+
+    '<div class="form-row"><div><label class="muted" style="font-size:11px">Brand name</label><input value="Orange Botswana"></div>'+
+    '<div><label class="muted" style="font-size:11px">Sector</label><input value="Telecommunications"></div></div>'+
+    '<button class="btn btn-primary btn-sm" onclick="toast(\'Profile saved.\',\'success\')">Save changes</button></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:14px"><div class="section-title">Plan & usage</div>'+
+    '<div class="stat-grid"><div class="card stat-card"><div class="lbl">Plan</div><div class="val" style="font-size:18px">Enterprise</div></div>'+
+    '<div class="card stat-card"><div class="lbl">Publications</div><div class="val" style="font-size:18px">18</div></div>'+
+    '<div class="card stat-card"><div class="lbl">Users</div><div class="val" style="font-size:18px">12</div></div>'+
+    '<div class="card stat-card"><div class="lbl">Renews</div><div class="val" style="font-size:18px">Jan 2027</div></div></div></div>'+
+    '<div class="card" style="padding:18px"><div class="section-title">Team members</div>'+
+    '<table><tr><th>Name</th><th>Role</th><th>Status</th></tr>'+
+    '<tr><td>Obakeng Molefe</td><td>Admin</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Active</span></td></tr>'+
+    '<tr><td>Tsogo Kedibone</td><td>Viewer</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Active</span></td></tr>'+
+    '<tr><td>Kagiso Pheto</td><td>Editor</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Active</span></td></tr>'+
+    '</table></div>';
+};
+
+PAGES['viewer-reports'] = function(p){
+  p.innerHTML =
+    '<div class="page-head"><h2>Saved reports</h2><div class="sub">Read-only access — reports generated by your agency or client admin</div></div>'+
+    '<div class="card" style="padding:18px">'+
+    '<table><tr><th>Report</th><th>Period</th><th>Date</th></tr>'+
+    '<tr><td>Weekly PR Brief</td><td>Last 7 days</td><td>29 Jun 2026</td></tr>'+
+    '<tr><td>Monthly Coverage Report</td><td>June 2026</td><td>1 Jul 2026</td></tr>'+
+    '<tr><td>Quarterly Board Deck</td><td>Q2 2026</td><td>30 Jun 2026</td></tr>'+
+    '</table></div>';
+};
+
+/* ---------- AGENCY PAGES ---------- */
+PAGES['agency-dash'] = function(p){
+  p.innerHTML =
+    '<div class="page-head"><h2>Agency dashboard</h2><div class="sub">DS Communications · 5 client accounts</div></div>'+
+    '<div class="stat-grid">'+
+      statCard('Clients','5')+
+      statCard('Stories this week','1,090')+
+      statCard('Active alerts','5')+
+      statCard('Reports due','3')+
+    '</div>'+
+    '<div class="stat-grid" style="grid-template-columns:1fr">'+statCard('MRR','P31,500')+'</div>'+
+    '<div class="card" style="padding:18px;margin-bottom:16px"><div class="section-title">Client health</div>'+
+    '<div class="tbl-wrap"><table><tr><th>Client</th><th>Sector</th><th>Sentiment</th><th>Alerts</th></tr>'+
+    CLIENTS.map(function(c){ return '<tr><td>'+c.name+'</td><td>'+c.sector+'</td><td>'+c.sentiment+'</td><td>'+(c.status==='Attention'?'<span class="pill" style="background:rgba(239,68,68,.12);color:var(--red)">1 active</span>':'<span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Clear</span>')+'</td></tr>'; }).join('')+
+    '</table></div></div>'+
+    '<div class="card" style="padding:18px"><div class="section-title">Cross-client alerts today</div>'+
+    ALERTS_DATA.filter(function(a){return a.status==='active';}).map(function(a){ return '<div style="padding:10px 0;border-bottom:1px solid var(--line);font-size:12.5px"><span class="pill" style="background:var(--or-bg);color:var(--or)">'+a.client+'</span> '+a.title+'</div>'; }).join('')+
+    '</div>';
+};
+
+PAGES['agency-clients'] = function(p){
+  p.innerHTML =
+    '<div class="page-head"><h2>Client accounts</h2></div>'+
+    '<div class="card" style="padding:18px"><div class="tbl-wrap"><table><tr><th>Client</th><th>Sector</th><th>Plan</th><th>Users</th><th>Stories</th><th>Sentiment</th><th>MRR</th><th>Status</th></tr>'+
+    CLIENTS.map(function(c){ return '<tr><td>'+c.name+'</td><td>'+c.sector+'</td><td><span class="pill" style="background:var(--teal-bg);color:var(--teal)">'+c.plan+'</span></td><td>'+c.users+'</td><td>'+c.stories+'</td><td>'+c.sentiment+'</td><td>P'+c.mrr.toLocaleString()+'</td><td>'+(c.status==='Attention'?'<span class="pill" style="background:rgba(245,158,11,.15);color:var(--yellow)">Attention</span>':'<span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Healthy</span>')+'</td></tr>'; }).join('')+
+    '</table></div></div>';
+};
+
+PAGES['agency-campaigns'] = function(p){
+  const camps = [
+    {client:'Orange Botswana',camp:'5G Launch',ch:'Print + Social',stories:14,sent:78,trend:'up'},
+    {client:'FNB Botswana',camp:'Digital Banking Push',ch:'Digital',stories:9,sent:62,trend:'up'},
+    {client:'Pick n Pay BW',camp:'Value Range Relaunch',ch:'Print',stories:6,sent:48,trend:'down'},
+    {client:'Stanbic Botswana',camp:'SME Lending Drive',ch:'Digital + Print',stories:8,sent:70,trend:'up'},
+    {client:'BDO Botswana',camp:'Tax Season Advisory',ch:'Digital',stories:4,sent:74,trend:'up'}
+  ];
+  const clientNames = ['All'].concat(CLIENTS.map(function(c){return c.name;}));
+  p.innerHTML =
+    '<div class="page-head"><h2>Campaign monitor</h2></div>'+
+    '<div class="chips">'+clientNames.map(function(c,i){ return '<div class="chip'+(i===0?' on':'')+'" onclick="toast(\'Filtered by '+c+'.\',\'info\')">'+c+'</div>'; }).join('')+'</div>'+
+    '<div class="card" style="padding:18px"><div class="tbl-wrap"><table><tr><th>Client</th><th>Campaign</th><th>Channel</th><th>Stories</th><th>Sentiment</th><th>Trend</th></tr>'+
+    camps.map(function(c){ return '<tr><td>'+c.client+'</td><td>'+c.camp+'</td><td>'+c.ch+'</td><td>'+c.stories+'</td><td>'+c.sent+'</td><td class="'+(c.trend==='up'?'up':'down')+'">'+(c.trend==='up'?'▲':'▼')+'</td></tr>'; }).join('')+
+    '</table></div></div>';
+};
+
+PAGES['agency-calendar'] = function(p){
+  const days = ['Mon 9','Tue 10','Wed 11','Thu 12','Fri 13','Sat 14','Sun 15'];
+  const events = {
+    'Mon 9':[{c:'Orange',t:'5G press event'}],
+    'Tue 10':[{c:'FNB',t:'Q2 results briefing'}],
+    'Wed 11':[{c:'Orange',t:'Atlega ceremony'},{c:'Stanbic',t:'SME roadshow'}],
+    'Thu 12':[],
+    'Fri 13':[{c:'Pick n Pay',t:'Value campaign launch'}],
+    'Sat 14':[],
+    'Sun 15':[{c:'BDO',t:'Tax advisory feature'}]
+  };
+  const colorMap = {Orange:'var(--or)',FNB:'var(--teal)',Stanbic:'var(--purple)','Pick n Pay':'var(--yellow)',BDO:'var(--green)'};
+  const today = 'Wed 11';
+  p.innerHTML =
+    '<div class="page-head"><h2>Content calendar</h2><div class="sub">9–15 June 2026</div></div>'+
+    '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px">'+
+    days.map(function(d){
+      const isToday = d===today;
+      let cellHtml = '<div class="card" style="padding:10px;min-height:120px;'+(isToday?'border-color:var(--or)':'')+'"><div style="font-size:11px;font-weight:700;margin-bottom:8px;'+(isToday?'color:var(--or)':'')+'">'+d+'</div>';
+      (events[d]||[]).forEach(function(ev){
+        cellHtml += '<div style="font-size:10.5px;padding:5px 6px;border-radius:6px;margin-bottom:4px;background:'+(colorMap[ev.c]||'var(--s3)')+'22;color:'+(colorMap[ev.c]||'var(--mu)')+'">'+ev.c+': '+ev.t+'</div>';
+      });
+      cellHtml += '</div>';
+      return cellHtml;
+    }).join('')+
+    '</div>';
+};
+
+PAGES['agency-reports'] = function(p, readonly){
+  p.innerHTML =
+    '<div class="page-head"><h2>Report builder</h2></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:16px">'+
+    '<div class="form-row"><div><label class="muted" style="font-size:11px">Client</label><select id="ar-client">'+CLIENTS.map(function(c){return '<option>'+c.name+'</option>';}).join('')+'</select></div>'+
+    '<div><label class="muted" style="font-size:11px">Type</label><select id="ar-type"><option>Weekly brief</option><option>Monthly report</option><option>Board deck</option></select></div></div>'+
+    '<div class="form-row"><div><label class="muted" style="font-size:11px">Period</label><select><option>Last 7 days</option><option>Last 30 days</option></select></div></div>'+
+    (readonly?'':'<button class="btn btn-primary" onclick="genAgencyReport()">Generate ↗</button>')+
+    '<div id="ar-ai-result"></div>'+
+    '</div>'+
+    '<div class="card" style="padding:18px"><div class="section-title">Recent reports — all clients</div>'+
+    '<table><tr><th>Client</th><th>Report</th><th>Date</th></tr>'+
+    CLIENTS.map(function(c){ return '<tr><td>'+c.name+'</td><td>Weekly PR Brief</td><td>29 Jun 2026</td></tr>'; }).join('')+
+    '</table></div>';
+};
+function genAgencyReport(){
+  const client = el('ar-client').value;
+  genReport('ar-ai-result', client);
+}
+
+PAGES['agency-alerts'] = function(p){
+  p.innerHTML =
+    '<div class="page-head"><h2>All alerts</h2><div class="sub">Aggregated across all client accounts</div></div>'+
+    ALERTS_DATA.map(function(a){
+      return '<div class="card alert-item"><div class="alert-icon" style="background:'+a.color+'22;color:'+a.color+'">'+a.icon+'</div>'+
+        '<div style="flex:1"><span class="pill" style="background:var(--or-bg);color:var(--or)">'+a.client+'</span><div style="font-weight:700;font-size:13.5px;margin:6px 0 4px">'+a.title+'</div><p style="font-size:12.5px;color:var(--mu);margin-bottom:6px">'+a.body+'</p><div class="muted" style="font-size:11px">'+a.time+' · '+(a.status==='resolved'?'Resolved':'Active')+'</div></div></div>';
+    }).join('');
+};
+
+PAGES['agency-sources'] = function(p){
+  p.innerHTML =
+    '<div class="page-head"><h2>Source management</h2></div>'+
+    '<div class="card" style="padding:18px"><div class="tbl-wrap"><table><tr><th>Source</th><th>Method</th><th>Status</th><th>Last fetch</th><th></th></tr>'+
+    INGESTION_SOURCES.slice(0,8).map(function(s,i){
+      return '<tr><td>'+s.name+'</td><td><span class="pill" style="background:var(--teal-bg);color:var(--teal)">'+s.method+'</span></td><td>'+(s.status==='ok'?'<span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">OK</span>':'<span class="pill" style="background:rgba(239,68,68,.12);color:var(--red)">Error</span>')+'</td><td>'+s.last+'</td><td>'+(s.status==='error'?'<button class="btn btn-ghost btn-sm" onclick="diagnoseSource('+i+')">Diagnose</button>':'')+'</td></tr>';
+    }).join('')+
+    '</table></div></div><div id="src-diag"></div>';
+};
+function diagnoseSource(i){
+  const s = INGESTION_SOURCES[i];
+  genericAI('You are a media-ingestion systems engineer. Diagnose why the source "'+s.name+'" (method: '+s.method+') might be failing to fetch, and propose 2 concrete fixes. Keep it under 100 words.', 'src-diag', 'Diagnosing');
+}
+
+PAGES['agency-intel'] = function(p){
+  p.innerHTML =
+    '<div class="page-head"><h2>Market intelligence</h2></div>'+
+    '<div class="stat-grid" style="grid-template-columns:1fr 1fr">'+statCard('Total telco market','P487,858')+statCard('Market leader','BTC · 36%')+'</div>'+
+    '<div class="card chart-box" style="margin-bottom:16px"><div class="section-title">Market share</div><canvas id="chart-intel"></canvas></div>'+
+    '<div class="card" style="padding:18px"><div class="section-title">AI market Q&A</div>'+
+    '<textarea id="intel-q" rows="3" style="width:100%;margin-bottom:10px" placeholder="Ask a market intelligence question..."></textarea>'+
+    '<button class="btn btn-primary btn-sm" onclick="intelAnalyse()">Analyse ↗</button>'+
+    '<div id="intel-ai-result"></div></div>';
+  setTimeout(function(){
+    makeChart('chart-intel','bar',{
+      labels:['BTC','Mascom','Orange'],
+      datasets:[{label:'Market share %',data:[36,33,31],backgroundColor:['#A855F7','#F59E0B','#FF5C1A'],borderRadius:6}]
+    },{merge:{plugins:{legend:{display:false}}}});
+  },100);
+};
+function intelAnalyse(){
+  const q = el('intel-q').value || 'Summarise the Botswana telecom competitive landscape this quarter.';
+  genericAI('You are a market intelligence analyst covering the Botswana telecom sector. Answer: "'+q+'" in under 150 words with realistic Botswana market context.', 'intel-ai-result', 'Analysing market');
+}
+
+PAGES['agency-team'] = function(p){
+  p.innerHTML =
+    '<div class="page-head"><h2>Team & access</h2></div>'+
+    '<div class="card" style="padding:18px"><table><tr><th>Name</th><th>Role</th><th>Status</th></tr>'+
+    '<tr><td>Naledi Kgosimore</td><td>Agency Admin</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Active</span></td></tr>'+
+    '<tr><td>Boitumelo Seretse</td><td>Agency Editor</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Active</span></td></tr>'+
+    '<tr><td>Kabo Mmusi</td><td>Agency Viewer</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Active</span></td></tr>'+
+    '</table></div>';
+};
+
+PAGES['agency-settings'] = function(p){
+  const integ = [{name:'WhatsApp',status:'Connected'},{name:'Slack',status:'Connected'},{name:'Mailchimp',status:'Not connected'},{name:'Google Analytics',status:'Not connected'}];
+  p.innerHTML =
+    '<div class="page-head"><h2>Agency settings</h2></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:14px"><div class="section-title">Agency profile</div>'+
+    '<div class="form-row"><input value="DS Communications"><input value="PR & Communications Agency"></div>'+
+    '<button class="btn btn-primary btn-sm" onclick="toast(\'Agency profile saved.\',\'success\')">Save</button></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:14px"><div class="section-title">White-label portal domain</div>'+
+    '<input value="portal.dscommunications.co.bw" style="width:100%"></div>'+
+    '<div class="card" style="padding:18px"><div class="section-title">API integrations</div>'+
+    integ.map(function(i){ return '<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px"><span>'+i.name+'</span>'+(i.status==='Connected'?'<span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Connected</span>':'<span class="pill" style="background:var(--s3);color:var(--mu)">Not connected</span>')+'</div>'; }).join('')+
+    '</div>';
+};
+
+/* ---------- ADMIN PAGES ---------- */
+PAGES['admin-health'] = function(p){
+  const pipeline = [{name:'RSS pollers',status:'ok'},{name:'PDF processors',status:'ok'},{name:'Social crawlers',status:'ok'},{name:'AI classification queue',status:'ok'},{name:'The Patriot scraper',status:'error'}];
+  p.innerHTML =
+    '<div class="page-head"><h2>System health</h2></div>'+
+    '<div class="stat-grid">'+statCard('Uptime','99.8%')+statCard('Articles today','412')+statCard('AI calls','1,204')+statCard('Active clients','5')+'</div>'+
+    '<div class="grid2">'+
+      '<div class="card" style="padding:18px"><div class="section-title">Pipeline status</div>'+
+      pipeline.map(function(s){ return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px"><span style="width:8px;height:8px;border-radius:50%;background:'+(s.status==='ok'?'var(--green)':'var(--red)')+'"></span>'+s.name+'</div>'; }).join('')+
+      '</div>'+
+      '<div class="card chart-box"><div class="section-title">Throughput — articles/day</div><canvas id="chart-throughput"></canvas></div>'+
+    '</div>';
+  setTimeout(function(){
+    makeChart('chart-throughput','line',{
+      labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets:[{label:'Articles',data:[380,410,395,430,412,290,260],borderColor:'#00D4C8',backgroundColor:'rgba(0,212,200,.1)',tension:.35,fill:true}]
+    },{merge:{plugins:{legend:{display:false}}}});
+  },100);
+};
+
+PAGES['admin-clients'] = function(p){
+  const enterprise = CLIENTS.filter(function(c){return c.plan==='Enterprise';}).length;
+  const pro = CLIENTS.filter(function(c){return c.plan==='Professional';}).length;
+  const starter = CLIENTS.filter(function(c){return c.plan==='Starter';}).length;
+  p.innerHTML =
+    '<div class="page-head"><h2>All clients</h2></div>'+
+    '<div class="stat-grid">'+statCard('Total clients',CLIENTS.length)+statCard('Enterprise',enterprise)+statCard('Professional',pro)+statCard('Starter',starter)+'</div>'+
+    '<div class="card" style="padding:18px"><div class="tbl-wrap"><table><tr><th>Client</th><th>Plan</th><th>MRR</th><th>Since</th><th></th></tr>'+
+    CLIENTS.map(function(c){ return '<tr><td>'+c.name+'</td><td><span class="pill" style="background:var(--teal-bg);color:var(--teal)">'+c.plan+'</span></td><td>P'+c.mrr.toLocaleString()+'</td><td>Jan 2025</td><td><button class="btn btn-ghost btn-sm" onclick="toast(\'Impersonating '+c.name+'.\',\'info\')">Impersonate</button></td></tr>'; }).join('')+
+    '</table></div></div>';
+};
+
+PAGES['admin-users'] = function(p){
+  const users = [
+    {name:'Obakeng Molefe',org:'Orange Botswana',role:'Client Admin',login:'2h ago',status:'Active'},
+    {name:'Tsogo Kedibone',org:'Orange Botswana',role:'Viewer',login:'1d ago',status:'Active'},
+    {name:'Naledi Kgosimore',org:'DS Communications',role:'Agency Admin',login:'30m ago',status:'Active'},
+    {name:'Boitumelo Seretse',org:'DS Communications',role:'Agency Editor',login:'3h ago',status:'Active'},
+    {name:'Thabo Kediemetse',org:'FNB Botswana',role:'Client Admin',login:'5h ago',status:'Active'},
+    {name:'Dimpho Ntema',org:'Stanbic Botswana',role:'Client Admin',login:'1d ago',status:'Active'},
+    {name:'System Administrator',org:'MediaPulse BW',role:'Super Admin',login:'Now',status:'Active'}
+  ];
+  p.innerHTML =
+    '<div class="page-head"><h2>User management</h2></div>'+
+    '<div class="card" style="padding:18px"><div class="tbl-wrap"><table><tr><th>Name</th><th>Organisation</th><th>Role</th><th>Last login</th><th>Status</th></tr>'+
+    users.map(function(u){ return '<tr><td>'+u.name+'</td><td>'+u.org+'</td><td>'+u.role+'</td><td>'+u.login+'</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">'+u.status+'</span></td></tr>'; }).join('')+
+    '</table></div></div>';
+};
+
+PAGES['admin-ingestion'] = function(p){
+  p.innerHTML =
+    '<div class="page-head"><h2>Ingestion pipeline</h2></div>'+
+    hintBanner('ing-hint','Full per-publication schedule and cadence lives on the <a onclick="showPage(\'admin-schedule\')">Ingestion schedule →</a> page.')+
+    '<div class="grid2" style="margin-bottom:16px">'+
+      '<div class="card" style="padding:18px"><div class="section-title">Add RSS source</div><div class="form-row"><input placeholder="Publication name"><input placeholder="RSS URL"></div><button class="btn btn-primary btn-sm" onclick="addSource(\'RSS\')">Add source</button><div id="add-rss-status"></div></div>'+
+      '<div class="card" style="padding:18px"><div class="section-title">Add web scrape source</div><div class="form-row"><input placeholder="Publication name"><input placeholder="Website URL"></div><button class="btn btn-primary btn-sm" onclick="addSource(\'web scrape\')">Add source</button><div id="add-web-status"></div></div>'+
+    '</div>'+
+    '<div class="card" style="padding:18px"><div class="section-title">Active sources</div><div class="tbl-wrap"><table><tr><th>Source</th><th>Method</th><th></th></tr>'+
+    INGESTION_SOURCES.map(function(s){ return '<tr><td>'+s.name+'</td><td>'+s.method+'</td><td><button class="btn btn-ghost btn-sm" onclick="toast(\'Editing '+s.name+'.\',\'info\')">Edit</button> <button class="btn btn-ghost btn-sm" onclick="toast(\''+s.name+' fetch triggered.\',\'success\')">Fetch now</button></td></tr>'; }).join('')+
+    '</table></div></div>';
+};
+function addSource(type){
+  const idStat = type==='RSS' ? 'add-rss-status' : 'add-web-status';
+  el(idStat).innerHTML = '<div class="muted" style="font-size:11.5px;margin-top:8px"><span class="loading-dots">Validating source</span></div>';
+  setTimeout(function(){
+    el(idStat).innerHTML = '<div style="font-size:11.5px;color:var(--green);margin-top:8px">✓ Source validated and queued.</div>';
+    toast(type+' source added.', 'success');
+  }, 900);
+}
+
+PAGES['admin-schedule'] = function(p){
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const methodColor = {'PressReader':'#A855F7','RSS':'#00D4C8','PDF':'#00D4C8','Web scrape':'#FF5C1A','Social':'#3B82F6'};
+  let grid = '<div class="tbl-wrap"><table><tr><th>Publication</th>'+days.map(function(d){return '<th>'+d+'</th>';}).join('')+'</tr>';
+  INGESTION_SOURCES.forEach(function(s){
+    grid += '<tr><td>'+s.name+'</td>';
+    days.forEach(function(){
+      const active = s.days==='Daily' || s.days.indexOf('Mon')>-1 || Math.random()>0.5;
+      grid += '<td><div class="heat-cell" style="background:'+(active?methodColor[s.method]+'55':'var(--s2)')+'"></div></td>';
+    });
+    grid += '</tr>';
+  });
+  grid += '</table></div>';
+  p.innerHTML =
+    '<div class="page-head"><h2>Ingestion schedule</h2><div class="sub">Weekly publication × method heatmap</div></div>'+
+    '<div style="display:flex;gap:14px;margin-bottom:14px;font-size:11.5px;flex-wrap:wrap">'+
+      '<span><span class="heat-cell" style="background:#A855F755;width:14px;height:14px;display:inline-block;vertical-align:middle"></span> PressReader</span>'+
+      '<span><span class="heat-cell" style="background:#00D4C855;width:14px;height:14px;display:inline-block;vertical-align:middle"></span> RSS / PDF</span>'+
+      '<span><span class="heat-cell" style="background:#FF5C1A55;width:14px;height:14px;display:inline-block;vertical-align:middle"></span> Web scrape</span>'+
+      '<span><span class="heat-cell" style="background:#3B82F655;width:14px;height:14px;display:inline-block;vertical-align:middle"></span> Social</span>'+
+    '</div>'+
+    '<div class="card" style="padding:18px;margin-bottom:16px">'+grid+'</div>'+
+    '<div class="card" style="padding:18px;margin-bottom:16px"><div class="tbl-wrap"><table><tr><th>Method</th><th>Publish window</th><th>Active cadence</th><th>Idle cadence</th><th>Social mirror</th><th>Last fetch</th><th>Status</th><th></th></tr>'+
+    INGESTION_SOURCES.map(function(s,i){
+      return '<tr><td>'+s.name+'<br><span class="pill" style="background:var(--teal-bg);color:var(--teal);margin-top:4px">'+s.method+'</span></td><td>'+s.window+'</td><td>'+s.active+'</td><td>'+s.idle+'</td><td>'+(s.social?'✓':'—')+'</td><td>'+s.last+'</td><td>'+(s.status==='ok'?'<span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">OK</span>':'<span class="pill" style="background:rgba(239,68,68,.12);color:var(--red)">Error</span>')+'</td>'+
+      '<td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" onclick="diagnoseAI('+i+')">Diagnose AI</button> <button class="btn btn-ghost btn-sm" onclick="toast(\'Editing '+s.name+'.\',\'info\')">Edit</button> <button class="btn btn-ghost btn-sm" onclick="toast(\''+s.name+' fetch triggered.\',\'success\')">Fetch now</button></td></tr>';
+    }).join('')+
+    '</table></div></div>'+
+    '<div id="schedule-diag" style="margin-bottom:16px"></div>'+
+    '<div class="grid2">'+
+      '<div class="card" style="padding:18px"><div class="section-title">Window-aware scheduling</div><p style="font-size:12.5px;color:var(--mu);line-height:1.6">During a publication\'s known print/upload window, MediaPulse polls at the "active cadence" to catch the story the moment it lands. Outside that window it falls back to the slower "idle cadence" to save resources.</p></div>'+
+      '<div class="card" style="padding:18px"><div class="section-title">Social mirrors</div><p style="font-size:12.5px;color:var(--mu);line-height:1.6">Publications with a social mirror are also monitored across their official Facebook/X pages, capturing reader reaction and reach that print alone can\'t measure.</p></div>'+
+    '</div>';
+};
+function diagnoseAI(i){
+  const s = INGESTION_SOURCES[i];
+  genericAI('You are a media ingestion systems engineer for MediaPulse BW. The source "'+s.name+'" uses method "'+s.method+'" with active cadence '+s.active+' and idle cadence '+s.idle+'. Suggest whether the current cadence looks correct for this publication type and one optimisation. Under 90 words.', 'schedule-diag', 'Running AI diagnosis');
+}
+
+PAGES['admin-upload'] = function(p){
+  p.innerHTML =
+    '<div class="page-head"><h2>Upload content</h2></div>'+
+    '<div class="card" style="padding:30px;text-align:center;border:2px dashed var(--line2);margin-bottom:16px;cursor:pointer" onclick="simulateUpload()">'+
+    '<div style="font-size:32px;margin-bottom:10px">📤</div><div style="font-weight:600;margin-bottom:4px">Drag & drop files here</div><div class="muted" style="font-size:12px">PDF, image or text — click to simulate an upload</div>'+
+    '<div id="upload-status"></div></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:16px"><div class="section-title">AI extraction test</div>'+
+    '<textarea id="extract-txt" rows="4" style="width:100%;margin-bottom:10px" placeholder="Paste raw scraped text to test AI extraction..."></textarea>'+
+    '<button class="btn btn-primary btn-sm" onclick="runExtraction()">Run extraction ↗</button><div id="extract-result"></div></div>'+
+    '<div class="card" style="padding:18px"><div class="section-title">Upload history</div>'+
+    '<table><tr><th>File</th><th>Type</th><th>Status</th></tr>'+
+    '<tr><td>mmegi_2026-07-01.pdf</td><td>PDF</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Processed</span></td></tr>'+
+    '<tr><td>guardian_scan.jpg</td><td>Image</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Processed</span></td></tr>'+
+    '</table></div>';
+};
+function simulateUpload(){
+  el('upload-status').innerHTML = '<div class="muted" style="font-size:11.5px;margin-top:10px"><span class="loading-dots">Uploading and extracting</span></div>';
+  setTimeout(function(){
+    el('upload-status').innerHTML = '<div style="font-size:11.5px;color:var(--green);margin-top:10px">✓ File processed and indexed.</div>';
+    toast('File uploaded and processed.', 'success');
+  }, 1100);
+}
+function runExtraction(){
+  const txt = el('extract-txt').value || 'Orange Botswana today announced the expansion of its 5G network to Francistown and Maun.';
+  genericAI('Extract structured PR metadata from this raw scraped newspaper text: headline, publication guess, sentiment, and key brand mentions. Text: "'+txt+'". Respond in a short bulleted format.', 'extract-result', 'Running extraction');
+}
+
+PAGES['admin-processing'] = function(p){
+  const jobs = [
+    {name:'Morning brief compile',sched:'Daily 05:45',last:'05:45 today',status:'ok'},
+    {name:'RSS poll',sched:'Every 10 min',last:'2 min ago',status:'ok'},
+    {name:'Social crawl',sched:'Every 5 min',last:'40 sec ago',status:'ok'},
+    {name:'PDF processing',sched:'On upload',last:'3 hr ago',status:'ok'},
+    {name:'Weekly reports',sched:'Fri 16:00',last:'Fri 16:00',status:'ok'},
+    {name:'The Patriot scraper',sched:'Every 50 min',last:'2 days ago',status:'error'}
+  ];
+  p.innerHTML =
+    '<div class="page-head"><h2>Processing schedule</h2></div>'+
+    '<div class="card" style="padding:18px"><table><tr><th>Job</th><th>Schedule</th><th>Last run</th><th>Status</th></tr>'+
+    jobs.map(function(j){ return '<tr><td>'+j.name+'</td><td>'+j.sched+'</td><td>'+j.last+'</td><td>'+(j.status==='ok'?'<span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">OK</span>':'<span class="pill" style="background:rgba(239,68,68,.12);color:var(--red)">Error</span>')+'</td></tr>'; }).join('')+
+    '</table></div>';
+};
+
+PAGES['admin-logs'] = function(p){
+  const logs = [];
+  const tasks = ['Sentiment classify','Brand extract','PR brief gen','Social reply draft','Report compile'];
+  for(let i=0;i<10;i++){
+    logs.push({time:(8+i)+':0'+(i%6)+' AM',task:tasks[i%tasks.length],src:INGESTION_SOURCES[i%INGESTION_SOURCES.length].name,tokens:(400+i*37),latency:(0.8+i*0.1).toFixed(1)+'s',status: i===7?'error':'ok'});
+  }
+  p.innerHTML =
+    '<div class="page-head"><h2>AI processing logs</h2></div>'+
+    '<div class="stat-grid">'+statCard('Calls today','1,204')+statCard('Tokens today','2.1M')+statCard('Cost today','$18.40')+statCard('Avg latency','1.2s')+'</div>'+
+    '<div class="card" style="padding:18px"><div class="tbl-wrap"><table><tr><th>Time</th><th>Task</th><th>Source</th><th>Tokens</th><th>Latency</th><th>Status</th></tr>'+
+    logs.map(function(l){ return '<tr><td>'+l.time+'</td><td>'+l.task+'</td><td>'+l.src+'</td><td>'+l.tokens+'</td><td>'+l.latency+'</td><td>'+(l.status==='ok'?'<span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">OK</span>':'<span class="pill" style="background:rgba(239,68,68,.12);color:var(--red)">Error</span>')+'</td></tr>'; }).join('')+
+    '</table></div></div>';
+};
+
+PAGES['admin-templates'] = function(p){
+  const templates = [
+    {name:'PR Brief Generator',model:'claude-sonnet',calls:412},
+    {name:'Sentiment Classifier',model:'claude-haiku',calls:8420},
+    {name:'Social Reply Drafter',model:'claude-sonnet',calls:186},
+    {name:'Competitive Q&A',model:'claude-sonnet',calls:94},
+    {name:'Report Compiler',model:'claude-sonnet',calls:58},
+    {name:'Extraction Assistant',model:'claude-haiku',calls:1340}
+  ];
+  p.innerHTML =
+    '<div class="page-head"><h2>Prompt templates</h2></div>'+
+    templates.map(function(t){ return '<div class="card" style="padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:700;font-size:13px">'+t.name+'</div><div class="muted" style="font-size:11.5px;margin-top:2px">'+t.calls.toLocaleString()+' calls</div></div><span class="pill" style="background:var(--teal-bg);color:var(--teal)">'+t.model+'</span></div>'; }).join('');
+};
+
+PAGES['admin-billing'] = function(p){
+  p.innerHTML =
+    '<div class="page-head"><h2>Billing & plans</h2></div>'+
+    '<div class="stat-grid">'+statCard('MRR','P31,500')+statCard('ARR','P378,000')+statCard('Gross margin','93%')+statCard('Active clients','5')+'</div>'+
+    '<div class="card" style="padding:18px"><div class="tbl-wrap"><table><tr><th>Client</th><th>Plan</th><th>MRR</th><th>Status</th></tr>'+
+    CLIENTS.map(function(c){ return '<tr><td>'+c.name+'</td><td>'+c.plan+'</td><td>P'+c.mrr.toLocaleString()+'</td><td><span class="pill" style="background:rgba(34,197,94,.12);color:var(--green)">Paid</span></td></tr>'; }).join('')+
+    '</table></div></div>';
+};
+
+PAGES['admin-config'] = function(p){
+  p.innerHTML =
+    '<div class="page-head"><h2>Platform configuration</h2></div>'+
+    '<div class="card" style="padding:18px;margin-bottom:14px"><div class="section-title">AI model settings</div>'+
+    '<div class="form-row"><div><label class="muted" style="font-size:11px">Classification model</label><select><option>claude-haiku</option><option>claude-sonnet</option></select></div>'+
+    '<div><label class="muted" style="font-size:11px">Generation model</label><select><option>claude-sonnet</option><option>claude-opus</option></select></div></div>'+
+    '<div class="form-row"><div><label class="muted" style="font-size:11px">Max tokens per call</label><input value="800"></div>'+
+    '<div><label class="muted" style="font-size:11px">Monthly AI budget (USD)</label><input value="600"></div></div>'+
+    '<button class="btn btn-primary btn-sm" onclick="toast(\'Platform config saved.\',\'success\')">Save configuration</button></div>'+
+    '<div class="card" style="padding:18px"><div class="section-title">Platform info</div>'+
+    '<table><tr><td>Version</td><td>2.4.1</td></tr><tr><td>Database</td><td>PostgreSQL 16</td></tr><tr><td>Cache</td><td>Redis 7.2</td></tr><tr><td>Region</td><td>af-south-1</td></tr></table></div>';
+};
+
+PAGES['admin-syslogs'] = function(p){
+  const levels = ['INFO','INFO','WARN','INFO','ERROR','INFO','WARN','INFO'];
+  const msgs = ['Session created','RSS poll completed','Retry threshold reached for The Patriot','AI classification batch complete','Failed to fetch The Patriot — connection timeout','User login: admin@mediapulse.bw','Cache eviction triggered','Weekly report job queued'];
+  p.innerHTML =
+    '<div class="page-head"><h2>System logs</h2></div>'+
+    '<div class="chips"><div class="chip on">All</div><div class="chip">Info</div><div class="chip">Warn</div><div class="chip">Error</div></div>'+
+    '<div class="card" style="padding:18px"><table><tr><th>Time</th><th>Level</th><th>Message</th></tr>'+
+    levels.map(function(l,i){
+      const color = l==='ERROR' ? 'var(--red)' : (l==='WARN' ? 'var(--yellow)' : 'var(--teal)');
+      return '<tr><td>'+(9+i)+':0'+i+' AM</td><td><span class="pill" style="background:'+color+'22;color:'+color+'">'+l+'</span></td><td>'+msgs[i]+'</td></tr>';
+    }).join('')+
+    '</table></div>';
+};
+
+/* =====================================================================
+   INIT
+===================================================================== */
+document.addEventListener('DOMContentLoaded', function(){
+  showLanding();
+});
+</script>
+</body>
+</html>
