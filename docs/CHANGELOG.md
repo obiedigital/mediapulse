@@ -1,5 +1,62 @@
 # Changelog
 
+## M2 — AI enrichment
+
+Classification, per-brand sentiment, entity extraction, summarisation, and
+threat tagging, with the model config fix from M0 finally exercised
+end-to-end: an article that comes in through `import-legacy` (re-queued,
+legacy classification discarded) now flows cleanly through `mediapulse
+classify` and comes out the other side with real intelligence.
+
+**Added**
+- `ai/client.py` — single shared Anthropic SDK adapter (`AnthropicClient`
+  protocol + `AnthropicClientAdapter`) used by both classification and the
+  M1 vision fallback, so there's exactly one place that reads a model
+  string and records token usage. `ai/vision_segment.py` refactored onto
+  this instead of its own copy.
+- `ai/json_utils.py` — shared markdown-fence stripping for model JSON
+  output, also deduplicated out of `vision_segment.py`.
+- `ai/pricing.py` — per-tier (opus/sonnet/haiku) $/Mtok table for
+  `cost_usd` logging on every `Classification` row; returns `None` for an
+  unrecognized model rather than guessing a number.
+- `ai/schemas.py` — strict Pydantic schema for the classification
+  response (`relevance_score`, `category`, `sentiment_overall`,
+  per-brand `sentiment_by_brand`, `entities`, `summary_exec`,
+  `key_quotes`, `why_it_matters`, `threat_tag`, `threat_rationale`) that
+  mirrors the `Classification` table field-for-field, so a response
+  missing something fails validation instead of landing half-populated.
+- `ai/prompts.py` — tenant-aware prompt builder: injects the tenant's full
+  watchlist (brand-watch/competitor/regulator/sector topics with
+  keywords) so the same pipeline judges sentiment, category, and
+  threat/opportunity/monitor tagging from *that tenant's* point of view
+  (a BTC price cut is a `risk` for Orange, sector news for a bank).
+- `ai/classify.py` — `classify_article()` (retry/backoff on bad JSON,
+  same discipline as the M1 vision fallback; exhausted retries mark
+  `Classification.status=failed` + `Article.status=error` with the real
+  error recorded, never silently) and `classify_pending()` (the batch
+  runner behind the CLI, with an explicit `reprocess_errors` queue).
+- `mediapulse classify --tenant --reprocess-errors --limit` now actually
+  runs enrichment; verified end-to-end against a real SQLite DB (correctly
+  reports and exits non-zero on an auth failure with no API key
+  configured, rather than crashing).
+- 18 new tests (69 total): shared client refactor (vision tests updated to
+  the new protocol), pricing, prompt injection, schema validation
+  (rejects out-of-range relevance, invalid sentiment enum), classify
+  retry/failure/reclassification behavior, batch runner status filtering,
+  and a full legacy-import → classify end-to-end test proving defect #1
+  is fixed in practice, not just in isolated units.
+
+**Known gaps going into M3**
+- No real `ANTHROPIC_API_KEY` is configured in this environment, so
+  classification has only been run against a fake client in tests/CLI
+  smoke tests — worth one real run against the live API before trusting
+  output quality/latency.
+- `category` is a free string constrained only by prompt instruction, not
+  a DB-level enum — worth revisiting once real classified data shows
+  what categories actually show up.
+- No API layer or React dashboard yet — `mediapulse brief` is still a
+  stub.
+
 ## M1 — Ingestion
 
 RSS + PressReader workers, and the rebuilt PDF article-segmentation

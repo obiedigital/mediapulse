@@ -221,15 +221,28 @@ def classify(
     reprocess_errors: Annotated[
         bool, typer.Option(help="Re-run classification for articles in `error` status")
     ] = False,
+    limit: Annotated[
+        Optional[int], typer.Option(help="Max number of articles to process this run")
+    ] = None,
 ) -> None:
-    """Run AI enrichment over pending (or errored) articles for a tenant.
+    """Run AI enrichment (relevance, sentiment-by-brand, entities, summary,
+    threat tag) over pending (or errored) articles for a tenant."""
+    from .ai.classify import classify_pending
 
-    M2 deliverable — see mediapulse/ai/.
-    """
     with session_scope() as session:
-        _require_tenant(session, tenant)
-    typer.echo("AI classification pipeline is not implemented yet (M2). See mediapulse/ai/.")
-    raise typer.Exit(code=1)
+        tenant_row = _require_tenant(session, tenant)
+        result = classify_pending(
+            session, tenant=tenant_row, reprocess_errors=reprocess_errors, limit=limit
+        )
+
+    typer.echo(
+        f"Processed {result.processed}: succeeded={result.succeeded} failed={result.failed} "
+        f"est_cost=${result.total_cost_usd:.4f}"
+    )
+    for failure in result.failures:
+        typer.echo(f"  ! {failure}")
+    if result.failed:
+        raise typer.Exit(code=1)
 
 
 @app.command()

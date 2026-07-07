@@ -10,13 +10,14 @@ this repo tracks it milestone by milestone in `docs/CHANGELOG.md`.
 
 ## Status
 
-**M0 (scaffold) and M1 (ingestion) are done.** RSS and PressReader workers,
-plus a layout-aware print PDF segmentation pipeline (with a Claude-vision
-fallback for pages it can't resolve heuristically), are implemented and
-tested against synthetic sample PDFs — see `docs/CHANGELOG.md` for details
-and known gaps. AI enrichment, the API, and the React dashboard are not
-built yet — `mediapulse classify`/`brief` are wired-up stubs that resolve
-tenant scope and then tell you which milestone implements them.
+**M0 (scaffold), M1 (ingestion), and M2 (AI enrichment) are done.** RSS and
+PressReader workers, a layout-aware print PDF segmentation pipeline (with
+a Claude-vision fallback), and tenant-aware classification/sentiment/
+entity/summary/threat-tagging are implemented and tested — see
+`docs/CHANGELOG.md` for details and known gaps. No real `ANTHROPIC_API_KEY`
+has been exercised against the live API yet (tests and CLI smoke tests use
+a fake client). The API layer and React dashboard are not built yet —
+`mediapulse brief` is still a wired-up stub.
 
 `mediapulse_platform.html` at the repo root is a static design reference for
 the eventual React frontend (landing page + app-shell mockup) — it is not
@@ -42,8 +43,13 @@ backend/
       manual.py          # manual PDF/link upload path
       filters.py         # shared non-editorial (advert/notice) detection
     ai/
-      vision_segment.py  # Claude-vision fallback for unresolved PDF pages
-      (classification/sentiment/entities/summaries land in M2)
+      client.py           # shared Anthropic SDK adapter (text + vision)
+      json_utils.py        # markdown-fence stripping for model JSON output
+      pricing.py            # per-model $/Mtok cost estimation
+      vision_segment.py     # Claude-vision fallback for unresolved PDF pages
+      schemas.py             # strict Pydantic schema for classification output
+      prompts.py              # tenant-aware classification prompt builder
+      classify.py              # classify_article/classify_pending (M2)
     scripts/
       import_legacy.py # legacy SQLite -> new schema, with date repair
   migrations/          # Alembic

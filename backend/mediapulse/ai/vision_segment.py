@@ -8,7 +8,7 @@ structured shape (`headline`/`byline`/`body`/`page`/`section`) the
 heuristic path produces, so callers can merge the two without caring which
 one ran.
 
-The model client is injected (`AnthropicMessagesClient` protocol) so this
+The model client is injected (`ai.client.AnthropicClient` protocol) so this
 is testable without a network call or an API key — `AnthropicClientAdapter`
 is the real implementation, constructed lazily so importing this module
 never requires the `anthropic` package to be configured.
@@ -22,14 +22,14 @@ from __future__ import annotations
 
 import base64
 import json
-import re
 import time
-from typing import Protocol
 
 import fitz
 from pydantic import BaseModel, ValidationError
 
 from ..config import get_settings
+from .client import AnthropicClient, AnthropicClientAdapter, image_block, text_block
+from .json_utils import extract_json_object
 
 SEGMENTATION_PROMPT = """You are segmenting one page of a Botswana print newspaper into articles.
 
@@ -64,39 +64,6 @@ class VisionSegmentationError(RuntimeError):
     pass
 
 
-class AnthropicMessagesClient(Protocol):
-    def create_message(self, *, model: str, image_b64: str, prompt: str) -> str: ...
-
-
-class AnthropicClientAdapter:
-    """Thin wrapper around the real Anthropic SDK, constructed lazily so
-    this module imports cleanly with no API key configured."""
-
-    def __init__(self, api_key: str | None = None):
-        import anthropic
-
-        self._client = anthropic.Anthropic(api_key=api_key or get_settings().anthropic_api_key)
-
-    def create_message(self, *, model: str, image_b64: str, prompt: str) -> str:
-        response = self._client.messages.create(
-            model=model,
-            max_tokens=4096,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "source": {"type": "base64", "media_type": "image/png", "data": image_b64},
-                        },
-                        {"type": "text", "text": prompt},
-                    ],
-                }
-            ],
-        )
-        return "".join(block.text for block in response.content if block.type == "text")
-
-
 def render_page_png(pdf_path: str, page_number: int, *, dpi: int = 200) -> bytes:
     doc = fitz.open(pdf_path)
     try:
@@ -106,19 +73,11 @@ def render_page_png(pdf_path: str, page_number: int, *, dpi: int = 200) -> bytes
         doc.close()
 
 
-def _extract_json(text: str) -> str:
-    """Strip a ```json ... ``` fence if the model wrapped its output in one."""
-    fenced = re.search(r"```(?:json)?\s*(\{.*\})\s*```", text, re.DOTALL)
-    if fenced:
-        return fenced.group(1)
-    return text
-
-
 def segment_page_with_vision(
     pdf_path: str,
     page_number: int,
     *,
-    client: AnthropicMessagesClient | None = None,
+    client: AnthropicClient | None = None,
     max_retries: int | None = None,
     backoff_seconds: float | None = None,
 ) -> list[VisionSegmentedArticle]:
@@ -131,12 +90,13 @@ def segment_page_with_vision(
 
     image_b64 = base64.b64encode(render_page_png(pdf_path, page_number)).decode()
     prompt = SEGMENTATION_PROMPT.format(page=page_number)
+    content = [image_block(image_b64), text_block(prompt)]
 
     last_error: Exception | None = None
     for attempt in range(1, max_retries + 1):
         try:
-            raw = client.create_message(model=settings.vision_model, image_b64=image_b64, prompt=prompt)
-            payload = json.loads(_extract_json(raw))
+            result = client.create_message(model=settings.vision_model, content=content)
+            payload = json.loads(extract_json_object(result.text))
             parsed = VisionSegmentationResponse.model_validate(payload)
             for article in parsed.articles:
                 article.page = page_number

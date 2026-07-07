@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from mediapulse.ai.client import MessageResult
 from mediapulse.ai.vision_segment import (
     VisionSegmentationError,
     render_page_png,
@@ -30,12 +31,12 @@ class FakeClient:
         self._responses = list(responses)
         self.calls = 0
 
-    def create_message(self, *, model, image_b64, prompt):
+    def create_message(self, *, model, content, max_tokens=4096):
         self.calls += 1
         response = self._responses[min(self.calls - 1, len(self._responses) - 1)]
         if isinstance(response, Exception):
             raise response
-        return response
+        return MessageResult(text=response, input_tokens=100, output_tokens=50)
 
 
 def test_render_page_png_returns_valid_png_bytes():
