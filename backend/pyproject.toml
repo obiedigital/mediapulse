@@ -1,0 +1,44 @@
+[project]
+name = "mediapulse"
+version = "0.1.0"
+description = "MediaPulse BW — AI-powered media intelligence platform"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "typer>=0.12",
+    "anthropic>=0.40",
+    "python-dotenv>=1.0",
+    "tenacity>=8.3",
+    "rapidfuzz>=3.9",
+    "pymupdf>=1.24",
+    "feedparser>=6.0",
+    "httpx>=0.27",
+    "jinja2>=3.1",
+    "weasyprint>=62.0",
+    "psycopg[binary]>=3.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "ruff>=0.5",
+]
+
+[project.scripts]
+mediapulse = "mediapulse.cli:app"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["mediapulse*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

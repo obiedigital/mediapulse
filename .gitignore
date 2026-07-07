@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+*.db
+*.db-journal
+.env
+legacy_import_report.json
+node_modules/
+dist/
+.pytest_cache/
+*.egg-info/
