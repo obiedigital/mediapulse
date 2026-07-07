@@ -7,7 +7,7 @@ from typing import Annotated, Optional
 import typer
 
 from .db import session_scope
-from .models import Tenant, Topic, TopicKind
+from .models import Source, SourceType, Tenant, Topic, TopicKind
 
 app = typer.Typer(help="MediaPulse BW operational CLI.")
 
@@ -103,19 +103,116 @@ def ingest(
     tenant: Annotated[str, typer.Option(help="Tenant slug")],
     topic: Annotated[Optional[str], typer.Option(help="Limit to one topic label")] = None,
 ) -> None:
-    """Run all active sources for a tenant (RSS/PressReader/PDF watch folder).
+    """Run every active RSS/PressReader source for a tenant.
 
-    M1 deliverable — ingestion workers land in `mediapulse.ingestion`; this
-    stub already resolves the tenant/topic scope so workers just need to be
-    plugged in behind it.
+    PDF sources aren't polled here — they're one-shot uploads via
+    `mediapulse ingest-pdf` (or the M3 UI equivalent) since a print PDF
+    doesn't arrive on a schedule the same way a feed does.
     """
+    from .ingestion import pressreader, rss
+
     with session_scope() as session:
-        _require_tenant(session, tenant)
+        tenant_row = _require_tenant(session, tenant)
+        query = (
+            session.query(Source)
+            .join(Topic)
+            .filter(Topic.tenant_id == tenant_row.id, Source.is_active.is_(True))
+        )
+        if topic:
+            query = query.filter(Topic.label == topic)
+        sources = query.all()
+
+        if not sources:
+            typer.echo(f"No active sources found for tenant={tenant!r}" + (f", topic={topic!r}" if topic else ""))
+            raise typer.Exit(code=1)
+
+        totals = {"fetched": 0, "inserted": 0, "skipped_duplicates": 0, "errors": 0}
+        for source in sources:
+            if source.type == SourceType.rss:
+                result = rss.run(session, source)
+            elif source.type == SourceType.pressreader:
+                result = pressreader.run(session, source)
+            else:
+                typer.echo(f"Skipping {source.name!r}: type {source.type.value} has no polling worker.")
+                continue
+
+            typer.echo(
+                f"{source.name}: fetched={result.fetched} inserted={result.inserted} "
+                f"skipped={result.skipped_duplicates} errors={len(result.errors)}"
+            )
+            for error in result.errors:
+                typer.echo(f"  ! {error}")
+            totals["fetched"] += result.fetched
+            totals["inserted"] += result.inserted
+            totals["skipped_duplicates"] += result.skipped_duplicates
+            totals["errors"] += len(result.errors)
+
     typer.echo(
-        "Ingestion workers are not implemented yet (M1). "
-        "Tenant/topic scoping is wired; see mediapulse/ingestion/."
+        f"Done. fetched={totals['fetched']} inserted={totals['inserted']} "
+        f"skipped={totals['skipped_duplicates']} errors={totals['errors']}"
     )
-    raise typer.Exit(code=1)
+
+
+@app.command()
+def ingest_pdf(
+    tenant: Annotated[str, typer.Option(help="Tenant slug")],
+    topic: Annotated[str, typer.Option(help="Topic label to attach articles to")],
+    pdf_path: Annotated[Path, typer.Option(help="Path to the newspaper PDF")],
+    publication: Annotated[str, typer.Option(help="Outlet name, e.g. 'Daily News'")],
+    no_vision_fallback: Annotated[
+        bool, typer.Option(help="Skip the Claude-vision fallback for unresolved pages")
+    ] = False,
+) -> None:
+    """Manually ingest one print PDF (Daily News, Botswana Gazette, ...)."""
+    from .ingestion.manual import ingest_pdf as run_ingest_pdf
+
+    with session_scope() as session:
+        tenant_row = _require_tenant(session, tenant)
+        topic_row = session.query(Topic).filter_by(tenant_id=tenant_row.id, label=topic).one_or_none()
+        if topic_row is None:
+            raise typer.BadParameter(f"No topic {topic!r} for tenant {tenant!r}.")
+
+        result = run_ingest_pdf(
+            session,
+            tenant=tenant_row,
+            topic=topic_row,
+            pdf_path=pdf_path,
+            publication=publication,
+            use_vision_fallback=not no_vision_fallback,
+        )
+
+    typer.echo(
+        f"Segmented {result.fetched} items: inserted={result.inserted} "
+        f"skipped={result.skipped_duplicates} rejected_non_editorial={result.rejected_non_editorial}"
+    )
+    for error in result.errors:
+        typer.echo(f"  ! {error}")
+
+
+@app.command()
+def ingest_link(
+    tenant: Annotated[str, typer.Option(help="Tenant slug")],
+    topic: Annotated[str, typer.Option(help="Topic label to attach the article to")],
+    url: Annotated[str, typer.Option(help="URL to fetch and ingest")],
+) -> None:
+    """Manually ingest a single link pasted through the UI."""
+    from .ingestion.manual import ingest_link as run_ingest_link
+
+    with session_scope() as session:
+        tenant_row = _require_tenant(session, tenant)
+        topic_row = session.query(Topic).filter_by(tenant_id=tenant_row.id, label=topic).one_or_none()
+        if topic_row is None:
+            raise typer.BadParameter(f"No topic {topic!r} for tenant {tenant!r}.")
+
+        result = run_ingest_link(session, tenant=tenant_row, topic=topic_row, url=url)
+
+    if result.inserted:
+        typer.echo(f"Ingested {url}")
+    elif result.skipped_duplicates:
+        typer.echo("Already ingested (duplicate).")
+    else:
+        typer.echo(f"Failed: {result.errors}")
+        raise typer.Exit(code=1)
 
 
 @app.command()

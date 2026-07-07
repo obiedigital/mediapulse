@@ -1,5 +1,79 @@
 # Changelog
 
+## M1 — Ingestion
+
+RSS + PressReader workers, and the rebuilt PDF article-segmentation
+pipeline, proven against two synthetic sample PDFs standing in for the
+real Daily News (10-06-2026) and Botswana Gazette (06-05-2026) — no real
+legacy PDFs, `mediapulse.db`, or `dashboard_data.json` exist in this repo
+(see M0's "known gaps"), so `tests/fixtures/build_sample_pdfs.py` generates
+representative two-column pages carrying the exact headlines named as
+expected output in the product brief.
+
+**Added**
+- `ingestion/dedupe.py` — cross-outlet story clustering (`StoryCluster`,
+  pickup counts) via rapidfuzz title similarity within a recency window;
+  kept separate from the exact-duplicate `content_hash` guard each worker
+  already does at insert time.
+- `ingestion/base.py` — shared `IngestResult`, `compute_content_hash`, and
+  uniform `Source` health tracking (`last_fetched_at`/`last_success_at`/
+  `consecutive_error_count`/`last_error`) so every connector reports the
+  same shape to the future admin source-health page.
+- `ingestion/rss.py` — feedparser-based worker with an injectable fetch
+  function (network call is a single seam, so tests never hit the
+  network). Idempotent on rerun, records source-level errors on fetch/parse
+  failure without needing a full stack trace to show up on the health page.
+- `ingestion/pressreader.py` — connector interface (`PressReaderClient`
+  protocol) for the same insert/dedupe/health path, since PressReader has
+  no public content API and the legacy scraper isn't in this repo. Fails
+  loudly and specifically ("client not configured") rather than crashing
+  or silently no-op'ing; a real scraper implementation is a one-file
+  addition once credentials exist.
+- `ingestion/pdf.py` — layout-aware print segmentation: PyMuPDF block
+  extraction, dynamic column clustering from x-coordinates, a heading
+  font-size heuristic (checked after a non-editorial keyword check, so a
+  bold "INVITATION TO TENDER" doesn't get mistaken for a headline),
+  masthead date detection reusing the M0 date-repair checksum logic,
+  "To Page N"/"From Page N" continuation merging across pages, and a
+  `pages_needing_vision_fallback` signal when a page has no headline-sized
+  text and no real body (a heavily degraded scan).
+- `ai/vision_segment.py` — Claude-vision fallback for those flagged pages:
+  renders the page to PNG, asks for the same structured shape the
+  heuristic path produces, retries a configurable number of times on
+  unparseable JSON rather than trusting or discarding garbage output
+  (direct lesson from defect #1). The Anthropic client is injected, so this
+  is fully unit-tested with zero network calls / no API key required.
+- `ingestion/manual.py` — backend half of the "manual upload of PDFs/links
+  through the UI" requirement, callable now via CLI ahead of the M3 UI:
+  `ingest_pdf` runs the full segmentation + vision-fallback pipeline and
+  inserts articles with the document's masthead date; `ingest_link`
+  fetches and stores a single pasted URL.
+- `mediapulse ingest` now actually runs every active RSS/PressReader
+  source for a tenant (PDF sources are one-shot uploads, not polled).
+  Added `mediapulse ingest-pdf` and `mediapulse ingest-link` for the manual
+  path. All three verified end-to-end against a real SQLite DB, including
+  the RSS worker's real (network-blocked) error path and the PressReader
+  stub's "not configured" path.
+- `tests/fixtures/build_sample_pdfs.py` — generates the two synthetic
+  sample PDFs; regenerate with `python tests/fixtures/build_sample_pdfs.py`.
+- 31 new tests (51 total): dedupe clustering, RSS worker (canned feed
+  XML, idempotency, fetch/parse failure), PressReader worker (fake
+  client), PDF segmentation against both synthetic PDFs (correct
+  headlines/dates/continuation merge, ads and notices excluded from
+  editorial output, vision-fallback flagging on a degraded page), vision
+  segmentation (retry-on-bad-JSON, markdown-fence stripping, exhausted
+  retries raise clearly), and manual PDF/link ingest.
+
+**Known gaps going into M2**
+- Still no real legacy corpus or real sample newspaper PDFs in this repo —
+  if you have them, send them over so the pipeline can be validated
+  against actual OCR/layout quirks rather than the synthetic fixtures.
+- PressReader has no working scraper behind the connector interface yet —
+  needs real credentials/session details before it can fetch anything.
+- The heading font-size threshold (13pt) and non-editorial keyword list
+  are heuristics tuned against the synthetic fixtures; expect to widen
+  them once real papers are available.
+
 ## M0 — Scaffold
 
 Repo layout, config, DB models/migrations, and legacy-data import script

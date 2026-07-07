@@ -10,10 +10,13 @@ this repo tracks it milestone by milestone in `docs/CHANGELOG.md`.
 
 ## Status
 
-**M0 (scaffold) is done.** Ingestion workers, AI enrichment, the API, and the
-React dashboard are not built yet — `mediapulse ingest`/`classify`/`brief`
-are wired-up stubs that resolve tenant/topic scope and then tell you which
-milestone implements them.
+**M0 (scaffold) and M1 (ingestion) are done.** RSS and PressReader workers,
+plus a layout-aware print PDF segmentation pipeline (with a Claude-vision
+fallback for pages it can't resolve heuristically), are implemented and
+tested against synthetic sample PDFs — see `docs/CHANGELOG.md` for details
+and known gaps. AI enrichment, the API, and the React dashboard are not
+built yet — `mediapulse classify`/`brief` are wired-up stubs that resolve
+tenant scope and then tell you which milestone implements them.
 
 `mediapulse_platform.html` at the repo root is a static design reference for
 the eventual React frontend (landing page + app-shell mockup) — it is not
@@ -29,13 +32,24 @@ backend/
     models/           # Tenant, User, Topic, Source, Article, StoryCluster,
                        # Classification, Brief — all tenant-scoped
     cli.py            # `mediapulse ...` entrypoint (Typer)
-    ingestion/         # RSS/PressReader/PDF workers land here (M1);
-                       # dates.py (masthead date recovery) already lives here
-    ai/                 # Anthropic SDK wrapper lands here (M2)
+    ingestion/
+      dates.py          # masthead date recovery (weekday checksum)
+      dedupe.py          # cross-outlet story clustering
+      base.py            # shared IngestResult, content-hash, source health
+      rss.py             # RSS/web monitoring worker
+      pressreader.py     # PressReader connector interface (needs a real client)
+      pdf.py             # layout-aware print PDF segmentation
+      manual.py          # manual PDF/link upload path
+      filters.py         # shared non-editorial (advert/notice) detection
+    ai/
+      vision_segment.py  # Claude-vision fallback for unresolved PDF pages
+      (classification/sentiment/entities/summaries land in M2)
     scripts/
       import_legacy.py # legacy SQLite -> new schema, with date repair
   migrations/          # Alembic
   tests/
+    fixtures/
+      build_sample_pdfs.py  # generates synthetic Daily News / Gazette PDFs
 docs/
   CHANGELOG.md
 ```

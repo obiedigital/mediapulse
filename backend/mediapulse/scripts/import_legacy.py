@@ -30,20 +30,10 @@ from pathlib import Path
 from sqlalchemy.orm import Session
 
 from ..ingestion.dates import DateConfidence, resolve_published_at
+from ..ingestion.filters import looks_non_editorial
 from ..models import Article, ArticleStatus, Tenant, Topic, TopicKind
 
 MIN_EDITORIAL_BODY_CHARS = 60
-
-_NON_EDITORIAL_KEYWORDS = (
-    "invitation to tender",
-    "tender notice",
-    "legal notice",
-    "notice of intention",
-    "public notice",
-    "classifieds",
-    "rate table",
-    "advertisement feature",
-)
 
 
 @dataclass
@@ -79,11 +69,6 @@ def _parse_legacy_datetime(value: str | None) -> dt.datetime | None:
         return parsed
     except ValueError:
         return None
-
-
-def _looks_non_editorial(title: str, raw_text: str) -> bool:
-    haystack = f"{title}\n{raw_text[:500]}".lower()
-    return any(keyword in haystack for keyword in _NON_EDITORIAL_KEYWORDS)
 
 
 def _get_or_create_topic(session: Session, tenant: Tenant, topic_label: str | None) -> Topic:
@@ -149,7 +134,7 @@ def run_legacy_import(
                 report.dates_repaired += 1
 
             is_fragment = len(raw_text.strip()) < MIN_EDITORIAL_BODY_CHARS
-            is_non_editorial = _looks_non_editorial(title, raw_text)
+            is_non_editorial = looks_non_editorial(title, raw_text)
 
             if is_non_editorial:
                 status = ArticleStatus.rejected
