@@ -31,6 +31,16 @@ DEFAULT_WINDOW_DAYS = 5
 DEFAULT_SIMILARITY_THRESHOLD = 86
 
 
+def _as_utc_aware(value: dt.datetime) -> dt.datetime:
+    """SQLite has no real timezone-aware storage: a `DateTime(timezone=True)`
+    column round-trips as naive once SQLAlchemy has to re-fetch a row (e.g.
+    the post-INSERT refresh triggered by TimestampMixin's server_default
+    columns) even though every datetime this app writes is UTC. Normalize
+    before comparing so that round trip can't raise
+    "can't compare offset-naive and offset-aware datetimes"."""
+    return value if value.tzinfo is not None else value.replace(tzinfo=dt.timezone.utc)
+
+
 def normalize_title(title: str) -> str:
     words = re.findall(r"[a-z0-9]+", title.lower())
     return " ".join(w for w in words if w not in _STOPWORDS)
@@ -86,7 +96,9 @@ def assign_story_cluster(
 
     if best_cluster is not None and best_score >= similarity_threshold:
         best_cluster.pickup_count += 1
-        best_cluster.last_seen_at = max(best_cluster.last_seen_at, reference_time)
+        best_cluster.last_seen_at = max(
+            _as_utc_aware(best_cluster.last_seen_at), _as_utc_aware(reference_time)
+        )
         article.story_cluster_id = best_cluster.id
         session.flush()
         return best_cluster

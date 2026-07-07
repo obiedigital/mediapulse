@@ -1,5 +1,84 @@
 # Changelog
 
+## M3 — API + dashboard
+
+FastAPI backend and a React dashboard, verified end-to-end in a real
+browser against the real API (screenshots taken via Playwright/Chromium):
+login → overview → story feed → story detail → share of voice → daily
+brief archive → admin source health, across three roles (admin, analyst,
+client-portal groundwork via `client_viewer`).
+
+**Added — backend**
+- `auth.py` — PBKDF2-SHA256 password hashing (stdlib only, no native
+  extension) and JWT issuance/verification (`pyjwt`).
+- `api/deps.py` — tenant-scoping dependency: a tenant-bound user always
+  sees their own tenant's data (a `?tenant=` override to another tenant is
+  rejected with 403); a `platform_admin` (no tenant_id) must pass
+  `?tenant=<slug>` to select one. `require_roles()` gates admin-only routes.
+- `schemas/` — Pydantic response models for every endpoint. `published_at`
+  on `ArticleListItemOut`/`ArticleDetailOut` is never optional — the
+  articles router resolves `published_at or fetched_at` before
+  constructing the response, so a null date can't reach the frontend as
+  "Invalid Date" (M0 defect #4, now fixed by construction, not convention).
+- `api/routers/articles.py` — story feed with filters (date range,
+  publication, sentiment, category, status, brand, free-text search),
+  pagination, CSV export, and story detail.
+- `api/routers/analytics.py` — KPIs, share-of-voice (brand mentions/day,
+  carries an explicit "directional, not full-media-monitoring-universe"
+  methodology note per the house style rule), sentiment trend by brand,
+  topic mix, top publications, byline tracker.
+- `api/routers/health.py` — public `/health`, admin-only `/admin/sources`
+  (the source-health page backing data: last fetch/success, error streak).
+- `api/routers/briefs.py` — read-only Daily Brief archive (empty until M4).
+- `mediapulse create-user` CLI command; `mediapulse seed-demo-data` seeds
+  realistic classified articles, sources (one healthy, one erroring), and
+  three demo logins (admin/analyst/client_viewer) without needing a real
+  Anthropic API key.
+- Fixed a real cross-database bug surfaced while seeding: SQLite has no
+  true timezone-aware storage, so a `StoryCluster` row re-fetched after
+  its TimestampMixin server-default post-INSERT refresh came back with a
+  naive `last_seen_at`, crashing `max(naive, aware)` in
+  `ingestion/dedupe.py`. Fixed by normalizing to UTC-aware before
+  comparing — affects SQLite dev/test only, Postgres round-trips
+  correctly.
+- 21 new API tests (98 total) covering auth, tenant isolation (a
+  tenant-scoped user cannot read another tenant's data even by query-param
+  override), filter correctness, KPI/SOV/sentiment-trend/topic-mix math
+  against known fixtures, CSV export, and role-gated admin access.
+
+**Added — frontend**
+- React + Vite + TypeScript + Tailwind v4 + Recharts + react-router.
+  Orange brand (`#FF7900`) for UI chrome (logo, active nav, buttons);
+  chart/status colors use the dataviz skill's validated CVD-safe default
+  palette instead of brand hues, with light/dark tokens both wired
+  (`prefers-color-scheme` plus a `data-theme` override hook for a future
+  manual toggle) — brand color and data color are deliberately different
+  color systems here.
+  Categorical hues (share-of-voice brand lines) are assigned in
+  first-seen order per entity and never re-cycled; sentiment/threat
+  badges pair a status color with an icon dot *and* a text label, never
+  color alone.
+- Pages: Login, Overview (KPI tiles + share-of-voice line chart + topic
+  mix bar chart), Story Feed (filterable/paginated table + CSV export),
+  Story Detail (summary, why-it-matters, per-brand sentiment, entities,
+  key quotes, full text), Share of Voice (larger SOV + per-brand
+  sentiment-trend stacked bars), Daily Brief archive (empty state), Admin
+  (source health table, role-gated).
+- Every state handles the "not yet classified" / "failed" article
+  gracefully (a `null` classification renders "Pending analysis" and a
+  visible error status, not a crash) — checked live against the seeded
+  pending/error demo rows, not just the happy path.
+
+**Known gaps going into M4**
+- Brand/entity JSON filtering in the articles endpoint is done in Python
+  after SQL-level filters run (documented in `articles.py`) — fine at
+  current data volumes, worth moving to Postgres jsonb operators before a
+  tenant's corpus grows much larger.
+- No live Anthropic API run yet (same gap as M2) — dashboard has only
+  been exercised against seeded/fixture classifications.
+- Daily Brief generation itself (M4) still needs building; the archive
+  UI/API are ready for it.
+
 ## M2 — AI enrichment
 
 Classification, per-brand sentiment, entity extraction, summarisation, and

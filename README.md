@@ -10,18 +10,20 @@ this repo tracks it milestone by milestone in `docs/CHANGELOG.md`.
 
 ## Status
 
-**M0 (scaffold), M1 (ingestion), and M2 (AI enrichment) are done.** RSS and
-PressReader workers, a layout-aware print PDF segmentation pipeline (with
-a Claude-vision fallback), and tenant-aware classification/sentiment/
-entity/summary/threat-tagging are implemented and tested — see
-`docs/CHANGELOG.md` for details and known gaps. No real `ANTHROPIC_API_KEY`
-has been exercised against the live API yet (tests and CLI smoke tests use
-a fake client). The API layer and React dashboard are not built yet —
-`mediapulse brief` is still a wired-up stub.
+**M0 (scaffold), M1 (ingestion), M2 (AI enrichment), and M3 (API +
+dashboard) are done.** RSS/PressReader ingestion, a layout-aware print PDF
+pipeline, tenant-aware AI classification, a FastAPI backend, and a React
+dashboard are implemented, tested, and verified end-to-end in a real
+browser (login, story feed, story detail, share of voice, admin source
+health) — see `docs/CHANGELOG.md` for details and known gaps. No real
+`ANTHROPIC_API_KEY` has been exercised against the live API yet (tests,
+CLI smoke tests, and the dashboard have all been run against a fake
+client / seeded fixture data). Daily Brief generation (M4) is not built
+yet — the archive UI/API are ready for it.
 
-`mediapulse_platform.html` at the repo root is a static design reference for
-the eventual React frontend (landing page + app-shell mockup) — it is not
-served by the backend.
+`mediapulse_platform.html` at the repo root is the original static design
+reference for the frontend (landing page + app-shell mockup) — it predates
+and is not served by the real `frontend/` React app.
 
 ## Layout
 
@@ -52,10 +54,23 @@ backend/
       classify.py              # classify_article/classify_pending (M2)
     scripts/
       import_legacy.py # legacy SQLite -> new schema, with date repair
+      seed_demo_data.py # demo/dev fixture data (no API key needed)
+    api/
+      main.py            # FastAPI app, CORS, router registration
+      deps.py             # DB session, current-user, tenant-scoping, RBAC
+      routers/            # auth, articles, analytics, briefs, health
+    schemas/            # Pydantic response models (API boundary validation)
   migrations/          # Alembic
   tests/
     fixtures/
       build_sample_pdfs.py  # generates synthetic Daily News / Gazette PDFs
+    api/                # FastAPI TestClient tests
+frontend/
+  src/
+    lib/                # api client, auth context, types, chart color rules
+    components/         # Layout, StatTile, sentiment/threat badges
+    pages/               # Login, Overview, StoryFeed, StoryDetail,
+                         # ShareOfVoice, Briefs, Admin
 docs/
   CHANGELOG.md
 ```
@@ -73,6 +88,27 @@ alembic upgrade head
 python -m mediapulse.cli seed-demo-tenant
 python -m pytest
 ```
+
+## Running the full stack locally
+
+```bash
+# backend
+cd backend && source .venv/bin/activate
+export MEDIAPULSE_DATABASE_URL="sqlite:///./dev.db"
+export MEDIAPULSE_SECRET_KEY="$(openssl rand -hex 32)"
+alembic upgrade head
+python -m mediapulse.cli seed-demo-tenant
+python -m mediapulse.cli seed-demo-data --tenant orange-bw   # no API key needed
+uvicorn mediapulse.api.main:app --reload --port 8000
+
+# frontend (separate terminal)
+cd frontend
+npm install
+npm run dev   # proxies /api/* to localhost:8000, see vite.config.ts
+```
+
+`seed-demo-data` prints three demo logins (admin/analyst/client_viewer,
+password `demo-password-123`) for the dashboard at http://localhost:5173.
 
 ## Importing the legacy Colab-era corpus
 

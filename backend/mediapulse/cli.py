@@ -7,7 +7,7 @@ from typing import Annotated, Optional
 import typer
 
 from .db import session_scope
-from .models import Source, SourceType, Tenant, Topic, TopicKind
+from .models import Source, SourceType, Tenant, Topic, TopicKind, User, UserRole
 
 app = typer.Typer(help="MediaPulse BW operational CLI.")
 
@@ -64,6 +64,61 @@ def seed_demo_tenant() -> None:
             session.add(Topic(tenant_id=tenant.id, label=label, kind=kind, keywords=keywords))
 
         typer.echo(f"Seeded tenant 'orange-bw' with {len(topics)} topics.")
+
+
+@app.command()
+def create_user(
+    email: Annotated[str, typer.Option(help="Login email")],
+    password: Annotated[str, typer.Option(prompt=True, hide_input=True, confirmation_prompt=True)],
+    name: Annotated[str, typer.Option(help="Display name")],
+    role: Annotated[str, typer.Option(help="platform_admin|admin|analyst|client_viewer")] = "analyst",
+    tenant: Annotated[
+        Optional[str], typer.Option(help="Tenant slug (omit for platform_admin)")
+    ] = None,
+) -> None:
+    """Create a login for the API/dashboard."""
+    from .auth import hash_password
+
+    try:
+        role_enum = UserRole(role)
+    except ValueError as exc:
+        raise typer.BadParameter(f"role must be one of {[r.value for r in UserRole]}") from exc
+
+    with session_scope() as session:
+        tenant_id = None
+        if role_enum != UserRole.platform_admin:
+            if not tenant:
+                raise typer.BadParameter("--tenant is required unless --role=platform_admin")
+            tenant_id = _require_tenant(session, tenant).id
+        elif tenant:
+            raise typer.BadParameter("--tenant must be omitted for --role=platform_admin")
+
+        if session.query(User).filter_by(email=email).first():
+            raise typer.BadParameter(f"A user with email {email!r} already exists.")
+
+        session.add(User(
+            tenant_id=tenant_id, email=email, name=name, role=role_enum,
+            hashed_password=hash_password(password),
+        ))
+    typer.echo(f"Created user {email!r} ({role}).")
+
+
+@app.command()
+def seed_demo_data(
+    tenant: Annotated[str, typer.Option(help="Tenant slug")] = "orange-bw",
+) -> None:
+    """Seed realistic classified demo articles, sources, and login users for
+    a tenant — dev/demo fixture data only, does not call the Anthropic API."""
+    from .scripts.seed_demo_data import DEMO_PASSWORD, DEMO_USERS, seed_demo_data as run_seed
+
+    with session_scope() as session:
+        tenant_row = _require_tenant(session, tenant)
+        run_seed(session, tenant_row)
+
+    typer.echo(f"Seeded demo articles/sources/users for tenant {tenant!r}.")
+    typer.echo(f"Demo logins (password: {DEMO_PASSWORD}):")
+    for email, role, _ in DEMO_USERS:
+        typer.echo(f"  {email} ({role.value})")
 
 
 @app.command()
