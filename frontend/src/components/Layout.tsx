@@ -7,7 +7,7 @@ import { useAuth } from "../lib/auth"
 const STRATEGIST_ROLES = ["admin", "analyst", "platform_admin"]
 
 const NAV_ITEMS = [
-  { to: "/", label: "Overview", end: true },
+  { to: "/dashboard", label: "Overview", end: true },
   { to: "/feed", label: "Story Feed", roles: STRATEGIST_ROLES },
   { to: "/share-of-voice", label: "Share of Voice", roles: STRATEGIST_ROLES },
   { to: "/ask", label: "Ask MediaPulse", roles: STRATEGIST_ROLES },

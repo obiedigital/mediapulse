@@ -1,8 +1,10 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { AuthProvider, useAuth } from "./lib/auth"
 import { Layout } from "./components/Layout"
+import { Landing } from "./pages/Landing"
 import { Login } from "./pages/Login"
 import { Overview } from "./pages/Overview"
+import { ClientPortal } from "./pages/ClientPortal"
 import { StoryFeed } from "./pages/StoryFeed"
 import { StoryDetail } from "./pages/StoryDetail"
 import { ShareOfVoice } from "./pages/ShareOfVoice"
@@ -19,10 +21,26 @@ function ProtectedLayout() {
   return <Layout />
 }
 
+// client_viewer gets a consumer-grade portal, not the analyst's dense
+// charts — see ClientPortal for the "zero data-plumbing" rationale.
+function DashboardHome() {
+  const { user } = useAuth()
+  return user?.role === "client_viewer" ? <ClientPortal /> : <Overview />
+}
+
+// Public marketing landing page — redirects straight to the dashboard for
+// anyone who's already signed in, so "/" never shows the pitch to a user
+// mid-session.
+function PublicHome() {
+  const { user, loading } = useAuth()
+  if (!loading && user) return <Navigate to="/dashboard" replace />
+  return <Landing />
+}
+
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
   if (user?.role !== "admin" && user?.role !== "platform_admin") {
-    return <Navigate to="/" replace />
+    return <Navigate to="/dashboard" replace />
   }
   return <>{children}</>
 }
@@ -33,7 +51,7 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
 function RequireStrategist({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
   if (user?.role === "client_viewer") {
-    return <Navigate to="/" replace />
+    return <Navigate to="/dashboard" replace />
   }
   return <>{children}</>
 }
@@ -43,9 +61,10 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<PublicHome />} />
           <Route path="/login" element={<Login />} />
           <Route element={<ProtectedLayout />}>
-            <Route path="/" element={<Overview />} />
+            <Route path="/dashboard" element={<DashboardHome />} />
             <Route
               path="/feed"
               element={

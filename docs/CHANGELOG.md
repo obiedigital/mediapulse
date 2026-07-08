@@ -1,5 +1,49 @@
 # Changelog
 
+## Digital-native redesign — landing page, login, client portal
+
+Replaces the static `mediapulse_platform.html` mockup with a real,
+wired-up public entry point, and gives the client-facing surfaces a
+distinct, consumer-grade look instead of the analyst dashboard's
+utilitarian styling.
+
+- **`frontend/src/marketing.css`** — a scoped dark theme (`.mp-marketing`)
+  porting the mockup's ink/orange/teal, Syne+Inter brand system into
+  reusable classes. Namespaced so it never leaks into the light-mode
+  dataviz-token system the analyst dashboard uses.
+- **`frontend/src/pages/Landing.tsx`** — the real public `/` route: hero,
+  live-feeling signal cards, a metrics band, and a feature grid covering
+  the platform's actual capabilities (AI classification, layout-aware
+  PDF ingestion, Daily Brief, Ask MediaPulse, alerts, client portal).
+  Redirects straight to `/dashboard` if you're already signed in.
+- **`frontend/src/pages/Login.tsx`** — redesigned in the same dark brand
+  language instead of the plain light-mode form.
+- **`frontend/src/pages/ClientPortal.tsx`** — a distinct `client_viewer`
+  home: a greeting, three plain-language highlight cards (opportunities /
+  worth watching / risks), and a spotlight on the latest Daily Brief —
+  no share-of-voice chart or topic-mix breakdown, consistent with the
+  portal's "zero data-plumbing visible" intent that the nav gating
+  already enforced but the old Overview page didn't honor.
+- Routing: `Overview` moved from `/` to `/dashboard`; `/` is now the
+  public landing page. `App.tsx` picks `ClientPortal` vs `Overview` at
+  `/dashboard` based on role.
+- Verified live via Playwright: landing → login → analyst dashboard →
+  client portal, screenshotted at each step; 161 backend tests still
+  pass unaffected (frontend-only change).
+
+## SMTP implicit-TLS (port 465) support
+
+While wiring a real client mail server (`mail.ebw.co.bw`, port 465) for
+Daily Brief delivery, found that `notify/email.py` only supported
+STARTTLS (port 587) — calling `.starttls()` on an already-encrypted
+port-465 connection is wrong and most servers reject it. Added a
+`smtp_use_ssl` config flag and a `_default_connection()` helper that
+picks `smtplib.SMTP_SSL` vs `smtplib.SMTP` accordingly, with 4 new tests
+covering both conventions. Live delivery itself remains unverified: this
+sandbox's egress proxy only proxies HTTPS/443 traffic, and raw SMTP (TCP,
+non-443) isn't supported through it — a hard environment limitation, not
+a code or credentials issue.
+
 ## Live verification against the real Anthropic API
 
 Ran `mediapulse classify` and `mediapulse brief` for real, against a

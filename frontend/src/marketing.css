@@ -1,0 +1,415 @@
+/* Scoped dark "digital native" marketing theme — carries forward the
+   brand DNA from the original mediapulse_platform.html design reference
+   (Syne/Inter, ink/orange/teal) into the real app, for the public landing
+   page and login screen only. Everything is namespaced under
+   .mp-marketing so it never leaks into the analyst dashboard's light-mode
+   dataviz-token system. */
+.mp-marketing {
+  --ink: #0a0a0f;
+  --ink2: #12121a;
+  --surface: #1c1c28;
+  --s2: #252534;
+  --s3: #2e2e42;
+  --line: rgba(255, 255, 255, 0.07);
+  --line2: rgba(255, 255, 255, 0.13);
+  --or: #ff5c1a;
+  --or2: #ff8150;
+  --or-bg: rgba(255, 92, 26, 0.1);
+  --teal: #00d4c8;
+  --teal-bg: rgba(0, 212, 200, 0.1);
+  --cream: #f5f2ec;
+  --mu: rgba(245, 242, 236, 0.5);
+
+  background: var(--ink);
+  color: var(--cream);
+  font-family: "Inter", system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+.mp-marketing h1,
+.mp-marketing h2,
+.mp-marketing h3,
+.mp-marketing .mp-num,
+.mp-marketing .mp-brandmark {
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.mp-grad-text {
+  background: linear-gradient(120deg, var(--or), var(--teal));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.mp-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.mp-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.mp-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.mp-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 800;
+}
+.mp-logo-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--or), var(--teal));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #0a0a0f;
+  flex-shrink: 0;
+}
+
+.mp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 20px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 700;
+  transition: all 0.15s;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+}
+.mp-btn-primary {
+  background: linear-gradient(135deg, var(--or), var(--or2));
+  color: #fff;
+}
+.mp-btn-primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.mp-btn-ghost {
+  background: var(--s2);
+  border: 1px solid var(--line2);
+  color: var(--cream);
+}
+.mp-btn-ghost:hover {
+  background: var(--s3);
+}
+
+.mp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: var(--teal-bg);
+  border: 1px solid rgba(0, 212, 200, 0.25);
+  color: var(--teal);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.mp-hero {
+  padding: 90px 32px 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 60px;
+  align-items: center;
+}
+@media (max-width: 960px) {
+  .mp-hero {
+    grid-template-columns: 1fr;
+    padding: 50px 20px;
+  }
+}
+.mp-hero h1 {
+  font-size: 52px;
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+  margin-bottom: 20px;
+}
+@media (max-width: 520px) {
+  .mp-hero h1 {
+    font-size: 36px;
+  }
+}
+.mp-hero p {
+  font-size: 16px;
+  color: var(--mu);
+  line-height: 1.6;
+  max-width: 480px;
+  margin-bottom: 30px;
+}
+.mp-hero-ctas {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mp-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.mp-signal-card {
+  padding: 20px 22px;
+  margin-bottom: 12px;
+}
+.mp-signal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.mp-signal-num {
+  font-size: 32px;
+  line-height: 1;
+}
+.mp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.mp-pill-risk {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+.mp-pill-opportunity {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+}
+.mp-pill-monitor {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+}
+.mp-muted {
+  color: var(--mu);
+}
+
+.mp-section {
+  padding: 70px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.mp-section-head {
+  max-width: 620px;
+  margin: 0 auto 44px;
+  text-align: center;
+}
+.mp-section-head .mp-eyebrow {
+  margin-bottom: 14px;
+}
+.mp-section-head h2 {
+  font-size: 32px;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+.mp-section-head p {
+  color: var(--mu);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.mp-feat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 860px) {
+  .mp-feat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  .mp-feat-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.mp-feat-cell {
+  padding: 26px;
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.mp-feat-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--or-bg);
+  color: var(--or);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+.mp-feat-cell h4 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  font-family: "Syne", sans-serif;
+  font-weight: 700;
+}
+.mp-feat-cell p {
+  font-size: 13px;
+  color: var(--mu);
+  line-height: 1.55;
+}
+
+.mp-metrics-band {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  padding: 50px 32px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+@media (max-width: 760px) {
+  .mp-metrics-band {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.mp-metric {
+  text-align: center;
+}
+.mp-metric .mp-num {
+  font-size: 34px;
+  display: block;
+}
+.mp-metric span {
+  font-size: 12.5px;
+  color: var(--mu);
+}
+
+.mp-footer-cta {
+  text-align: center;
+  padding: 90px 32px;
+}
+.mp-footer-cta h2 {
+  font-size: 34px;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+}
+.mp-footer-cta p {
+  color: var(--mu);
+  margin-bottom: 30px;
+}
+
+.mp-footer {
+  border-top: 1px solid var(--line);
+  padding: 32px;
+  text-align: center;
+  color: var(--mu);
+  font-size: 12.5px;
+}
+
+.mp-auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.mp-auth-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 36px 32px;
+}
+.mp-auth-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  text-align: center;
+}
+.mp-auth-head .mp-logo-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+.mp-auth-head h1 {
+  font-size: 19px;
+}
+.mp-auth-head p {
+  color: var(--mu);
+  font-size: 13px;
+}
+.mp-field {
+  margin-bottom: 16px;
+}
+.mp-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mu);
+  margin-bottom: 6px;
+}
+.mp-field input {
+  width: 100%;
+  padding: 10px 13px;
+  border-radius: 9px;
+  border: 1px solid var(--line2);
+  background: var(--s2);
+  color: var(--cream);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.mp-field input:focus {
+  border-color: var(--teal);
+}
+.mp-field input::placeholder {
+  color: rgba(245, 242, 236, 0.3);
+}
+.mp-auth-error {
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #ef4444;
+}
+.mp-btn-block {
+  width: 100%;
+  justify-content: center;
+}
+.mp-auth-foot {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--mu);
+}
+.mp-auth-foot a {
+  color: var(--teal);
+  text-decoration: none;
+}
