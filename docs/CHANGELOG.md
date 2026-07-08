@@ -1,5 +1,31 @@
 # Changelog
 
+## Live verification against the real Anthropic API
+
+Ran `mediapulse classify` and `mediapulse brief` for real, against a
+temporary API key provided for this one-off test (rotated by the owner
+immediately after — never committed, logged, or written to any file).
+
+- **Classification** (`claude-sonnet-4-6`): a real BTC-price-cut story
+  classified in ~11s for $0.0088. Output correctly reasoned per-brand
+  directional sentiment — `"BTC": "positive"` (good news for BTC),
+  `"Orange Botswana": "negative"` (bad news for Orange) — from the same
+  article, plus accurate entities, a tight two-sentence summary, and a
+  specific `risk` threat rationale.
+- **Daily Brief** (`claude-opus-4-8` synthesis): generated in ~12.6s.
+  Real output: a sharp exec summary, pillar commentary that correctly
+  caveated a 1-mention data point as "an early signal, not a trend,"
+  and a watch-list recommended action specific enough to act on
+  ("Convene a rapid pricing and retention review of prepaid data
+  bundles... before the story gains traction").
+- Found and fixed a real README bug while running this: the documented
+  `mediapulse brief --type daily` flag doesn't exist — the actual option
+  is `--brief-type`.
+
+This closes the "no live API run" standing gap for the classification and
+brief-synthesis paths specifically. SMTP delivery is still unverified
+(no SMTP credentials were provided for this pass).
+
 ## Scheduler — unattended operation
 
 Closes the "no scheduler wiring ingest → classify → brief → alerts

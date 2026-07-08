@@ -134,13 +134,13 @@ Requires a real `ANTHROPIC_API_KEY` (the synthesis step calls the model
 configured as `MEDIAPULSE_SYNTHESIS_MODEL`):
 
 ```bash
-python -m mediapulse.cli brief --tenant orange-bw --date today --type daily
+python -m mediapulse.cli brief --tenant orange-bw --date today --brief-type daily
 # add --send-to client@orange.bw to also email it (requires SMTP config in .env)
 ```
 
 Writes the PDF to `MEDIAPULSE_BRIEF_STORAGE_DIR` (default `./brief_output`)
 and upserts a `Brief` archive row — rerunning the same tenant/type/period
-updates it in place. `--type` is `daily`/`weekly`/`monthly`.
+updates it in place. `--brief-type` is `daily`/`weekly`/`monthly`.
 
 ## Alerts
 
