@@ -42,6 +42,14 @@ def _build_message(*, from_addr: str, to: str, subject: str, html_body: str, att
     return msg
 
 
+def _default_connection(settings: Settings) -> smtplib.SMTP:
+    if settings.smtp_use_ssl:
+        # Implicit TLS from the first byte (port 465 convention) — the
+        # whole session is encrypted already, so no starttls() upgrade.
+        return smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=15)
+    return smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15)
+
+
 def send_email(
     *,
     to: str,
@@ -62,9 +70,9 @@ def send_email(
         attachment_path=attachment_path,
     )
 
-    server = smtp_factory() if smtp_factory else smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15)
+    server = smtp_factory() if smtp_factory else _default_connection(settings)
     with server as connection:
-        if settings.smtp_use_tls:
+        if settings.smtp_use_tls and not settings.smtp_use_ssl:
             connection.starttls()
         if settings.smtp_user:
             connection.login(settings.smtp_user, settings.smtp_password)

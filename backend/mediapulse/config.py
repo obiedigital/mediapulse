@@ -43,7 +43,13 @@ class Settings(BaseSettings):
     smtp_user: str = ""
     smtp_password: str = ""
     smtp_from: str = "briefs@mediapulse.bw"
+    # STARTTLS (upgrade a plaintext connection) — the port 587 convention.
     smtp_use_tls: bool = True
+    # Implicit TLS/SSL from the first byte — the port 465 convention. Some
+    # hosts (e.g. cPanel-style shared mail) only offer 465, not 587;
+    # mutually exclusive with smtp_use_tls in practice, checked in that
+    # order by notify/email.py (ssl wins if both are set).
+    smtp_use_ssl: bool = False
 
     brief_storage_dir: str = "./brief_output"
 
