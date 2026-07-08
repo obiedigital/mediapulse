@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
+from ..alerts.rules import evaluate_article_alerts
 from ..config import get_settings
 from ..models import (
     Article,
@@ -113,6 +114,7 @@ def classify_article(
 
             article.status = ArticleStatus.classified
             session.flush()
+            evaluate_article_alerts(session, tenant, article)
             return classification
         except (json.JSONDecodeError, ValidationError) as exc:
             last_error = exc

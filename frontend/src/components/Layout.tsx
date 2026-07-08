@@ -1,15 +1,22 @@
 import { NavLink, Outlet } from "react-router-dom"
 import { useAuth } from "../lib/auth"
 
+// Client CMO gets a clean read-only portal — Overview + Briefs only, no
+// story-level data-plumbing (feed/SOV/Ask) per the product brief's
+// "zero data-plumbing visible" requirement for the client_viewer role.
+const STRATEGIST_ROLES = ["admin", "analyst", "platform_admin"]
+
 const NAV_ITEMS = [
   { to: "/", label: "Overview", end: true },
-  { to: "/feed", label: "Story Feed" },
-  { to: "/share-of-voice", label: "Share of Voice" },
+  { to: "/feed", label: "Story Feed", roles: STRATEGIST_ROLES },
+  { to: "/share-of-voice", label: "Share of Voice", roles: STRATEGIST_ROLES },
+  { to: "/ask", label: "Ask MediaPulse", roles: STRATEGIST_ROLES },
   { to: "/briefs", label: "Daily Brief" },
 ]
 
 export function Layout() {
   const { user, logout } = useAuth()
+  const visibleNavItems = NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(user?.role ?? ""))
 
   return (
     <div className="flex min-h-screen">
@@ -21,7 +28,7 @@ export function Layout() {
           <span className="text-sm font-semibold tracking-tight">MediaPulse BW</span>
         </div>
         <nav className="flex flex-col gap-0.5 px-3">
-          {NAV_ITEMS.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

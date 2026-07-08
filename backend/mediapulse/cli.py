@@ -67,6 +67,42 @@ def seed_demo_tenant() -> None:
 
 
 @app.command()
+def create_tenant(
+    slug: Annotated[str, typer.Option(help="URL-safe tenant identifier, e.g. 'first-bank'")],
+    name: Annotated[str, typer.Option(help="Display name, e.g. 'First National Bank'")],
+    brand_primary: Annotated[str, typer.Option(help="Primary brand hex color for the client portal/briefs")] = "#2a78d6",
+) -> None:
+    """Onboard a new client tenant (bank, mining house, government, telco, ...)
+    with an empty watchlist — any client beyond the Orange Botswana demo goes
+    through this, not a bespoke seed script. Add topics with `add-topic`."""
+    with session_scope() as session:
+        if session.query(Tenant).filter_by(slug=slug).first():
+            raise typer.BadParameter(f"Tenant {slug!r} already exists.")
+        session.add(Tenant(slug=slug, name=name, brand_config={"primary": brand_primary}))
+    typer.echo(f"Created tenant {slug!r} ({name}). Add topics with `mediapulse add-topic --tenant {slug} ...`.")
+
+
+@app.command()
+def add_topic(
+    tenant: Annotated[str, typer.Option(help="Tenant slug")],
+    label: Annotated[str, typer.Option(help="Topic label, e.g. 'First Bank (brand watch)'")],
+    kind: Annotated[str, typer.Option(help="brand_watch|competitor|regulator|sector|custom")] = "custom",
+    keywords: Annotated[str, typer.Option(help="Comma-separated keywords for pre-filtering")] = "",
+) -> None:
+    """Add a watchlist topic (brand-watch/competitor/regulator/sector) to a tenant."""
+    try:
+        kind_enum = TopicKind(kind)
+    except ValueError as exc:
+        raise typer.BadParameter(f"kind must be one of {[k.value for k in TopicKind]}") from exc
+
+    with session_scope() as session:
+        tenant_row = _require_tenant(session, tenant)
+        keyword_list = [k.strip() for k in keywords.split(",") if k.strip()]
+        session.add(Topic(tenant_id=tenant_row.id, label=label, kind=kind_enum, keywords=keyword_list))
+    typer.echo(f"Added topic {label!r} ({kind}) to tenant {tenant!r}.")
+
+
+@app.command()
 def create_user(
     email: Annotated[str, typer.Option(help="Login email")],
     password: Annotated[str, typer.Option(prompt=True, hide_input=True, confirmation_prompt=True)],
@@ -346,6 +382,48 @@ def brief(
                 brief_row.sent_at = dt.datetime.now(dt.timezone.utc)
                 brief_row.status = BriefStatus.sent
                 typer.echo(f"Emailed brief to {send_to}.")
+            except EmailNotConfigured as exc:
+                typer.echo(f"Not sent — {exc}")
+                raise typer.Exit(code=1) from exc
+
+
+@app.command()
+def alerts(
+    tenant: Annotated[str, typer.Option(help="Tenant slug")],
+    date: Annotated[str, typer.Option(help="Reference date for the volume-spike check, or 'today'")] = "today",
+    send_to: Annotated[
+        Optional[str], typer.Option(help="Email address to send the alert digest to")
+    ] = None,
+) -> None:
+    """Check for a coverage-volume spike and email a digest of any unsent
+    alerts (article-scoped alerts are created automatically during
+    `mediapulse classify`; this command handles the day-level volume-spike
+    check plus delivery)."""
+    from .alerts.rules import evaluate_volume_spike
+    from .models import Alert
+    from .notify.alerts import send_alert_digest
+    from .notify.email import EmailNotConfigured
+
+    ref_date = dt.date.today() if date == "today" else dt.date.fromisoformat(date)
+
+    with session_scope() as session:
+        tenant_row = _require_tenant(session, tenant)
+        spike = evaluate_volume_spike(session, tenant_row, reference_date=ref_date)
+        if spike:
+            typer.echo(f"Volume spike detected: {spike.message}")
+
+        pending = session.query(Alert).filter_by(tenant_id=tenant_row.id, sent_at=None).all()
+        typer.echo(f"{len(pending)} unsent alert(s).")
+        for alert in pending:
+            typer.echo(f"  [{alert.alert_type.value}] {alert.message}")
+
+        if send_to and pending:
+            try:
+                send_alert_digest(tenant_name=tenant_row.name, alerts=pending, to=send_to)
+                now = dt.datetime.now(dt.timezone.utc)
+                for alert in pending:
+                    alert.sent_at = now
+                typer.echo(f"Emailed digest to {send_to}.")
             except EmailNotConfigured as exc:
                 typer.echo(f"Not sent — {exc}")
                 raise typer.Exit(code=1) from exc

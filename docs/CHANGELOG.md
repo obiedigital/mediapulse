@@ -1,5 +1,91 @@
 # Changelog
 
+## M5 — Alerts, Ask MediaPulse, client portal, Docker
+
+Rounds out the platform: near-real-time alerts, a RAG-style "Ask
+MediaPulse" chat, a genuinely read-only client portal (not just a role
+label), a real multi-tenant onboarding path, and containerization.
+
+**Added — Alerts**
+- `models/alert.py` — new `Alert` table + migration (`article_id`
+  nullable for the day-scoped volume-spike type). Idempotent by design:
+  article-scoped alerts are keyed on (article_id, alert_type); volume
+  spikes on (tenant_id, alert_type, day).
+- `alerts/rules.py` — three article-scoped rules fired automatically as a
+  side effect of `ai/classify.py`'s successful classification (negative
+  sentiment on the tenant's own brand-watch topic, a competitor-topic
+  story matching launch keywords, any regulator-topic story), plus a
+  day-scoped `evaluate_volume_spike` (today's count vs. a trailing
+  7-day average, with an absolute floor so a barely-onboarded tenant
+  doesn't get spurious spike alerts on day one).
+- `notify/alerts.py` — one digest email per run rather than one email per
+  alert; `notify/email.py` refactored to expose a generic `send_email`
+  both the Brief (with PDF attachment) and the alert digest (without) call.
+- `mediapulse alerts --tenant --send-to` (volume-spike check + digest
+  delivery) and `GET /alerts` (tenant-scoped, newest first).
+
+**Added — Ask MediaPulse**
+- `ai/ask.py` — lexical retrieval (`search_articles`: query-term overlap
+  scored against title/summary/body, weighted title > summary > body)
+  over the tenant's corpus — the "Postgres full-text search to start"
+  phase from the product brief; swapping in pgvector similarity later is
+  isolated to this one function. `ask_mediapulse` asks the synthesis
+  model to answer using only the retrieved articles, with citations, same
+  retry-on-bad-JSON discipline as classification/brief synthesis, and an
+  `AskError` on exhausted retries.
+- `POST /ask` (tenant-scoped, 502 with a clear message on AI failure
+  rather than a raw 500) and a new "Ask MediaPulse" dashboard page — a
+  lightweight running Q&A history with citation chips linking to story
+  detail. Verified live: an unanswerable question (no API key configured)
+  surfaces the clean error text in the UI, not a crash.
+
+**Added — client portal + multi-tenant onboarding**
+- The `client_viewer` role is now genuinely restricted, not just RBAC'd
+  on the backend: Story Feed, Share of Voice, and Ask MediaPulse are
+  hidden from nav *and* route-guarded (a direct URL doesn't bypass it) —
+  "zero data-plumbing visible" for the Client CMO persona, verified live
+  with a screenshot showing the client login sees only Overview + Daily
+  Brief.
+- `mediapulse create-tenant` + `mediapulse add-topic` generalize
+  `seed-demo-tenant` into a real onboarding path for any client (bank,
+  mining house, government, telco) — the brief's multi-tenant requirement
+  no longer only works for the Orange Botswana demo.
+
+**Added — Docker**
+- `backend/Dockerfile` (+ `docker-entrypoint.sh` running `alembic upgrade
+  head` before serving), `frontend/Dockerfile` (multi-stage Vite build →
+  nginx, `/api/` reverse-proxied to the backend service), and
+  `docker-compose.yml` (Postgres + backend + frontend, named volumes for
+  Postgres data and brief PDFs).
+- **Caveat**: the Docker daemon is unavailable in this sandboxed dev
+  environment (nested containers aren't permitted here), so `docker build`
+  / `docker compose up` could not be executed end-to-end. Validated what
+  was possible instead: `docker compose config` parses and resolves
+  cleanly, and the WeasyPrint system-package list is confirmed correct
+  since this same sandbox already runs WeasyPrint successfully on an
+  equivalent Debian base. Worth a real `docker compose up` smoke test in
+  an environment where Docker actually runs before calling this done.
+
+**Added — tests**
+- 30 new tests (150 total): alert rule detection (all four types,
+  idempotency), alert digest email construction, Ask retrieval ranking
+  and prompt construction, Ask retry/failure behavior, and API tests for
+  both `/alerts` and `/ask` (tenant isolation, auth, clean 502 on AI
+  failure via a `get_ai_client` FastAPI dependency override).
+
+**Known gaps**
+- No live Anthropic API or SMTP server exercised yet (same standing gap
+  since M2 — everything verified against fakes/fixtures).
+- Docker Compose stack unverified end-to-end (see caveat above).
+- Alert rules are a fixed set, not tenant-configurable — no rule-builder
+  UI. Volume-spike thresholds are also fixed constants, not per-tenant
+  tunable.
+- Ask MediaPulse retrieval is O(n) over the tenant's full article table
+  in Python — fine at current scale, but the brief's own phased plan
+  calls for embeddings/pgvector once corpus size actually warrants it.
+- No scheduler (cron/APScheduler) wiring `classify`/`brief`/`alerts`
+  together automatically — still manual CLI invocations.
+
 ## M4 — Daily Brief generator + email
 
 The flagship deliverable: `mediapulse brief --tenant orange-bw --date today

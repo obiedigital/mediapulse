@@ -22,7 +22,7 @@ class EmailNotConfigured(RuntimeError):
     pass
 
 
-def _build_message(*, from_addr: str, to: str, subject: str, html_body: str, pdf_path: str | None) -> MIMEMultipart:
+def _build_message(*, from_addr: str, to: str, subject: str, html_body: str, attachment_path: str | None) -> MIMEMultipart:
     msg = MIMEMultipart("mixed")
     msg["Subject"] = subject
     msg["From"] = from_addr
@@ -32,13 +32,43 @@ def _build_message(*, from_addr: str, to: str, subject: str, html_body: str, pdf
     alt.attach(MIMEText(html_body, "html"))
     msg.attach(alt)
 
-    if pdf_path is not None:
-        data = Path(pdf_path).read_bytes()
-        part = MIMEApplication(data, _subtype="pdf")
-        part.add_header("Content-Disposition", "attachment", filename=Path(pdf_path).name)
+    if attachment_path is not None:
+        data = Path(attachment_path).read_bytes()
+        subtype = "pdf" if attachment_path.lower().endswith(".pdf") else "octet-stream"
+        part = MIMEApplication(data, _subtype=subtype)
+        part.add_header("Content-Disposition", "attachment", filename=Path(attachment_path).name)
         msg.attach(part)
 
     return msg
+
+
+def send_email(
+    *,
+    to: str,
+    subject: str,
+    html_body: str,
+    attachment_path: str | None = None,
+    settings: Settings | None = None,
+    smtp_factory: Callable[[], smtplib.SMTP] | None = None,
+) -> None:
+    """Generic HTML email send — the Daily Brief (with a PDF attachment)
+    and alert digests (no attachment) both go through this."""
+    settings = settings or get_settings()
+    if not settings.smtp_host:
+        raise EmailNotConfigured("SMTP is not configured (MEDIAPULSE_SMTP_HOST is empty).")
+
+    msg = _build_message(
+        from_addr=settings.smtp_from, to=to, subject=subject, html_body=html_body,
+        attachment_path=attachment_path,
+    )
+
+    server = smtp_factory() if smtp_factory else smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15)
+    with server as connection:
+        if settings.smtp_use_tls:
+            connection.starttls()
+        if settings.smtp_user:
+            connection.login(settings.smtp_user, settings.smtp_password)
+        connection.send_message(msg)
 
 
 def send_brief_email(
@@ -50,16 +80,7 @@ def send_brief_email(
     settings: Settings | None = None,
     smtp_factory: Callable[[], smtplib.SMTP] | None = None,
 ) -> None:
-    settings = settings or get_settings()
-    if not settings.smtp_host:
-        raise EmailNotConfigured("SMTP is not configured (MEDIAPULSE_SMTP_HOST is empty).")
-
-    msg = _build_message(from_addr=settings.smtp_from, to=to, subject=subject, html_body=html_body, pdf_path=pdf_path)
-
-    server = smtp_factory() if smtp_factory else smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15)
-    with server as connection:
-        if settings.smtp_use_tls:
-            connection.starttls()
-        if settings.smtp_user:
-            connection.login(settings.smtp_user, settings.smtp_password)
-        connection.send_message(msg)
+    send_email(
+        to=to, subject=subject, html_body=html_body, attachment_path=pdf_path,
+        settings=settings, smtp_factory=smtp_factory,
+    )

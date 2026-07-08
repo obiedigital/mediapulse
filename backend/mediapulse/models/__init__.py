@@ -1,3 +1,4 @@
+from .alert import Alert, AlertType
 from .article import Article, ArticleStatus
 from .base import Base
 from .brief import Brief, BriefStatus, BriefType
@@ -27,4 +28,6 @@ __all__ = [
     "Brief",
     "BriefType",
     "BriefStatus",
+    "Alert",
+    "AlertType",
 ]

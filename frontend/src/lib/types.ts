@@ -131,3 +131,13 @@ export interface CurrentUser {
   role: string
   tenant_id: string | null
 }
+
+export interface AskCitation {
+  article_id: string
+  title: string
+}
+
+export interface AskResponse {
+  answer: string
+  citations: AskCitation[]
+}

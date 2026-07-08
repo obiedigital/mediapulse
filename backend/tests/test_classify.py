@@ -4,6 +4,8 @@ import json
 from mediapulse.ai.classify import classify_article, classify_pending
 from mediapulse.ai.client import MessageResult
 from mediapulse.models import (
+    Alert,
+    AlertType,
     Article,
     ArticleStatus,
     Classification,
@@ -86,6 +88,19 @@ def test_classify_article_success_persists_full_classification(session, tenant):
     assert classification.cost_usd is not None
     assert classification.model_used == "claude-sonnet-4-6"
     assert article.status == ArticleStatus.classified
+
+
+def test_classify_article_triggers_negative_sentiment_alert_on_client_topic(session, tenant):
+    client_topic = Topic(tenant_id=tenant.id, label="Orange Botswana (brand watch)", kind=TopicKind.brand_watch)
+    session.add(client_topic)
+    session.flush()
+    article = _make_article(session, tenant, client_topic)
+    client = FakeClient([VALID_RESPONSE])  # sentiment_by_brand includes BTC: negative
+
+    classify_article(session, article, tenant=tenant, topics=[client_topic], client=client, max_retries=1, backoff_seconds=0)
+
+    alerts = session.query(Alert).filter_by(article_id=article.id).all()
+    assert any(a.alert_type == AlertType.negative_sentiment for a in alerts)
 
 
 def test_classify_article_retries_on_bad_json_then_succeeds(session, tenant):

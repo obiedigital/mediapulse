@@ -77,3 +77,11 @@ def require_roles(*roles: UserRole):
         return current_user
 
     return _check
+
+
+def get_ai_client():
+    """Returns None by default, letting AI call sites fall back to the real
+    `AnthropicClientAdapter`. Exists as a dependency (rather than a plain
+    function call) purely so tests can override it with a fake client —
+    see tests/api/conftest.py."""
+    return None

@@ -8,6 +8,7 @@ import { StoryDetail } from "./pages/StoryDetail"
 import { ShareOfVoice } from "./pages/ShareOfVoice"
 import { Briefs } from "./pages/Briefs"
 import { Admin } from "./pages/Admin"
+import { Ask } from "./pages/Ask"
 
 function ProtectedLayout() {
   const { user, loading } = useAuth()
@@ -26,6 +27,17 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+// Client CMO (client_viewer) gets a read-only portal — Overview + Briefs
+// only. These routes carry story-level data-plumbing, so they're gated
+// here too, not just hidden from nav (a direct URL shouldn't bypass it).
+function RequireStrategist({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  if (user?.role === "client_viewer") {
+    return <Navigate to="/" replace />
+  }
+  return <>{children}</>
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -34,10 +46,39 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route element={<ProtectedLayout />}>
             <Route path="/" element={<Overview />} />
-            <Route path="/feed" element={<StoryFeed />} />
-            <Route path="/feed/:id" element={<StoryDetail />} />
-            <Route path="/share-of-voice" element={<ShareOfVoice />} />
+            <Route
+              path="/feed"
+              element={
+                <RequireStrategist>
+                  <StoryFeed />
+                </RequireStrategist>
+              }
+            />
+            <Route
+              path="/feed/:id"
+              element={
+                <RequireStrategist>
+                  <StoryDetail />
+                </RequireStrategist>
+              }
+            />
+            <Route
+              path="/share-of-voice"
+              element={
+                <RequireStrategist>
+                  <ShareOfVoice />
+                </RequireStrategist>
+              }
+            />
             <Route path="/briefs" element={<Briefs />} />
+            <Route
+              path="/ask"
+              element={
+                <RequireStrategist>
+                  <Ask />
+                </RequireStrategist>
+              }
+            />
             <Route
               path="/admin"
               element={
