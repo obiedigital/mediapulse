@@ -1,5 +1,70 @@
 # Changelog
 
+## M4 — Daily Brief generator + email
+
+The flagship deliverable: `mediapulse brief --tenant orange-bw --date today
+--send-to client@orange.bw` generates a full agency-quality brief (exec
+summary, four pillars, share of voice, sentiment shifts, a Risk/
+Opportunity/Monitor watch list with recommended actions, methodology
+footnote), renders it to email-safe HTML and a PDF, persists it to the
+`Brief` archive (already exposed via the M3 API/UI), and optionally emails
+it — verified end to end including a real rendered PDF checked visually,
+not just asserted on byte count.
+
+**Added**
+- `briefs/aggregate.py` — pulls one tenant-period's classified coverage
+  into pillars (Client/Competitors/Regulator/Sector, from each `Topic`'s
+  kind), share of voice, sentiment shifts vs. the immediately preceding
+  period of equal length, and a Risk/Opportunity watch list (risk items
+  first, then by relevance). Deliberately has no AI dependency — pure
+  arithmetic over already-classified rows, fully unit tested without a
+  model client.
+- `ai/brief_synthesis.py` — asks the `synthesis_model` (the stronger model
+  reserved for this, per M0's config split) to write the exec summary,
+  per-pillar commentary, sentiment-shift narrative, and a one-line
+  recommended action per watch-list item, around the numbers `aggregate.py`
+  already computed. Same retry discipline as classification/vision: bad
+  JSON is retried, and a final failure raises `BriefSynthesisError`
+  clearly instead of shipping a broken brief. Prompt embeds the house
+  style rule (always "Orange Digital Center", US spelling) and instructs
+  the model not to invent facts.
+- `briefs/render.py` — Jinja2 template (flexbox rows, not nested tables —
+  a WeasyPrint quirk left "Orange Botswana7" glued together with no gap
+  under `table-layout:fixed`, caught by actually rendering and looking at
+  the PDF, not just asserting substrings) to email-safe HTML, plus a
+  WeasyPrint PDF export. Brand color reads from `tenant.brand_config`, so
+  the same template serves any tenant. Threat-tag colors match the
+  frontend's dataviz status palette so Risk/Opportunity/Monitor reads the
+  same in the emailed brief as on the dashboard.
+- `notify/email.py` — stdlib-only SMTP delivery (HTML body + PDF
+  attachment), SMTP connection injectable for testing, a `notify/` package
+  (not a one-off function) so WhatsApp/Slack alerting can land the same way.
+- `briefs/generate.py` — orchestrates aggregate → synthesize → render →
+  upsert `Brief` row (rerunning the same tenant/type/period updates it in
+  place rather than duplicating).
+- `mediapulse brief --tenant --date --type --send-to` fully wired: caught
+  a real UX gap in testing — a synthesis failure was surfacing as a raw
+  Typer traceback instead of the clean "Xxx failed: <reason>, exit 1"
+  pattern the other commands use; fixed by giving brief synthesis its own
+  exception type (`BriefSynthesisError`) and catching it in the CLI.
+- 26 new tests (123 total): pillar grouping/ranking, share-of-voice and
+  sentiment-shift math against known fixtures, watch-list ordering,
+  prompt content, synthesis retry/failure, HTML section rendering (brand
+  color, empty watch list, brief-type label correctness — daily vs.
+  weekly), a real PDF written to disk and checked for the `%PDF` magic
+  bytes, and SMTP message construction (TLS/login/attachment) against an
+  injected fake connection.
+
+**Known gaps going into M5**
+- No live Anthropic API run yet (same gap as M2/M3).
+- No live SMTP server exercised — email sending is verified against a
+  fake connection object, not a real inbox.
+- Brief generation isn't scheduled (no cron/APScheduler wiring yet) —
+  it's a manual CLI invocation. Automating "every morning" is M5/ops work.
+- Demo seed data (`seed_demo_data.py`) cycles through only 7 story
+  templates over 14 days, so a 7-day weekly-brief window can show the
+  same headline twice — cosmetic, fixture-only, not a product defect.
+
 ## M3 — API + dashboard
 
 FastAPI backend and a React dashboard, verified end-to-end in a real

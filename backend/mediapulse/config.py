@@ -45,6 +45,8 @@ class Settings(BaseSettings):
     smtp_from: str = "briefs@mediapulse.bw"
     smtp_use_tls: bool = True
 
+    brief_storage_dir: str = "./brief_output"
+
 
 @lru_cache
 def get_settings() -> Settings:

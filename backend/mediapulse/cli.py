@@ -305,19 +305,50 @@ def brief(
     tenant: Annotated[str, typer.Option(help="Tenant slug")],
     date: Annotated[str, typer.Option(help="Reference date, or 'today'")] = "today",
     brief_type: Annotated[str, typer.Option(help="daily|weekly|monthly")] = "daily",
+    send_to: Annotated[
+        Optional[str], typer.Option(help="Email address to send the brief to")
+    ] = None,
 ) -> None:
-    """Generate (and optionally email) a brief for a tenant.
+    """Generate (and optionally email) a brief for a tenant."""
+    from .ai.brief_synthesis import BriefSynthesisError
+    from .briefs.generate import generate_brief
+    from .models import BriefStatus, BriefType
+    from .notify.email import EmailNotConfigured, send_brief_email
 
-    M4 deliverable.
-    """
     ref_date = dt.date.today() if date == "today" else dt.date.fromisoformat(date)
+    try:
+        brief_type_enum = BriefType(brief_type)
+    except ValueError as exc:
+        raise typer.BadParameter(f"brief_type must be one of {[t.value for t in BriefType]}") from exc
+
     with session_scope() as session:
-        _require_tenant(session, tenant)
-    typer.echo(
-        f"Brief generation is not implemented yet (M4). "
-        f"Would generate a {brief_type} brief for {ref_date.isoformat()}."
-    )
-    raise typer.Exit(code=1)
+        tenant_row = _require_tenant(session, tenant)
+        try:
+            brief_row = generate_brief(
+                session, tenant=tenant_row, brief_type=brief_type_enum, reference_date=ref_date,
+            )
+        except BriefSynthesisError as exc:
+            typer.echo(f"Brief generation failed: {exc}")
+            raise typer.Exit(code=1) from exc
+        typer.echo(
+            f"Generated {brief_type} brief for {tenant!r}, period "
+            f"{brief_row.period_start.date()}–{brief_row.period_end.date()}. PDF: {brief_row.pdf_path}"
+        )
+
+        if send_to:
+            try:
+                send_brief_email(
+                    to=send_to,
+                    subject=f"{tenant_row.name} {brief_type.title()} Brief — {ref_date.isoformat()}",
+                    html_body=brief_row.html_content,
+                    pdf_path=brief_row.pdf_path,
+                )
+                brief_row.sent_at = dt.datetime.now(dt.timezone.utc)
+                brief_row.status = BriefStatus.sent
+                typer.echo(f"Emailed brief to {send_to}.")
+            except EmailNotConfigured as exc:
+                typer.echo(f"Not sent — {exc}")
+                raise typer.Exit(code=1) from exc
 
 
 if __name__ == "__main__":

@@ -10,16 +10,17 @@ this repo tracks it milestone by milestone in `docs/CHANGELOG.md`.
 
 ## Status
 
-**M0 (scaffold), M1 (ingestion), M2 (AI enrichment), and M3 (API +
-dashboard) are done.** RSS/PressReader ingestion, a layout-aware print PDF
-pipeline, tenant-aware AI classification, a FastAPI backend, and a React
-dashboard are implemented, tested, and verified end-to-end in a real
-browser (login, story feed, story detail, share of voice, admin source
-health) — see `docs/CHANGELOG.md` for details and known gaps. No real
-`ANTHROPIC_API_KEY` has been exercised against the live API yet (tests,
-CLI smoke tests, and the dashboard have all been run against a fake
-client / seeded fixture data). Daily Brief generation (M4) is not built
-yet — the archive UI/API are ready for it.
+**M0 (scaffold) through M4 (Daily Brief + email) are done.** RSS/
+PressReader ingestion, a layout-aware print PDF pipeline, tenant-aware AI
+classification, a FastAPI backend, a React dashboard, and the Daily/
+Weekly/Monthly Brief generator (exec summary, pillars, share of voice,
+sentiment shifts, Risk/Opportunity watch list, HTML+PDF, email delivery)
+are implemented and tested — see `docs/CHANGELOG.md` for details and
+known gaps. No real `ANTHROPIC_API_KEY` or live SMTP server has been
+exercised yet (tests, CLI smoke tests, and the dashboard have all been
+run against a fake AI client / fake SMTP connection / seeded fixture
+data). Remaining: alerts, Ask MediaPulse (RAG), client portal polish,
+Docker, scheduling (M5).
 
 `mediapulse_platform.html` at the repo root is the original static design
 reference for the frontend (landing page + app-shell mockup) — it predates
@@ -52,6 +53,13 @@ backend/
       schemas.py             # strict Pydantic schema for classification output
       prompts.py              # tenant-aware classification prompt builder
       classify.py              # classify_article/classify_pending (M2)
+      brief_synthesis.py        # AI prose for the Daily Brief (M4)
+    briefs/
+      aggregate.py       # pillar/SOV/sentiment-shift/watchlist math (no AI)
+      render.py           # Jinja2 -> email-safe HTML, WeasyPrint -> PDF
+      generate.py          # aggregate -> synthesize -> render -> upsert Brief
+    notify/
+      email.py           # stdlib SMTP delivery (HTML + PDF attachment)
     scripts/
       import_legacy.py # legacy SQLite -> new schema, with date repair
       seed_demo_data.py # demo/dev fixture data (no API key needed)
@@ -109,6 +117,20 @@ npm run dev   # proxies /api/* to localhost:8000, see vite.config.ts
 
 `seed-demo-data` prints three demo logins (admin/analyst/client_viewer,
 password `demo-password-123`) for the dashboard at http://localhost:5173.
+
+## Generating a Daily Brief
+
+Requires a real `ANTHROPIC_API_KEY` (the synthesis step calls the model
+configured as `MEDIAPULSE_SYNTHESIS_MODEL`):
+
+```bash
+python -m mediapulse.cli brief --tenant orange-bw --date today --type daily
+# add --send-to client@orange.bw to also email it (requires SMTP config in .env)
+```
+
+Writes the PDF to `MEDIAPULSE_BRIEF_STORAGE_DIR` (default `./brief_output`)
+and upserts a `Brief` archive row — rerunning the same tenant/type/period
+updates it in place. `--type` is `daily`/`weekly`/`monthly`.
 
 ## Importing the legacy Colab-era corpus
 
