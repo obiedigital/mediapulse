@@ -47,6 +47,10 @@ class Settings(BaseSettings):
 
     brief_storage_dir: str = "./brief_output"
 
+    scheduler_ingest_interval_minutes: int = 30
+    scheduler_classify_interval_minutes: int = 15
+    scheduler_alerts_interval_minutes: int = 60
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -1,5 +1,59 @@
 # Changelog
 
+## Scheduler — unattended operation
+
+Closes the "no scheduler wiring ingest → classify → brief → alerts
+together automatically" gap. `mediapulse scheduler` is a long-lived
+foreground process (its own container — see the `scheduler` service in
+`docker-compose.yml`, separate from the API server) that runs the exact
+same functions the CLI commands call, on a recurring schedule, for every
+active tenant:
+
+- ingest every `MEDIAPULSE_SCHEDULER_INGEST_INTERVAL_MINUTES` (default 30)
+- classify every `MEDIAPULSE_SCHEDULER_CLASSIFY_INTERVAL_MINUTES` (default 15)
+- alert digest + volume-spike check every
+  `MEDIAPULSE_SCHEDULER_ALERTS_INTERVAL_MINUTES` (default 60)
+- daily brief checked hourly, sent once a tenant's configured
+  `daily_brief_hour_utc` matches the current UTC hour
+
+**Added**
+- `Tenant.notification_config` (new JSON column + migration) —
+  `{"brief_recipients": [...], "alert_recipients": [...],
+  "daily_brief_hour_utc": 6}`. A tenant with no recipients configured
+  still gets ingested/classified/alert-evaluated by the scheduler; it
+  just doesn't get anything emailed automatically. Set via the new
+  `mediapulse set-notifications --tenant --brief-to --alert-to
+  --daily-brief-hour-utc` command.
+- `mediapulse/scheduler.py` — four cycle functions
+  (`run_ingest_cycle`/`run_classify_cycle`/`run_alerts_cycle`/
+  `run_daily_brief_job`), each a thin loop over active tenants calling
+  the same underlying functions the CLI uses (no duplicated business
+  logic), wrapped in `try/except` per-tenant so one tenant's failure
+  doesn't take down the cycle for everyone else. `mediapulse scheduler`
+  starts it (APScheduler `BlockingScheduler`); verified live that it
+  starts, registers all four jobs, and successfully runs an immediate
+  ingest cycle.
+- `docker-compose.yml` gained a `scheduler` service (same image as
+  `backend`, different command) and a shared `x-backend-env` YAML anchor
+  so the two services' environment blocks can't drift out of sync.
+- 8 new tests (158 total) covering the orchestration logic itself
+  (tenant iteration, active/inactive filtering, recipient/hour gating)
+  by monkeypatching the underlying work functions — those functions
+  already have their own dedicated suites, so these tests only check the
+  scheduler's wiring, not re-test ingestion/classification/brief logic.
+
+**On the other standing gap — no live Anthropic API/SMTP run yet**: this
+one isn't fixable by writing more code. It needs real credentials
+(`ANTHROPIC_API_KEY`, and SMTP host/user/password if you want email
+delivery verified too) that only the project owner has. The moment
+those are available — as env vars for a live CLI/scheduler smoke test, or
+in a deployed environment — the exact same code path runs for real;
+nothing here is mocked in a way that would need changing. Recommended
+first real-world check: `mediapulse classify --tenant orange-bw --limit 1`
+against one seeded article, then `mediapulse brief --tenant orange-bw`,
+both with a real `ANTHROPIC_API_KEY` set, before trusting output
+quality/latency/cost at scale.
+
 ## M5 — Alerts, Ask MediaPulse, client portal, Docker
 
 Rounds out the platform: near-real-time alerts, a RAG-style "Ask

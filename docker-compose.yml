@@ -1,3 +1,17 @@
+x-backend-env: &backend-env
+  MEDIAPULSE_DATABASE_URL: postgresql+psycopg://mediapulse:mediapulse@postgres:5432/mediapulse
+  MEDIAPULSE_SECRET_KEY: ${MEDIAPULSE_SECRET_KEY:-change-me-in-production}
+  MEDIAPULSE_ENV: production
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  MEDIAPULSE_CLASSIFY_MODEL: ${MEDIAPULSE_CLASSIFY_MODEL:-claude-sonnet-4-6}
+  MEDIAPULSE_SYNTHESIS_MODEL: ${MEDIAPULSE_SYNTHESIS_MODEL:-claude-opus-4-8}
+  MEDIAPULSE_VISION_MODEL: ${MEDIAPULSE_VISION_MODEL:-claude-sonnet-4-6}
+  MEDIAPULSE_SMTP_HOST: ${MEDIAPULSE_SMTP_HOST:-}
+  MEDIAPULSE_SMTP_PORT: ${MEDIAPULSE_SMTP_PORT:-587}
+  MEDIAPULSE_SMTP_USER: ${MEDIAPULSE_SMTP_USER:-}
+  MEDIAPULSE_SMTP_PASSWORD: ${MEDIAPULSE_SMTP_PASSWORD:-}
+  MEDIAPULSE_SMTP_FROM: ${MEDIAPULSE_SMTP_FROM:-briefs@mediapulse.bw}
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -16,23 +30,30 @@ services:
   backend:
     build: ./backend
     environment:
-      MEDIAPULSE_DATABASE_URL: postgresql+psycopg://mediapulse:mediapulse@postgres:5432/mediapulse
-      MEDIAPULSE_SECRET_KEY: ${MEDIAPULSE_SECRET_KEY:-change-me-in-production}
-      MEDIAPULSE_ENV: production
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      MEDIAPULSE_CLASSIFY_MODEL: ${MEDIAPULSE_CLASSIFY_MODEL:-claude-sonnet-4-6}
-      MEDIAPULSE_SYNTHESIS_MODEL: ${MEDIAPULSE_SYNTHESIS_MODEL:-claude-opus-4-8}
-      MEDIAPULSE_VISION_MODEL: ${MEDIAPULSE_VISION_MODEL:-claude-sonnet-4-6}
-      MEDIAPULSE_SMTP_HOST: ${MEDIAPULSE_SMTP_HOST:-}
-      MEDIAPULSE_SMTP_PORT: ${MEDIAPULSE_SMTP_PORT:-587}
-      MEDIAPULSE_SMTP_USER: ${MEDIAPULSE_SMTP_USER:-}
-      MEDIAPULSE_SMTP_PASSWORD: ${MEDIAPULSE_SMTP_PASSWORD:-}
-      MEDIAPULSE_SMTP_FROM: ${MEDIAPULSE_SMTP_FROM:-briefs@mediapulse.bw}
+      <<: *backend-env
     depends_on:
       postgres:
         condition: service_healthy
     ports:
       - "8000:8000"
+    volumes:
+      - brief_output:/app/brief_output
+
+  # Runs ingest/classify/alerts/brief on a recurring schedule for every
+  # tenant (mediapulse scheduler) — the unattended-operation process,
+  # separate from the API server so a scheduler crash/restart doesn't
+  # take the API down and vice versa.
+  scheduler:
+    build: ./backend
+    entrypoint: ["/app/docker-entrypoint.sh"]
+    command: ["python", "-m", "mediapulse.cli", "scheduler"]
+    environment:
+      <<: *backend-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
     volumes:
       - brief_output:/app/brief_output
 

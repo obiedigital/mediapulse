@@ -10,15 +10,17 @@ this repo tracks it milestone by milestone in `docs/CHANGELOG.md`.
 
 ## Status
 
-**M0 through M5 are done** — ingestion, AI enrichment, API+dashboard, the
-Daily Brief generator, alerts, Ask MediaPulse (RAG), a genuinely
-restricted client portal, multi-tenant onboarding, and Docker Compose. See
-`docs/CHANGELOG.md` for details and known gaps per milestone. Standing
-gaps: no real `ANTHROPIC_API_KEY` or live SMTP server has been exercised
-(everything verified against fakes/fixtures), the Docker Compose stack
-hasn't been run end-to-end (Docker daemon unavailable in this dev
-sandbox — see M5's changelog entry), and there's no scheduler wiring
-ingest/classify/brief/alerts together automatically yet.
+**M0 through M5 are done, plus a scheduler for unattended operation** —
+ingestion, AI enrichment, API+dashboard, the Daily Brief generator,
+alerts, Ask MediaPulse (RAG), a genuinely restricted client portal,
+multi-tenant onboarding, Docker Compose, and `mediapulse scheduler`
+running ingest/classify/alerts/brief on a recurring schedule per tenant.
+See `docs/CHANGELOG.md` for details and known gaps per milestone.
+Standing gaps: no real `ANTHROPIC_API_KEY` or live SMTP server has been
+exercised (everything verified against fakes/fixtures — this needs real
+credentials only the project owner has, not more code) and the Docker
+Compose stack hasn't been run end-to-end (Docker daemon unavailable in
+this dev sandbox — see the changelog).
 
 `mediapulse_platform.html` at the repo root is the original static design
 reference for the frontend (landing page + app-shell mockup) — it predates
@@ -160,6 +162,24 @@ python -m mediapulse.cli add-topic --tenant first-bank --label "Rival Bank (comp
 python -m mediapulse.cli create-user --tenant first-bank --email analyst@firstbank.bw --name "Analyst" --role analyst
 ```
 
+## Running unattended (scheduler)
+
+```bash
+python -m mediapulse.cli set-notifications --tenant orange-bw \
+  --brief-to client@orange.bw --alert-to admin@orange.bw --daily-brief-hour-utc 6
+python -m mediapulse.cli scheduler
+```
+
+Runs ingest/classify/alerts/brief on a recurring schedule for every
+active tenant, in the foreground (run it as its own long-lived process —
+see the `scheduler` service in `docker-compose.yml`). A tenant with no
+`brief_to`/`alert_to` configured is still ingested/classified/
+alert-evaluated; it just doesn't get anything emailed automatically.
+Cadence is configurable via `MEDIAPULSE_SCHEDULER_INGEST_INTERVAL_MINUTES`
+/ `..._CLASSIFY_INTERVAL_MINUTES` / `..._ALERTS_INTERVAL_MINUTES` (defaults
+30/15/60); the daily brief is checked hourly against each tenant's
+configured `daily_brief_hour_utc`.
+
 ## Running with Docker Compose
 
 ```bash
@@ -169,7 +189,8 @@ docker compose up --build
 
 Backend on :8000 (Postgres-backed, migrations run automatically on
 container start), dashboard on :3000 (nginx, `/api/*` reverse-proxied to
-the backend). Not yet verified end-to-end in this dev environment — the
+the backend), plus a `scheduler` service running the unattended-operation
+loop above. Not yet verified end-to-end in this dev environment — the
 Docker daemon isn't available in this sandbox — so treat the first run as
 a real smoke test, not a known-good path.
 

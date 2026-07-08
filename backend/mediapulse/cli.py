@@ -429,5 +429,44 @@ def alerts(
                 raise typer.Exit(code=1) from exc
 
 
+@app.command()
+def set_notifications(
+    tenant: Annotated[str, typer.Option(help="Tenant slug")],
+    brief_to: Annotated[
+        Optional[str], typer.Option(help="Comma-separated emails for the automated daily brief")
+    ] = None,
+    alert_to: Annotated[
+        Optional[str], typer.Option(help="Comma-separated emails for the alert digest")
+    ] = None,
+    daily_brief_hour_utc: Annotated[
+        int, typer.Option(help="UTC hour (0-23) the scheduler sends the daily brief")
+    ] = 6,
+) -> None:
+    """Configure automated delivery targets for `mediapulse scheduler`.
+    A tenant with no recipients configured is still ingested/classified/
+    alert-evaluated — it just doesn't get anything emailed automatically."""
+    with session_scope() as session:
+        tenant_row = _require_tenant(session, tenant)
+        config = dict(tenant_row.notification_config or {})
+        if brief_to is not None:
+            config["brief_recipients"] = [e.strip() for e in brief_to.split(",") if e.strip()]
+        if alert_to is not None:
+            config["alert_recipients"] = [e.strip() for e in alert_to.split(",") if e.strip()]
+        config["daily_brief_hour_utc"] = daily_brief_hour_utc
+        tenant_row.notification_config = config
+    typer.echo(f"Updated notification config for {tenant!r}: {config}")
+
+
+@app.command()
+def scheduler() -> None:
+    """Run ingest/classify/alerts/brief on a recurring schedule for every
+    active tenant — the unattended-operation entrypoint (see the
+    `scheduler` service in docker-compose.yml). Blocks forever; run it as
+    its own long-lived process, separate from the API server."""
+    from .scheduler import start_scheduler
+
+    start_scheduler()
+
+
 if __name__ == "__main__":
     app()

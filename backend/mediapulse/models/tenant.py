@@ -30,6 +30,12 @@ class Tenant(Base, TimestampMixin):
     brand_config: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     watchlist_config: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
 
+    # Scheduler delivery targets: {"brief_recipients": [...], "alert_recipients": [...],
+    # "daily_brief_hour_utc": 6}. Empty/absent means "generate but don't email" —
+    # the scheduler treats a tenant with no recipients as opted out of automated
+    # delivery, not an error.
+    notification_config: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+
     users: Mapped[list["User"]] = relationship(back_populates="tenant")
     topics: Mapped[list["Topic"]] = relationship(back_populates="tenant")
 
