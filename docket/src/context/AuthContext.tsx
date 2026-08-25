@@ -9,7 +9,7 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-const STORAGE_KEY = 'filed.demo.userId';
+const STORAGE_KEY = 'docket.demo.userId';
 
 function restoreUser(): DemoUser | null {
   try {

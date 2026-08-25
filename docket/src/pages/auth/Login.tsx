@@ -24,7 +24,7 @@ export function Login() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-navy-800">
             <FolderCog size={17} className="text-gold-400" />
           </div>
-          <span className="font-display text-[15px] font-extrabold text-ink">Filed</span>
+          <span className="font-display text-[15px] font-extrabold text-ink">Docket</span>
         </Link>
 
         <h1 className="mt-6 font-display text-[24px] font-extrabold text-ink">Welcome back</h1>

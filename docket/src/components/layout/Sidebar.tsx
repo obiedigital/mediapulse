@@ -50,7 +50,7 @@ export function Sidebar() {
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-500">
           <FolderCog size={17} className="text-navy-950" />
         </div>
-        <span className="font-display text-[15px] font-extrabold text-white">Filed</span>
+        <span className="font-display text-[15px] font-extrabold text-white">Docket</span>
       </div>
 
       <div className="mx-4 mb-4 rounded-xl bg-white/5 p-3">

@@ -30,7 +30,7 @@ const MODULES = [
   {
     icon: ScanLine,
     title: 'Smart Scan',
-    desc: 'Scan from mobile, network scanner or email. Filed reads and classifies each document into the right folder automatically.',
+    desc: 'Scan from mobile, network scanner or email. Docket reads and classifies each document into the right folder automatically.',
   },
   {
     icon: Workflow,
@@ -59,7 +59,7 @@ const INDUSTRIES = [
 
 const STEPS = [
   { n: '01', icon: Smartphone, title: 'Capture', desc: 'Snap a photo, scan a batch, or forward an email — paperwork enters the cabinet from anywhere.' },
-  { n: '02', icon: Sparkles, title: 'Classify', desc: 'Filed reads each document and files it into the right folder with the right tags, automatically.' },
+  { n: '02', icon: Sparkles, title: 'Classify', desc: 'Docket reads each document and files it into the right folder with the right tags, automatically.' },
   { n: '03', icon: Workflow, title: 'Automate', desc: 'Approval workflows route documents to the right person, with reminders until it is actioned.' },
   { n: '04', icon: FileSignature, title: 'Close out', desc: 'Send for eSignature, archive on schedule, and pull audit-ready reports in one click.' },
 ];
@@ -125,11 +125,11 @@ export function Landing() {
           <h1 className="font-display text-[38px] font-extrabold leading-[1.08] tracking-tight text-ink md:text-[54px]">
             Every document.
             <br />
-            Filed, signed<span className="text-gold-500">, </span>
+            Docketed, signed<span className="text-gold-500">, </span>
             <span className="bg-gradient-to-r from-navy-800 to-gold-600 bg-clip-text text-transparent">automatically.</span>
           </h1>
           <p className="mt-5 max-w-lg text-[15.5px] leading-relaxed text-ink/60">
-            Filed scans, classifies and files every contract, invoice and form your business handles — then routes it
+            Docket scans, classifies and files every contract, invoice and form your business handles — then routes it
             for approval and signature, so nothing sits in a tray or an inbox again.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -163,7 +163,7 @@ export function Landing() {
             <span className="h-2.5 w-2.5 rounded-full bg-line" />
             <span className="h-2.5 w-2.5 rounded-full bg-line" />
             <span className="h-2.5 w-2.5 rounded-full bg-line" />
-            <span className="ml-2 flex-1 rounded bg-surface px-2.5 py-1 text-center text-[10.5px] text-ink/40">app.filed.co.za/documents</span>
+            <span className="ml-2 flex-1 rounded bg-surface px-2.5 py-1 text-center text-[10.5px] text-ink/40">app.docket.co.za/documents</span>
           </div>
           <div className="p-4">
             <div className="mb-3 flex items-center justify-between">
@@ -207,7 +207,7 @@ export function Landing() {
           <div className="mb-3 inline-block rounded-full bg-navy-100 px-3 py-1 text-[11.5px] font-semibold text-navy-800">The platform</div>
           <h2 className="font-display text-[30px] font-extrabold tracking-tight text-ink md:text-[34px]">One cabinet, four modules.</h2>
           <p className="mt-2.5 text-[14.5px] leading-relaxed text-ink/55">
-            Filed replaces the filing room, the fax machine and the approvals-by-email chain with one connected system.
+            Docket replaces the filing room, the fax machine and the approvals-by-email chain with one connected system.
           </p>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

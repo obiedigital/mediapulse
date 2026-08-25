@@ -18,7 +18,7 @@ export function Nav() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-navy-800">
             <FolderCog size={17} className="text-gold-400" />
           </div>
-          <span className="font-display text-[16px] font-extrabold text-ink">Filed</span>
+          <span className="font-display text-[16px] font-extrabold text-ink">Docket</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8 text-[13.5px] font-medium text-ink/60">

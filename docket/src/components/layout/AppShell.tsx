@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 const TITLES: Record<string, { title: string; subtitle?: string }> = {
   '/app': { title: 'Dashboard', subtitle: 'Good morning — here is what needs your attention today.' },
   '/app/documents': { title: 'Document Manager', subtitle: 'Every file, contract and record — searchable in one cabinet.' },
-  '/app/scan': { title: 'Smart Scan', subtitle: 'Capture paperwork once. Filed classifies and files it for you.' },
+  '/app/scan': { title: 'Smart Scan', subtitle: 'Capture paperwork once. Docket classifies and files it for you.' },
   '/app/workflows': { title: 'Workflows', subtitle: 'Approval chains and automations running across your business.' },
   '/app/esignature': { title: 'eSignature & Forms', subtitle: 'Send for signature, build forms, track completion.' },
   '/app/reports': { title: 'Reports', subtitle: 'Volume, compliance and turnaround across every department.' },
@@ -19,7 +19,7 @@ export function AppShell() {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  const meta = TITLES[location.pathname] ?? { title: 'Filed' };
+  const meta = TITLES[location.pathname] ?? { title: 'Docket' };
 
   return (
     <div className="flex h-screen w-full bg-paper text-ink">

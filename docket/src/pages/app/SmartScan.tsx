@@ -9,9 +9,9 @@ import type { ScanJob, ScanStatus } from '../../types';
 import { useToast } from '../../context/ToastContext';
 
 const SOURCES = [
-  { icon: Smartphone, name: 'Mobile App', desc: 'Snap a photo from the Filed app — auto-cropped and enhanced.' },
+  { icon: Smartphone, name: 'Mobile App', desc: 'Snap a photo from the Docket app — auto-cropped and enhanced.' },
   { icon: Printer, name: 'Network Scanner', desc: 'Any office MFP scans straight into your cabinet over the network.' },
-  { icon: Mail, name: 'Email Import', desc: 'Forward to your cabinet address and Filed extracts attachments.' },
+  { icon: Mail, name: 'Email Import', desc: 'Forward to your cabinet address and Docket extracts attachments.' },
   { icon: UploadCloud, name: 'Bulk Upload', desc: 'Drop hundreds of pages at once for overnight digitisation.' },
 ];
 
@@ -85,7 +85,7 @@ export function SmartScan() {
             <div>
               <h3 className="font-display text-[15px] font-bold text-white">Capture simulator</h3>
               <p className="mt-1 max-w-md text-[12.5px] text-white/50">
-                Simulate a mobile scan: Filed reads the page, classifies it, and files it into the right folder — no manual filing.
+                Simulate a mobile scan: Docket reads the page, classifies it, and files it into the right folder — no manual filing.
               </p>
             </div>
             <Button variant="secondary" icon={<Smartphone size={15} />} onClick={runSimulation} disabled={simulating}>

@@ -1,4 +1,4 @@
-# Filed — the paperless office platform for South African business
+# Docket — the paperless office platform for South African business
 
 A product concept and interactive demo inspired by [Digital Cabinet](https://www.digitalcabinet.co.za/)
 (a Cape Town / Johannesburg document-management and workflow-automation SaaS). This is an

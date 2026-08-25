@@ -25,7 +25,7 @@ export function Footer() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-navy-800">
                 <FolderCog size={17} className="text-gold-400" />
               </div>
-              <span className="font-display text-[15px] font-extrabold text-ink">Filed</span>
+              <span className="font-display text-[15px] font-extrabold text-ink">Docket</span>
             </div>
             <p className="mt-3 max-w-xs text-[12.5px] leading-relaxed text-ink/55">
               The paperless office platform for South African business. Document management, smart scanning, workflow
@@ -48,7 +48,7 @@ export function Footer() {
           ))}
         </div>
         <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6 text-[11.5px] text-ink/45">
-          <span>© 2026 Filed Software (Pty) Ltd. Cape Town, South Africa.</span>
+          <span>© 2026 Docket Software (Pty) Ltd. Cape Town, South Africa.</span>
           <span>POPIA compliant · Hosted in ZA · Demo product — sample data only</span>
         </div>
       </div>

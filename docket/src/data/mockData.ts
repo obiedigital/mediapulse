@@ -129,7 +129,7 @@ export const workflows: WorkflowDef[] = [
     avgCompletionHrs: 18.2,
     steps: [
       { id: 'st1', name: 'Offer form submitted', type: 'form', detail: 'HR captures role, branch and salary band.' },
-      { id: 'st2', name: 'Contract eSignature', type: 'approval', assignee: 'Candidate', detail: 'Sent for signature via Filed eSign.' },
+      { id: 'st2', name: 'Contract eSignature', type: 'approval', assignee: 'Candidate', detail: 'Sent for signature via Docket eSign.' },
       { id: 'st3', name: 'HR Manager approval', type: 'approval', assignee: 'Thandiwe Nkosi', detail: 'Confirms signed contract and ID documents.' },
       { id: 'st4', name: 'Notify payroll & IT', type: 'notification', detail: 'Auto-emails payroll system and IT for access setup.' },
     ],
