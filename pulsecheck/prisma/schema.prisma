@@ -1,0 +1,189 @@
+// PulseCheck data model.
+//
+// Designed to share a tenant key (org_id) and a bridge table (insight_records)
+// with MediaPulse BW, so the two products can eventually be sold as one
+// intelligence suite without a schema rebuild. See README.md ("Shared data
+// layer") for how this is meant to plug in.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrgTier {
+  agency
+  enterprise
+}
+
+enum ModeratorRole {
+  owner
+  admin
+  member
+}
+
+enum SessionType {
+  concept_test
+  ad_recall
+  brand_pulse
+  focus_group
+  custom
+}
+
+enum SessionStatus {
+  draft
+  live
+  ended
+}
+
+enum SlideType {
+  poll
+  word_cloud
+  rating_scale
+  open_text
+}
+
+enum InsightSource {
+  pulsecheck
+  mediapulse
+}
+
+// -------------------- Tenancy --------------------
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  tier      OrgTier  @default(agency)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  users         User[]
+  sessions      Session[]
+  insightRecords InsightRecord[]
+
+  @@map("organizations")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  orgId        String        @map("org_id")
+  name         String
+  email        String        @unique
+  passwordHash String        @map("password_hash")
+  role         ModeratorRole @default(owner)
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  sessions Session[]    @relation("SessionCreatedBy")
+
+  @@index([orgId])
+  @@map("users")
+}
+
+// -------------------- Sessions --------------------
+
+model Session {
+  id        String        @id @default(cuid())
+  orgId     String        @map("org_id")
+  title     String
+  type      SessionType   @default(custom)
+  status    SessionStatus @default(draft)
+  joinCode  String        @unique @map("join_code") // 6-digit code, active while status != ended (rotated per session)
+  createdById String?     @map("created_by_id")
+  activeSlideOrder Int?   @map("active_slide_order") // which slide is currently live for participants; null = waiting room
+  createdAt DateTime      @default(now()) @map("created_at")
+  startedAt DateTime?     @map("started_at")
+  endedAt   DateTime?     @map("ended_at")
+
+  org          Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdBy    User?           @relation("SessionCreatedBy", fields: [createdById], references: [id])
+  slides       SessionSlide[]
+  participants Participant[]
+  responses    Response[]
+  insightRecords InsightRecord[]
+
+  @@index([orgId])
+  @@map("sessions")
+}
+
+model SessionSlide {
+  id        String    @id @default(cuid())
+  sessionId String    @map("session_id")
+  order     Int
+  type      SlideType
+  config    Json      @default("{}") // e.g. { question, options[], min, max, labels }
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  session   Session    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  responses Response[]
+
+  @@unique([sessionId, order])
+  @@index([sessionId])
+  @@map("session_slides")
+}
+
+// -------------------- Participants & responses --------------------
+
+model Participant {
+  id               String   @id @default(cuid())
+  sessionId        String   @map("session_id")
+  joinCode         String   @map("join_code") // the code they joined with, kept even if session rotates it later
+  deviceFingerprint String? @map("device_fingerprint")
+  demographicTags  Json     @default("{}") @map("demographic_tags") // { age_band, region, gender, lsm_segment }
+  joinedAt         DateTime @default(now()) @map("joined_at")
+
+  session   Session    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  responses Response[]
+
+  @@index([sessionId])
+  @@map("participants")
+}
+
+model Response {
+  id            String   @id @default(cuid())
+  sessionId     String   @map("session_id")
+  slideId       String   @map("slide_id")
+  participantId String   @map("participant_id")
+  value         Json // shape depends on slide type: {choice}, {choices[]}, {text}, {rating}
+  submittedAt   DateTime @default(now()) @map("submitted_at")
+
+  session     Session      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  slide       SessionSlide @relation(fields: [slideId], references: [id], onDelete: Cascade)
+  participant Participant  @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  // One response per participant per slide (resubmission overwrites via upsert).
+  @@unique([slideId, participantId])
+  @@index([sessionId])
+  @@index([slideId])
+  @@map("responses")
+}
+
+// -------------------- Shared layer with MediaPulse BW --------------------
+
+// Cross-product bridge table. Both PulseCheck and MediaPulse write summarized
+// findings here so a client dashboard can eventually show "what the media is
+// saying" next to "what our audience actually said" in one view.
+//
+// Phase 1 (this build): schema + write path exist and are exercised by the
+// PDF/segment export flow, seeding one record per completed session.
+// Phase 2: full write-back automation + MediaPulse-side reads.
+model InsightRecord {
+  id              String        @id @default(cuid())
+  orgId           String        @map("org_id")
+  source          InsightSource @default(pulsecheck)
+  recordType      String        @map("record_type") // e.g. "session_summary", "article_summary"
+  summary         String
+  tags            Json          @default("{}")
+  linkedSessionId String?       @map("linked_session_id")
+  linkedArticleId String?       @map("linked_article_id") // FK into MediaPulse's articles table (no local relation)
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  linkedSession  Session?     @relation(fields: [linkedSessionId], references: [id], onDelete: SetNull)
+
+  @@index([orgId])
+  @@index([source])
+  @@map("insight_records")
+}
