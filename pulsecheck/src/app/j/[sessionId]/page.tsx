@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { io, type Socket } from "socket.io-client";
-import { SOCKET_EVENTS, type SessionStatePayload } from "@/lib/socket-events";
+
+// No persistent socket on serverless hosting — poll for the host advancing
+// the slide instead. A few seconds' lag is an acceptable tradeoff for a
+// participant who's just about to tap a button anyway.
+const POLL_INTERVAL_MS = 3000;
 
 interface SlideItem {
   id: string;
@@ -29,7 +32,7 @@ export default function ParticipantSessionPage() {
   const [slides, setSlides] = useState<SlideItem[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const socketRef = useRef<Socket | null>(null);
+  const activeSlideOrderRef = useRef<number | null>(null);
 
   useEffect(() => {
     let stored: string | null = null;
@@ -47,26 +50,20 @@ export default function ParticipantSessionPage() {
 
   async function refreshSession() {
     const res = await fetch(`/api/sessions/${sessionId}/public`);
-    if (res.ok) {
-      const data = await res.json();
-      setSession(data.session);
-      setSlides(data.slides);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.session.activeSlideOrder !== activeSlideOrderRef.current) {
+      activeSlideOrderRef.current = data.session.activeSlideOrder;
+      setSubmitted(false);
     }
+    setSession(data.session);
+    setSlides(data.slides);
   }
 
   useEffect(() => {
     refreshSession();
-    const socket = io({ path: "/socket.io" });
-    socketRef.current = socket;
-    socket.emit(SOCKET_EVENTS.JOIN_SESSION, sessionId);
-    socket.on(SOCKET_EVENTS.SESSION_STATE, (payload: SessionStatePayload) => {
-      if (payload.sessionId !== sessionId) return;
-      setSession((s) => (s ? { ...s, status: payload.status, activeSlideOrder: payload.activeSlideOrder ?? null } : s));
-      setSubmitted(false);
-    });
-    return () => {
-      socket.disconnect();
-    };
+    const interval = setInterval(refreshSession, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 

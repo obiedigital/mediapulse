@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { io, type Socket } from "socket.io-client";
 import ResultsDisplay from "@/components/ResultsDisplay";
-import { SOCKET_EVENTS, type ResponseAddedPayload, type SessionStatePayload } from "@/lib/socket-events";
 import { AGE_BANDS, BW_REGIONS } from "@/types/slides";
+
+// Polls instead of pushing over a socket: Vercel's serverless functions can't
+// hold a persistent Socket.io connection open, so "live" here means "catches
+// up within a few seconds" rather than instant push. Good enough for a room
+// full of people looking at a projector; see README for the tradeoff.
+const POLL_INTERVAL_MS = 3000;
 
 interface SlideItem {
   id: string;
@@ -23,6 +27,8 @@ interface SessionMeta {
 }
 
 interface ResultsResponse {
+  status: "draft" | "live" | "ended";
+  activeSlideOrder: number | null;
   participantCount: number;
   results: {
     slideId: string;
@@ -44,7 +50,6 @@ export default function PresentView({ session: initialSession, slides }: { sessi
   const [bigScreen, setBigScreen] = useState(false);
   const [segmentKey, setSegmentKey] = useState<"" | "age_band" | "region">("");
   const [segmentValue, setSegmentValue] = useState("");
-  const socketRef = useRef<Socket | null>(null);
 
   const sorted = useMemo(() => [...slides].sort((a, b) => a.order - b.order), [slides]);
   const currentSlide = sorted.find((s) => s.order === viewOrder) ?? sorted[0];
@@ -57,7 +62,11 @@ export default function PresentView({ session: initialSession, slides }: { sessi
       params.set("segmentValue", segmentValue);
     }
     const res = await fetch(`/api/sessions/${session.id}/results?${params.toString()}`);
-    if (res.ok) setData(await res.json());
+    if (!res.ok) return;
+    const json: ResultsResponse = await res.json();
+    setData(json);
+    // Pick up status/active-slide changes made from another moderator tab.
+    setSession((s) => (s.status === json.status && s.activeSlideOrder === json.activeSlideOrder ? s : { ...s, status: json.status, activeSlideOrder: json.activeSlideOrder }));
   }
 
   useEffect(() => {
@@ -65,27 +74,13 @@ export default function PresentView({ session: initialSession, slides }: { sessi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSlide?.id, segmentKey, segmentValue]);
 
+  // Poll for new responses on the current slide (and pick up status/active
+  // slide changes made from another moderator tab/device).
   useEffect(() => {
-    const socket = io({ path: "/socket.io" });
-    socketRef.current = socket;
-    socket.emit(SOCKET_EVENTS.JOIN_SESSION, session.id);
-
-    socket.on(SOCKET_EVENTS.RESPONSE_ADDED, (payload: ResponseAddedPayload) => {
-      if (payload.sessionId === session.id) fetchResults();
-    });
-    socket.on(SOCKET_EVENTS.SESSION_STATE, (payload: SessionStatePayload) => {
-      if (payload.sessionId !== session.id) return;
-      setSession((s) => ({ ...s, status: payload.status, activeSlideOrder: payload.activeSlideOrder ?? null }));
-      if (payload.activeSlideOrder !== undefined && payload.activeSlideOrder !== null) {
-        setViewOrder(payload.activeSlideOrder);
-      }
-    });
-
-    return () => {
-      socket.disconnect();
-    };
+    const interval = setInterval(fetchResults, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session.id]);
+  }, [currentSlide?.id, segmentKey, segmentValue]);
 
   async function goToSlide(order: number) {
     setViewOrder(order);

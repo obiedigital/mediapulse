@@ -3,8 +3,6 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { jsonError, withErrorHandling } from "@/lib/api-helpers";
 import { wordsFromText } from "@/lib/aggregate";
-import { getIO } from "@/lib/socket-server";
-import { sessionRoom, SOCKET_EVENTS, type ResponseAddedPayload } from "@/lib/socket-events";
 import type { ResponseValue } from "@/types/slides";
 
 const bodySchema = z.object({
@@ -79,14 +77,6 @@ export async function POST(req: Request) {
       },
       update: { value: value as object, submittedAt: new Date() },
     });
-
-    const participantCount = await prisma.response.count({ where: { slideId: slide.id } });
-
-    const io = getIO();
-    if (io) {
-      const payload: ResponseAddedPayload = { sessionId: session.id, slideId: slide.id, participantCount };
-      io.to(sessionRoom(session.id)).emit(SOCKET_EVENTS.RESPONSE_ADDED, payload);
-    }
 
     return NextResponse.json({ ok: true });
   });

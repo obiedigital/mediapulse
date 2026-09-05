@@ -3,8 +3,6 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getOwnedSession, withErrorHandling } from "@/lib/api-helpers";
 import { writeSessionInsightRecord } from "@/lib/insights";
-import { getIO } from "@/lib/socket-server";
-import { sessionRoom, SOCKET_EVENTS, type SessionStatePayload } from "@/lib/socket-events";
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   return withErrorHandling(async () => {
@@ -42,16 +40,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
     if (body.status === "ended") {
       await writeSessionInsightRecord(record.id);
-    }
-
-    const io = getIO();
-    if (io && (body.status !== undefined || body.activeSlideOrder !== undefined)) {
-      const payload: SessionStatePayload = {
-        sessionId: updated.id,
-        status: updated.status,
-        activeSlideOrder: updated.activeSlideOrder,
-      };
-      io.to(sessionRoom(updated.id)).emit(SOCKET_EVENTS.SESSION_STATE, payload);
     }
 
     return NextResponse.json({ session: updated });
