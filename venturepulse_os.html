@@ -1,0 +1,1389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VenturePulse OS — The Venture Operating System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --ink:#0A0A0F; --ink2:#12121A; --surface:#1C1C28; --s2:#252534; --s3:#2E2E42;
+  --line:rgba(255,255,255,0.07); --line2:rgba(255,255,255,0.13);
+  --or:#7C5CFF; --or2:#9F86FF; --or-bg:rgba(124,92,255,0.13);
+  --teal:#B6F23A; --teal-bg:rgba(182,242,58,0.1);
+  --cream:#F5F2EC; --mu:rgba(245,242,236,0.5);
+  --green:#22C55E; --red:#EF4444; --yellow:#F59E0B; --purple:#A855F7;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--ink);color:var(--cream);font-family:'Inter',sans-serif;font-weight:400;overflow-x:hidden;width:100%;}
+h1,h2,h3,h4,.num,.brandmark{font-family:'Syne',sans-serif;font-weight:800;letter-spacing:-0.03em;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,textarea,select{font-family:inherit;color:var(--cream);background:var(--s2);border:1px solid var(--line2);border-radius:8px;padding:10px 12px;font-size:13px;outline:none;}
+input:focus,textarea:focus,select:focus{border-color:var(--or);}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--s3);border-radius:8px;}
+.screen{display:none;min-height:100vh;}
+.screen.active{display:block;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:9px;font-size:13px;font-weight:600;transition:all .15s;white-space:nowrap;}
+.btn-primary{background:linear-gradient(135deg,var(--or),var(--or2));color:#fff;}
+.btn:disabled{opacity:.6;cursor:default;}
+.btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.btn-ghost{background:var(--s2);border:1px solid var(--line2);color:var(--cream);}
+.btn-ghost:hover{background:var(--s3);}
+.btn-sm{padding:6px 12px;font-size:11.5px;border-radius:7px;}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:600;letter-spacing:.02em;}
+.muted{color:var(--mu);}
+.container{max-width:1280px;margin:0 auto;padding:0 32px;}
+@media(max-width:680px){.container{padding:0 16px;}}
+
+/* ---------- NAV / LANDING ---------- */
+.nav{position:sticky;top:0;z-index:50;background:rgba(10,10,15,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;max-width:1280px;margin:0 auto;}
+.logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;font-family:'Syne',sans-serif;}
+.logo-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--or),var(--teal));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#0A0A0F;flex-shrink:0;}
+.nav-links{display:flex;gap:28px;font-size:13.5px;color:var(--mu);}
+.nav-links a:hover{color:var(--cream);}
+.nav-actions{display:flex;gap:10px;align-items:center;}
+@media(max-width:900px){.nav-links{display:none;}}
+
+.hero{padding:90px 32px 60px;max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1.1fr .9fr;gap:60px;align-items:center;}
+@media(max-width:960px){.hero{grid-template-columns:1fr;padding:50px 20px;}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:var(--teal-bg);border:1px solid rgba(182,242,58,.25);color:var(--teal);font-size:11.5px;font-weight:600;margin-bottom:22px;}
+.hero h1{font-size:52px;line-height:1.04;letter-spacing:-0.04em;margin-bottom:20px;}
+.grad-text{background:linear-gradient(120deg,var(--or),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.hero p{font-size:16px;color:var(--mu);line-height:1.6;max-width:480px;margin-bottom:30px;}
+.hero-ctas{display:flex;gap:12px;margin-bottom:36px;flex-wrap:wrap;}
+.social-proof{display:flex;align-items:center;gap:12px;}
+.avatars{display:flex;}
+.avatars span{width:30px;height:30px;border-radius:50%;background:var(--s3);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-left:-8px;}
+.avatars span:first-child{margin-left:0;}
+@media(max-width:520px){.hero h1{font-size:36px;}}
+
+.signal-card{padding:22px;margin-bottom:14px;}
+.signal-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.signal-num{font-size:38px;line-height:1;}
+.ticker-wrap{overflow:hidden;height:96px;position:relative;-webkit-mask-image:linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);mask-image:linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);}
+.ticker-track{display:flex;flex-direction:column;gap:10px;animation:tickup 12s linear infinite;}
+@keyframes tickup{0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
+.ticker-item{font-size:12.5px;padding:8px 0;border-bottom:1px dashed var(--line);color:var(--mu);}
+.ticker-item b{color:var(--cream);font-weight:500;}
+
+.marquee-band{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:22px 0;overflow:hidden;background:var(--ink2);}
+.marquee-track{display:flex;gap:52px;white-space:nowrap;animation:scrollx 32s linear infinite;width:max-content;}
+@keyframes scrollx{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.marquee-track span{font-size:14px;color:var(--mu);font-weight:600;letter-spacing:.02em;}
+
+.section{padding:90px 32px;max-width:1280px;margin:0 auto;}
+.section-head{max-width:600px;margin-bottom:44px;}
+.section-head .eyebrow{margin-bottom:14px;}
+.section-head h2{font-size:34px;letter-spacing:-0.03em;margin-bottom:12px;}
+.section-head p{color:var(--mu);font-size:15px;line-height:1.6;}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;}
+.reveal.in{opacity:1;transform:translateY(0);}
+
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:860px){.feat-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.feat-grid{grid-template-columns:1fr;}}
+.feat-cell{padding:26px;min-height:170px;display:flex;flex-direction:column;justify-content:flex-end;}
+.feat-cell.span2{grid-column:span 2;}
+@media(max-width:560px){.feat-cell.span2{grid-column:span 1;}}
+.feat-icon{width:38px;height:38px;border-radius:10px;background:var(--or-bg);color:var(--or);display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:16px;}
+.feat-cell h4{font-size:16px;margin-bottom:8px;}
+.feat-cell p{font-size:13px;color:var(--mu);line-height:1.55;}
+
+.metrics-band{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:50px 32px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);max-width:1280px;margin:0 auto;}
+@media(max-width:760px){.metrics-band{grid-template-columns:repeat(2,1fr);}}
+.metric{text-align:center;}
+.metric .num{font-size:42px;background:linear-gradient(120deg,var(--or),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.metric .lbl{font-size:12.5px;color:var(--mu);margin-top:6px;}
+
+.browser-chrome{border-radius:14px;overflow:hidden;border:1px solid var(--line2);background:var(--ink2);}
+.chrome-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--s2);border-bottom:1px solid var(--line);}
+.chrome-dot{width:9px;height:9px;border-radius:50%;background:var(--s3);}
+.chrome-url{flex:1;background:var(--ink);border-radius:6px;padding:5px 12px;font-size:11px;color:var(--mu);text-align:center;}
+.chrome-body{display:grid;grid-template-columns:210px 1fr;min-height:380px;}
+@media(max-width:700px){.chrome-body{grid-template-columns:1fr;}}
+.chrome-side{background:var(--ink2);border-right:1px solid var(--line);padding:16px;font-size:12px;}
+.chrome-side .sidenav-item{padding:9px 10px;border-radius:7px;color:var(--mu);margin-bottom:2px;}
+.chrome-side .sidenav-item.on{background:var(--or-bg);color:var(--or);font-weight:600;}
+.chrome-main{padding:22px;}
+
+.steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+@media(max-width:760px){.steps-grid{grid-template-columns:repeat(2,1fr);}}
+.step-card{padding:24px;position:relative;}
+.step-num{font-size:12px;color:var(--or);font-weight:700;margin-bottom:14px;}
+.step-card h4{font-size:16px;margin-bottom:8px;}
+.step-card p{font-size:13px;color:var(--mu);line-height:1.55;}
+
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+@media(max-width:860px){.testi-grid{grid-template-columns:1fr;}}
+.testi-card{padding:26px;}
+.stars{color:var(--yellow);font-size:13px;margin-bottom:14px;letter-spacing:2px;}
+.testi-card p{font-size:14px;line-height:1.6;color:var(--cream);margin-bottom:18px;}
+.testi-who{display:flex;align-items:center;gap:10px;}
+.testi-avatar{width:36px;height:36px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;}
+.testi-name{font-size:13px;font-weight:600;}
+.testi-role{font-size:11.5px;color:var(--mu);}
+
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+@media(max-width:860px){.pricing-grid{grid-template-columns:1fr;}}
+.price-card{padding:30px;position:relative;}
+.price-card.featured{border-color:var(--or);background:linear-gradient(180deg,var(--or-bg),var(--surface) 40%);}
+.price-badge{position:absolute;top:-11px;right:24px;background:var(--or);color:#fff;font-size:10.5px;font-weight:700;padding:4px 12px;border-radius:20px;}
+.price-tier{font-size:14px;color:var(--mu);margin-bottom:6px;}
+.price-amt{font-size:36px;margin-bottom:4px;}
+.price-amt span{font-size:14px;color:var(--mu);font-weight:400;}
+.price-feats{margin:22px 0;display:flex;flex-direction:column;gap:10px;}
+.price-feats li{list-style:none;font-size:13px;color:var(--mu);display:flex;gap:8px;}
+.price-feats li:before{content:"✓";color:var(--teal);font-weight:700;}
+
+.cta-section{position:relative;text-align:center;padding:110px 32px;overflow:hidden;}
+.cta-glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 40%, rgba(124,92,255,.18), transparent 60%);pointer-events:none;}
+.cta-section h2{font-size:38px;letter-spacing:-0.03em;margin-bottom:18px;position:relative;}
+.cta-section p{color:var(--mu);margin-bottom:28px;position:relative;}
+
+footer{border-top:1px solid var(--line);padding:60px 32px 30px;}
+.footer-grid{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:32px;margin-bottom:40px;}
+@media(max-width:760px){.footer-grid{grid-template-columns:1fr 1fr;}}
+.footer-grid h5{font-size:12px;color:var(--mu);margin-bottom:14px;text-transform:uppercase;letter-spacing:.06em;}
+.footer-grid a{display:block;font-size:13px;color:var(--mu);margin-bottom:10px;}
+.footer-grid a:hover{color:var(--cream);}
+.footer-bottom{max-width:1280px;margin:0 auto;padding-top:24px;border-top:1px solid var(--line);font-size:12px;color:var(--mu);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+
+/* ---------- LOGIN ---------- */
+#screen-login{min-height:100vh;align-items:center;justify-content:center;padding:40px 20px;background:radial-gradient(circle at 30% 20%, rgba(124,92,255,.08), transparent 50%),radial-gradient(circle at 80% 80%, rgba(182,242,58,.08), transparent 50%);}
+#screen-login.active{display:flex;}
+.login-card{width:100%;max-width:520px;padding:40px;}
+.login-card h1{font-size:26px;margin:20px 0 6px;}
+.login-card>p.muted{margin-bottom:26px;}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:26px;}
+@media(max-width:480px){.demo-grid{grid-template-columns:1fr;}}
+.demo-card{padding:14px;text-align:left;border-radius:10px;background:var(--s2);border:1px solid var(--line2);transition:all .15s;}
+.demo-card:hover{border-color:var(--or);background:var(--s3);}
+.demo-role{font-size:10px;color:var(--teal);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px;}
+.demo-name{font-size:13.5px;font-weight:600;}
+.demo-org{font-size:11.5px;color:var(--mu);margin-top:2px;}
+.form-field{margin-bottom:14px;}
+.form-field label{display:block;font-size:11.5px;color:var(--mu);margin-bottom:6px;}
+.form-field input{width:100%;}
+
+/* ---------- APP SHELL ---------- */
+#screen-app{display:none;height:100vh;flex-direction:column;}
+#screen-app.active{display:flex;}
+.topchrome{height:50px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--ink2);border-bottom:1px solid var(--line);gap:16px;}
+.topchrome-left{display:flex;align-items:center;gap:22px;}
+.demo-switcher{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mu);}
+.role-tabs{display:flex;gap:2px;background:var(--s2);border-radius:8px;padding:2px;}
+.role-tab{padding:5px 11px;border-radius:6px;font-size:11.5px;color:var(--mu);font-weight:600;}
+.role-tab.on{background:var(--or);color:#fff;}
+.topchrome-search{flex:1;max-width:340px;display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--line2);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--mu);}
+.topchrome-search kbd{background:var(--s3);padding:1px 6px;border-radius:4px;font-size:10px;}
+.topchrome-right{display:flex;align-items:center;gap:14px;}
+.bell{position:relative;font-size:16px;}
+.bell .dot{position:absolute;top:-2px;right:-2px;width:7px;height:7px;border-radius:50%;background:var(--red);}
+.userchip{display:flex;align-items:center;gap:8px;font-size:12px;}
+.userchip .av{width:26px;height:26px;border-radius:50%;background:var(--or-bg);color:var(--or);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;}
+
+.app-body{flex:1;display:flex;overflow:hidden;}
+.sidebar{width:220px;flex-shrink:0;background:var(--ink2);border-right:1px solid var(--line);padding:16px 12px;overflow-y:auto;}
+@media(max-width:680px){.sidebar{display:none;}}
+.client-box{padding:12px;border-radius:10px;background:var(--s2);margin-bottom:14px;}
+.client-box .cb-name{font-size:13px;font-weight:700;}
+.client-box .cb-plan{font-size:11px;color:var(--teal);margin-top:2px;}
+.client-box .cb-ro{font-size:10px;color:var(--yellow);margin-top:5px;font-weight:600;}
+.qsearch-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:var(--s2);border:1px solid var(--line2);font-size:12px;color:var(--mu);margin-bottom:16px;}
+.qsearch-btn kbd{background:var(--s3);padding:1px 6px;border-radius:4px;font-size:10px;}
+.navgroup{margin-bottom:14px;}
+.navgroup-lbl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;padding:0 8px;margin-bottom:6px;}
+.navitem{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:8px;font-size:12.5px;color:var(--mu);margin-bottom:1px;position:relative;}
+.navitem:hover{background:var(--s2);color:var(--cream);}
+.navitem.on{background:var(--or-bg);color:var(--or);font-weight:600;}
+.navitem .nbadge{margin-left:auto;background:var(--red);color:#fff;font-size:9.5px;padding:1px 6px;border-radius:10px;font-weight:700;}
+
+.content{flex:1;overflow-y:auto;padding:26px 30px 60px;}
+@media(max-width:680px){.content{padding:18px;}}
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+.page-head h2{font-size:24px;}
+.page-head .sub{font-size:12.5px;color:var(--mu);margin-top:4px;}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+@media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+.stat-card{padding:18px;}
+.stat-card .lbl{font-size:11.5px;color:var(--mu);margin-bottom:8px;}
+.stat-card .val{font-size:26px;}
+.stat-card .delta{font-size:11px;margin-top:6px;font-weight:600;}
+.up{color:var(--green);}.down{color:var(--red);}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.chip{padding:6px 13px;border-radius:20px;font-size:12px;background:var(--s2);border:1px solid var(--line2);color:var(--mu);font-weight:500;}
+.chip.on{background:var(--or);border-color:var(--or);color:#fff;}
+
+.hint-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:10px;background:linear-gradient(90deg,var(--teal-bg),transparent);border:1px solid rgba(182,242,58,.2);margin-bottom:18px;font-size:12.5px;}
+.hint-banner a{color:var(--teal);font-weight:600;}
+.hint-x{font-size:16px;color:var(--mu);}
+
+.story-card{padding:18px;margin-bottom:14px;}
+.story-top{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+.story-head{font-size:15.5px;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:6px;line-height:1.3;}
+.story-src{font-size:11.5px;color:var(--mu);margin-bottom:10px;}
+.brandpills{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.story-rel{font-size:12.5px;color:var(--mu);background:var(--s2);border-left:3px solid var(--teal);padding:10px 12px;border-radius:6px;margin-bottom:12px;line-height:1.5;}
+.clip-prev{background:var(--ink2);border:1px solid var(--line2);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.clip-prev-head{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;font-family:'Syne',sans-serif;}
+.clip-prev-head .pg{font-size:10.5px;color:var(--mu);font-weight:400;font-family:'Inter',sans-serif;}
+.clip-prev-body{display:flex;gap:12px;padding:12px;}
+.clip-icon{width:90px;height:68px;background:var(--s2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
+.clip-prev-txt .h{font-size:12px;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:4px;}
+.clip-prev-txt .x{font-size:10px;color:var(--mu);line-height:1.4;}
+.clip-prev-foot{display:flex;gap:8px;padding:9px 12px;border-top:1px solid var(--line);}
+.story-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.ai-result{margin-top:12px;padding:14px;background:var(--s2);border:1px solid var(--teal-bg);border-left:3px solid var(--teal);border-radius:8px;font-size:12.5px;line-height:1.6;}
+.loading-dots:after{content:'...';animation:dots 1.2s steps(4,end) infinite;}
+@keyframes dots{0%,20%{content:'.'}40%{content:'..'}60%,100%{content:'...'}}
+
+.social-post{padding:16px;margin-bottom:12px;}
+.social-post.escalated{border-color:var(--red);background:rgba(239,68,68,.05);}
+.social-top{display:flex;gap:10px;align-items:center;margin-bottom:10px;}
+.social-av{width:36px;height:36px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+.social-handle{font-size:12.5px;font-weight:600;}
+.social-plat{font-size:10.5px;color:var(--mu);}
+.social-body{font-size:13px;line-height:1.55;margin-bottom:10px;}
+.social-stats{display:flex;gap:16px;font-size:11px;color:var(--mu);}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{text-align:left;padding:10px 12px;color:var(--mu);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--line2);}
+td{padding:11px 12px;border-bottom:1px solid var(--line);}
+tr:last-child td{border-bottom:none;}
+.tbl-wrap{overflow-x:auto;}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:900px){.grid2{grid-template-columns:1fr;}}
+.chart-box{padding:18px;height:280px;position:relative;}
+.chart-box canvas{max-height:230px;}
+.section-title{font-size:15px;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:14px;}
+
+.keyword-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.kw{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;}
+.kw.brand{background:var(--or-bg);color:var(--or2);}
+.kw.comp{background:rgba(239,68,68,.12);color:#f87171;}
+.kw.watch{background:var(--teal-bg);color:var(--teal);}
+
+.heat-cell{width:34px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:var(--mu);}
+.alert-item{display:flex;gap:12px;padding:16px;margin-bottom:12px;}
+.alert-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+
+/* ---------- MODAL / CMDK / TOAST ---------- */
+.overlay{position:fixed;inset:0;background:rgba(5,5,8,.75);backdrop-filter:blur(3px);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:60px 20px;overflow-y:auto;}
+.overlay.active{display:flex;}
+.modal-box{width:100%;max-width:640px;background:var(--surface);border:1px solid var(--line2);border-radius:14px;padding:26px;margin-bottom:60px;}
+.breadcrumb{font-size:11.5px;color:var(--mu);margin-bottom:16px;}
+.modal-close{position:absolute;top:20px;right:20px;font-size:18px;color:var(--mu);}
+.modal-box{position:relative;}
+.sent-bar{height:8px;border-radius:5px;overflow:hidden;display:flex;margin:14px 0;background:var(--s2);}
+.sent-bar .g{background:var(--green);}
+.sent-bar .r{background:var(--red);}
+
+#cmdk-overlay{align-items:flex-start;padding-top:100px;}
+.cmdk-box{width:100%;max-width:560px;background:var(--surface);border:1px solid var(--line2);border-radius:14px;overflow:hidden;}
+.cmdk-input{width:100%;padding:16px 20px;font-size:15px;background:var(--s2);border:none;border-bottom:1px solid var(--line);border-radius:0;}
+.cmdk-results{max-height:400px;overflow-y:auto;padding:8px;}
+.cmdk-group-lbl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;padding:10px 12px 4px;}
+.cmdk-item{padding:10px 12px;border-radius:8px;font-size:13px;display:flex;align-items:center;gap:10px;}
+.cmdk-item.sel{background:var(--or-bg);color:var(--or2);}
+
+#welcome-overlay .modal-box{max-width:460px;text-align:center;}
+.welcome-steps{text-align:left;margin:18px 0;display:flex;flex-direction:column;gap:10px;}
+.welcome-step{display:flex;gap:10px;font-size:13px;color:var(--mu);align-items:flex-start;}
+.welcome-step b{color:var(--or);font-family:'Syne',sans-serif;}
+
+#toast-stack{position:fixed;bottom:20px;right:20px;z-index:400;display:flex;flex-direction:column;gap:10px;align-items:flex-end;}
+.toast{padding:12px 16px;border-radius:10px;background:var(--surface);border:1px solid var(--line2);font-size:12.5px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);transform:translateX(120%);opacity:0;transition:all .3s ease;max-width:320px;}
+.toast.show{transform:translateX(0);opacity:1;}
+.toast .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.toast.success .dot{background:var(--green);}
+.toast.info .dot{background:var(--teal);}
+.toast.warn .dot{background:var(--yellow);}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+@media(max-width:560px){.form-row{grid-template-columns:1fr;}}
+.check-row{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:8px;}
+.toggle{width:38px;height:22px;border-radius:20px;background:var(--s3);position:relative;flex-shrink:0;}
+.toggle.on{background:var(--or);}
+.toggle .kn{width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:all .2s;}
+.toggle.on .kn{left:19px;}
+
+/* ---------- VENTUREPULSE ADDITIONS ---------- */
+.kanban{display:grid;grid-template-columns:repeat(5,minmax(200px,1fr));gap:12px;overflow-x:auto;padding-bottom:8px;}
+.kcol{background:var(--ink2);border:1px solid var(--line);border-radius:12px;padding:10px;min-height:320px;transition:background .15s;}
+.kcol.drag-over{background:var(--s2);border-color:var(--or);}
+.kcol-head{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);padding:4px 6px 10px;}
+.kcol-head .cnt{background:var(--s3);color:var(--cream);border-radius:10px;padding:1px 8px;font-size:10.5px;}
+.kcard{background:var(--surface);border:1px solid var(--line2);border-radius:10px;padding:12px;margin-bottom:8px;cursor:grab;transition:transform .12s,border-color .12s;}
+.kcard:hover{border-color:var(--or);transform:translateY(-1px);}
+.kcard.dragging{opacity:.4;}
+.kcard .kt{font-size:13px;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:3px;}
+.kcard .ks{font-size:11px;color:var(--mu);margin-bottom:8px;}
+.kcard .kf{display:flex;justify-content:space-between;align-items:center;font-size:11px;}
+.avsm{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;font-family:'Syne',sans-serif;color:#0A0A0F;flex-shrink:0;}
+.progress{height:7px;border-radius:5px;background:var(--s3);overflow:hidden;}
+.progress>div{height:100%;background:linear-gradient(90deg,var(--or),var(--teal));border-radius:5px;transition:width .4s;}
+.ring{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ring-inner{width:94px;height:94px;border-radius:50%;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-inner .num{font-size:28px;}
+.list-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);}
+.list-row:last-child{border-bottom:none;}
+.check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;cursor:pointer;}
+.check.on{background:var(--teal);border-color:var(--teal);color:#0A0A0F;font-weight:800;}
+.opp-card{padding:18px;display:flex;flex-direction:column;gap:8px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+@media(max-width:900px){.grid3{grid-template-columns:1fr;}}
+.split{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;}
+@media(max-width:1000px){.split{grid-template-columns:1fr;}}
+.mb{margin-bottom:16px;}
+.p18{padding:18px;}
+.score{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;}
+.range{width:100%;accent-color:var(--or);padding:0;border:none;background:none;}
+textarea{width:100%;min-height:90px;resize:vertical;}
+select{width:100%;}
+.mobile-nav{display:none;}
+.modal-box .stat-card .val,#round-out .stat-card .val{font-size:19px;}
+@media(max-width:680px){.stat-card .val{font-size:20px;}.modal-box .stat-grid{grid-template-columns:1fr 1fr!important;}}
+@media(max-width:680px){
+  .topchrome-search,.demo-switcher,.userchip div:last-child{display:none;}
+  .mobile-nav{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;background:var(--ink2);border-bottom:1px solid var(--line);flex-shrink:0;}
+  .mobile-nav .chip{white-space:nowrap;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ SCREEN 1: LANDING ============ -->
+<div class="screen active" id="screen-landing">
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="logo"><div class="logo-mark">VP</div> VenturePulse OS</div>
+      <div class="nav-links">
+        <a href="#platform">Platform</a><a href="#who">Who it's for</a><a href="#how">How it works</a><a href="#pricing">Pricing</a>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" onclick="showLogin()">Sign in</button>
+        <button class="btn btn-primary btn-sm" onclick="showLogin()">Get started</button>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">🚀 The operating system for African ventures</div>
+      <h1>Build. Raise. Grow.<br><span class="grad-text">One venture OS.</span></h1>
+      <p>VenturePulse OS connects founders, investors and accelerators on one platform — live traction metrics, fundraising pipelines, data rooms, deal flow and cohort impact reporting, with AI built in.</p>
+      <div class="hero-ctas">
+        <button class="btn btn-primary" onclick="showLogin()">Explore the live demo →</button>
+        <a class="btn btn-ghost" href="#platform">See the platform</a>
+      </div>
+      <div class="social-proof">
+        <div class="avatars"><span>TS</span><span>BR</span><span>ND</span><span>KM</span></div>
+        <div class="muted" style="font-size:12.5px">Trusted by <b style="color:var(--cream)">240+ startups</b> and <b style="color:var(--cream)">35 funds & programmes</b></div>
+      </div>
+    </div>
+    <div>
+      <div class="card signal-card">
+        <div class="signal-top">
+          <div><div class="muted" style="font-size:11.5px;margin-bottom:6px">Ecosystem capital tracked this quarter</div><div class="signal-num num">BWP 148M</div></div>
+          <span class="pill" style="background:var(--teal-bg);color:var(--teal)">▲ 22% QoQ</span>
+        </div>
+        <div class="ticker-wrap"><div class="ticker-track" id="hero-ticker"></div></div>
+      </div>
+      <div class="grid2" style="gap:14px">
+        <div class="card signal-card" style="margin:0"><div class="muted" style="font-size:11.5px">Active deals</div><div class="num" style="font-size:28px;margin-top:6px">1,284</div></div>
+        <div class="card signal-card" style="margin:0"><div class="muted" style="font-size:11.5px">Median runway</div><div class="num" style="font-size:28px;margin-top:6px">14.2 mo</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee-band"><div class="marquee-track" id="marquee"></div></div>
+
+  <section class="section" id="platform">
+    <div class="section-head reveal">
+      <div class="eyebrow">Platform</div>
+      <h2>Every stakeholder. One source of truth.</h2>
+      <p>Founders keep their numbers in one place. Investors and programme managers see the same live data — no more chasing spreadsheets before every board meeting.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="card feat-cell span2 reveal"><div class="feat-icon">📈</div><h4>Live traction dashboards</h4><p>MRR, burn, runway, customers and unit economics — tracked monthly and shared with the investors you choose.</p></div>
+      <div class="card feat-cell reveal"><div class="feat-icon">🤝</div><h4>Fundraising CRM</h4><p>Drag-and-drop investor pipeline from first intro to signed term sheet.</p></div>
+      <div class="card feat-cell reveal"><div class="feat-icon">🗂️</div><h4>Investor-ready data room</h4><p>A readiness score that tells you exactly what's missing before due diligence.</p></div>
+      <div class="card feat-cell reveal"><div class="feat-icon">🎯</div><h4>Deal flow for funds</h4><p>Screen, score and move deals through your investment process.</p></div>
+      <div class="card feat-cell reveal"><div class="feat-icon">✨</div><h4>AI co-pilot</h4><p>Draft investor updates, investment memos and LP letters in seconds.</p></div>
+      <div class="card feat-cell span2 reveal"><div class="feat-icon">🌱</div><h4>Cohort & impact reporting</h4><p>Accelerators and DFIs track applications, mentor matches, jobs created and women-led ventures — ready for donor reporting.</p></div>
+      <div class="card feat-cell reveal"><div class="feat-icon">🧮</div><h4>Cap table & round modelling</h4><p>Model dilution for your next round before you sign.</p></div>
+    </div>
+  </section>
+
+  <div class="metrics-band">
+    <div class="metric reveal"><div class="num" data-count="240">0</div><div class="lbl">Startups on the platform</div></div>
+    <div class="metric reveal"><div class="num" data-count="35">0</div><div class="lbl">Funds & programmes</div></div>
+    <div class="metric reveal"><div class="num" data-count="148" data-prefix="BWP " data-suffix="M">0</div><div class="lbl">Capital tracked</div></div>
+    <div class="metric reveal"><div class="num" data-count="3100" data-suffix="+">0</div><div class="lbl">Jobs reported</div></div>
+  </div>
+
+  <section class="section" id="who">
+    <div class="section-head reveal">
+      <div class="eyebrow">Who it's for</div>
+      <h2>Three workspaces. One ecosystem.</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="card testi-card reveal"><div class="feat-icon">🧑‍🚀</div><h4 style="font-size:18px;margin-bottom:8px">Founders</h4><p class="muted" style="font-size:13.5px">Track your metrics, manage your raise, keep your data room ready and send investor updates in minutes.</p></div>
+      <div class="card testi-card reveal"><div class="feat-icon">💼</div><h4 style="font-size:18px;margin-bottom:8px">Investors</h4><p class="muted" style="font-size:13.5px">Discover startups, run a structured deal pipeline, monitor your portfolio and report to LPs.</p></div>
+      <div class="card testi-card reveal"><div class="feat-icon">🏛️</div><h4 style="font-size:18px;margin-bottom:8px">Accelerators & DFIs</h4><p class="muted" style="font-size:13.5px">Run applications, score cohorts, match mentors and produce impact reports for funders.</p></div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="section-head reveal"><div class="eyebrow">How it works</div><h2>Up and running in a week.</h2></div>
+    <div class="steps-grid">
+      <div class="card step-card reveal"><div class="step-num">01</div><h4>Create your workspace</h4><p>Founder, fund or programme — pick your role and invite your team.</p></div>
+      <div class="card step-card reveal"><div class="step-num">02</div><h4>Connect your numbers</h4><p>Upload monthly metrics or connect accounting. We compute runway and growth.</p></div>
+      <div class="card step-card reveal"><div class="step-num">03</div><h4>Share with permission</h4><p>Grant investors or programmes live access — revoke any time.</p></div>
+      <div class="card step-card reveal"><div class="step-num">04</div><h4>Let AI do the paperwork</h4><p>Updates, memos and impact reports drafted from your live data.</p></div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="section-head reveal"><div class="eyebrow">Pricing</div><h2>Free for founders. Simple for funds.</h2></div>
+    <div class="pricing-grid">
+      <div class="card price-card reveal"><div class="price-tier">Founder</div><div class="price-amt num">Free</div><div class="muted" style="font-size:12.5px">For early-stage startups</div>
+        <ul class="price-feats"><li>Metrics dashboard</li><li>Fundraising CRM</li><li>Data room (1 GB)</li><li>5 AI drafts / month</li></ul>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="showLogin()">Start free</button></div>
+      <div class="card price-card featured reveal"><div class="price-badge">Most popular</div><div class="price-tier">Investor</div><div class="price-amt num">BWP 4,500<span>/mo</span></div><div class="muted" style="font-size:12.5px">For angels, syndicates & funds</div>
+        <ul class="price-feats"><li>Deal flow pipeline</li><li>Portfolio monitoring</li><li>Startup discovery</li><li>AI memos & LP reports</li><li>5 team seats</li></ul>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="showLogin()">Start 14-day trial</button></div>
+      <div class="card price-card reveal"><div class="price-tier">Programme</div><div class="price-amt num">Custom</div><div class="muted" style="font-size:12.5px">For accelerators, ESOs & DFIs</div>
+        <ul class="price-feats"><li>Applications & scoring</li><li>Mentor matching</li><li>Impact dashboards</li><li>Donor-ready exports</li><li>Unlimited cohorts</li></ul>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="showLogin()">Talk to us</button></div>
+    </div>
+  </section>
+
+  <section class="cta-section reveal">
+    <div class="cta-glow"></div>
+    <h2>Your next round starts with your numbers.</h2>
+    <p>Join the founders and funds building Africa's venture ecosystem on VenturePulse OS.</p>
+    <button class="btn btn-primary" onclick="showLogin()">Launch the demo →</button>
+  </section>
+
+  <footer>
+    <div class="footer-grid">
+      <div><div class="logo"><div class="logo-mark">VP</div> VenturePulse OS</div><p class="muted" style="font-size:12.5px;margin-top:12px;max-width:260px;line-height:1.6">The venture operating system for founders, investors and ecosystem builders.</p></div>
+      <div><h5>Product</h5><a href="#platform">Platform</a><a href="#pricing">Pricing</a><a onclick="showLogin()">Demo</a></div>
+      <div><h5>Workspaces</h5><a>Founders</a><a>Investors</a><a>Programmes</a></div>
+      <div><h5>Company</h5><a>About</a><a>Privacy</a><a>Contact</a></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 VenturePulse OS. Demo build — all companies and figures are fictional.</span><span>Made in Gaborone 🇧🇼</span></div>
+  </footer>
+</div>
+
+<!-- ============ SCREEN 2: LOGIN ============ -->
+<div class="screen" id="screen-login">
+  <div class="card login-card">
+    <div class="logo"><div class="logo-mark">VP</div> VenturePulse OS</div>
+    <h1>Welcome back</h1>
+    <p class="muted">Pick a demo workspace or sign in.</p>
+    <div class="demo-grid" id="demo-cards"></div>
+    <div class="form-field"><label>Email</label><input type="email" id="login-email" placeholder="you@startup.co.bw"></div>
+    <div class="form-field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:6px" onclick="doLogin()">Sign in →</button>
+    <div style="text-align:center;margin-top:16px"><a class="muted" style="font-size:12px;cursor:pointer" onclick="showLanding()">← Back to home</a></div>
+  </div>
+</div>
+
+<!-- ============ SCREEN 3: APP ============ -->
+<div class="screen" id="screen-app">
+  <div class="topchrome">
+    <div class="topchrome-left">
+      <div class="logo" style="font-size:13px;cursor:pointer" onclick="showLanding()"><div class="logo-mark" style="width:26px;height:26px;font-size:10px">VP</div> VenturePulse OS</div>
+      <div class="demo-switcher">Demo · view as
+        <div class="role-tabs" id="role-tabs"></div>
+      </div>
+    </div>
+    <div class="topchrome-search" onclick="openCmdk()">🔍 Search pages, startups, investors... <kbd style="margin-left:auto">⌘K</kbd></div>
+    <div class="topchrome-right">
+      <div class="bell" onclick="bellClick()" style="cursor:pointer">🔔<span class="dot"></span></div>
+      <div class="userchip" id="userchip"></div>
+      <button class="btn btn-ghost btn-sm" onclick="showLogin()">Switch</button>
+    </div>
+  </div>
+  <div class="mobile-nav" id="mobile-nav"></div>
+  <div class="app-body">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<div class="overlay" id="cmdk-overlay" onclick="if(event.target===this)closeCmdk()">
+  <div class="cmdk-box">
+    <input class="cmdk-input" id="cmdk-input" placeholder="Search pages, startups, investors..." oninput="cmdkSel=0;renderCmdkResults()">
+    <div class="cmdk-results" id="cmdk-results"></div>
+  </div>
+</div>
+
+<div class="overlay" id="welcome-overlay">
+  <div class="modal-box" id="welcome-box"></div>
+</div>
+
+<div id="toast-stack"></div>
+<script>
+/* =====================================================================
+   DATA (all fictional demo data)
+===================================================================== */
+const COLORS = ['#7C5CFF','#B6F23A','#22C55E','#F59E0B','#38BDF8','#F472B6','#A855F7','#EF4444'];
+
+const STARTUPS = [
+  {id:0,name:'Mosa Agritech',sector:'Agritech',stage:'Seed',city:'Gaborone',ask:6.5,mrr:182,growth:9,founder:'Thabo Sebego',female:false,score:84,deal:'Diligence',blurb:'IoT soil sensors and input financing for smallholder farmers across the SADC region.'},
+  {id:1,name:'Pula Pay',sector:'Fintech',stage:'Series A',city:'Gaborone',ask:28,mrr:640,growth:12,founder:'Kefilwe Moremi',female:true,score:91,deal:'Term sheet',blurb:'Merchant payments and instant settlement for informal retailers via mobile money.'},
+  {id:2,name:'Kalahari Health',sector:'Healthtech',stage:'Seed',city:'Francistown',ask:9,mrr:96,growth:14,founder:'Dr. Lorato Nkwe',female:true,score:79,deal:'Meeting',blurb:'Tele-pharmacy and chronic-care adherence platform for rural clinics.'},
+  {id:3,name:'Sedibeng Solar',sector:'Cleantech',stage:'Pre-seed',city:'Maun',ask:3.2,mrr:41,growth:18,founder:'Oratile Kebonang',female:false,score:72,deal:'Screening',blurb:'Pay-as-you-go solar kits and productive-use appliances for off-grid homes.'},
+  {id:4,name:'Thuto Labs',sector:'Edtech',stage:'Seed',city:'Gaborone',ask:5,mrr:58,growth:7,founder:'Masego Dube',female:true,score:68,deal:'Screening',blurb:'Offline-first maths tutoring for junior secondary schools.'},
+  {id:5,name:'Tsela Logistics',sector:'Logistics',stage:'Series A',city:'Gaborone',ask:35,mrr:910,growth:6,founder:'Kabelo Mmusi',female:false,score:81,deal:'Meeting',blurb:'Cross-border freight marketplace connecting shippers with verified trucks.'},
+  {id:6,name:'Bokamoso Insure',sector:'Insurtech',stage:'Seed',city:'Gaborone',ask:7.5,mrr:120,growth:11,founder:'Naledi Seretse',female:true,score:76,deal:'Diligence',blurb:'Embedded micro-insurance for gig workers and taxi operators.'},
+  {id:7,name:'Mophane Foods',sector:'Agritech',stage:'Pre-seed',city:'Selebi-Phikwe',ask:2,mrr:22,growth:21,founder:'Gofaone Tau',female:true,score:64,deal:'Sourced',blurb:'Protein snacks from sustainably harvested mophane worms.'},
+  {id:8,name:'Letlhaku Prop',sector:'Proptech',stage:'Seed',city:'Gaborone',ask:4.8,mrr:64,growth:5,founder:'Tumelo Phiri',female:false,score:59,deal:'Sourced',blurb:'Rental management and rent-to-own tools for small landlords.'},
+  {id:9,name:'Diamond Data',sector:'AI / Data',stage:'Seed',city:'Gaborone',ask:8,mrr:140,growth:15,founder:'Boitshepo Gabaake',female:true,score:87,deal:'Term sheet',blurb:'Computer-vision quality inspection for mining and manufacturing lines.'},
+  {id:10,name:'Kgotla Civic',sector:'Govtech',stage:'Pre-seed',city:'Gaborone',ask:1.5,mrr:12,growth:9,founder:'Onkemetse Rapula',female:false,score:55,deal:'Sourced',blurb:'Digital public-participation tools for local councils.'},
+  {id:11,name:'Okavango Trails',sector:'Traveltech',stage:'Seed',city:'Maun',ask:6,mrr:88,growth:8,founder:'Wame Kgosi',female:true,score:70,deal:'Screening',blurb:'Direct-booking platform for community-owned safari camps.'}
+];
+
+const FOUNDER_METRICS = {
+  months:['Apr','May','Jun','Jul','Aug','Sep'],
+  mrr:[121,132,146,158,167,182],
+  burn:[205,210,214,220,226,231],
+  customers:[1840,2010,2230,2460,2690,2980],
+  cash:850,
+  churn:[3.1,2.9,2.8,2.6,2.7,2.4],
+  cac:[410,395,380,372,360,348],
+  ltv:[3900,4050,4200,4300,4420,4610]
+};
+
+let INVESTORS = [
+  {name:'Lesedi Ventures',type:'VC fund',cheque:'BWP 3–8M',stage:'Due diligence',warm:'Hot',contact:'Boitumelo Ramotswa'},
+  {name:'Okavango Capital',type:'VC fund',cheque:'BWP 5–15M',stage:'Meeting',warm:'Warm',contact:'Pako Lekgowa'},
+  {name:'BW Angels Network',type:'Angel network',cheque:'BWP 0.5–2M',stage:'Term sheet',warm:'Hot',contact:'Mpho Segokgo'},
+  {name:'SADC Impact Fund',type:'DFI',cheque:'BWP 10–30M',stage:'Contacted',warm:'Warm',contact:'Refilwe Molapo'},
+  {name:'Savanna Seed',type:'Micro VC',cheque:'BWP 1–3M',stage:'Meeting',warm:'Cold',contact:'Itumeleng Sola'},
+  {name:'Agri Futures Africa',type:'Corporate VC',cheque:'BWP 2–6M',stage:'Prospect',warm:'Warm',contact:'Neo Mokgadi'},
+  {name:'Pan-African Growth',type:'VC fund',cheque:'BWP 8–20M',stage:'Prospect',warm:'Cold',contact:'Amani Okoro'},
+  {name:'Kgalagadi Family Office',type:'Family office',cheque:'BWP 1–4M',stage:'Contacted',warm:'Hot',contact:'Dineo Masire'}
+];
+const PIPE_STAGES = ['Prospect','Contacted','Meeting','Due diligence','Term sheet'];
+const DEAL_STAGES = ['Sourced','Screening','Meeting','Diligence','Term sheet'];
+
+let CAP = [
+  {holder:'Thabo Sebego (CEO)',cls:'Common',shares:4200000},
+  {holder:'Lame Sebego (CTO)',cls:'Common',shares:3000000},
+  {holder:'ESOP pool',cls:'Options',shares:1100000},
+  {holder:'Angel round (2024)',cls:'Preferred',shares:900000},
+  {holder:'Pre-seed SAFE (converted)',cls:'Preferred',shares:800000}
+];
+
+let DATAROOM = [
+  {sec:'Corporate',item:'Certificate of incorporation (CIPA)',done:true},
+  {sec:'Corporate',item:'Shareholder register & cap table',done:true},
+  {sec:'Corporate',item:'Board resolutions (last 24 months)',done:false},
+  {sec:'Financial',item:'Audited financials FY2025',done:true},
+  {sec:'Financial',item:'Management accounts (YTD)',done:true},
+  {sec:'Financial',item:'24-month financial model',done:false},
+  {sec:'Commercial',item:'Customer contracts (top 10)',done:true},
+  {sec:'Commercial',item:'Pipeline & unit economics',done:false},
+  {sec:'Legal',item:'IP assignment agreements',done:false},
+  {sec:'Legal',item:'Employment contracts & ESOP plan',done:true},
+  {sec:'Team',item:'Org chart & key hire plan',done:true},
+  {sec:'Impact',item:'ESG & impact metrics',done:false}
+];
+
+const OPPS = [
+  {name:'CEDA Youth Venture Fund',type:'Loan / grant',amt:'Up to BWP 2M',deadline:'31 Oct 2026',fit:92},
+  {name:'Pulse Accelerator Cohort 7',type:'Accelerator',amt:'BWP 250k + mentoring',deadline:'15 Nov 2026',fit:88},
+  {name:'AgriTech Africa Challenge',type:'Competition',amt:'USD 50k',deadline:'22 Nov 2026',fit:81},
+  {name:'BIH Innovation Grant',type:'Grant',amt:'BWP 500k',deadline:'05 Dec 2026',fit:74},
+  {name:'Climate Smart Ag Facility',type:'Blended finance',amt:'USD 250k',deadline:'Rolling',fit:69},
+  {name:'Women in Tech Fellowship',type:'Fellowship',amt:'Non-financial',deadline:'12 Jan 2027',fit:41}
+];
+
+const PORTFOLIO = [
+  {name:'Pula Pay',sector:'Fintech',invested:6,value:21.6,own:9.5,health:'Strong',runway:22},
+  {name:'Diamond Data',sector:'AI / Data',invested:3,value:7.2,own:11,health:'Strong',runway:18},
+  {name:'Tsela Logistics',sector:'Logistics',invested:5,value:6.5,own:7,health:'Watch',runway:9},
+  {name:'Bokamoso Insure',sector:'Insurtech',invested:2.5,value:3.4,own:8,health:'Stable',runway:14},
+  {name:'Kalahari Health',sector:'Healthtech',invested:2,value:2.2,own:10,health:'Stable',runway:12},
+  {name:'Sedibeng Solar',sector:'Cleantech',invested:1.5,value:0.9,own:12,health:'At risk',runway:5},
+  {name:'Okavango Trails',sector:'Traveltech',invested:1.2,value:1.8,own:9,health:'Stable',runway:16}
+];
+
+let APPLICATIONS = [
+  {name:'Mosa Agritech',sector:'Agritech',female:false,team:4,traction:4,market:5,status:'Shortlisted'},
+  {name:'Mophane Foods',sector:'Agritech',female:true,team:4,traction:3,market:4,status:'New'},
+  {name:'Kgotla Civic',sector:'Govtech',female:false,team:3,traction:2,market:3,status:'New'},
+  {name:'Thuto Labs',sector:'Edtech',female:true,team:5,traction:3,market:4,status:'Shortlisted'},
+  {name:'Letlhaku Prop',sector:'Proptech',female:false,team:3,traction:3,market:3,status:'New'},
+  {name:'Sedibeng Solar',sector:'Cleantech',female:false,team:4,traction:4,market:5,status:'Accepted'},
+  {name:'Kalahari Health',sector:'Healthtech',female:true,team:5,traction:4,market:4,status:'Accepted'},
+  {name:'Moremi Robotics',sector:'Hardware',female:true,team:3,traction:1,market:3,status:'New'},
+  {name:'Chobe Craft Co.',sector:'E-commerce',female:true,team:4,traction:3,market:3,status:'Declined'}
+];
+
+const MENTORS = [
+  {name:'Kagiso Molefhe',skills:['Fundraising','Fintech'],org:'ex-Standard Chartered',load:2},
+  {name:'Dr. Mmoloki Ntsabane',skills:['Healthtech','Regulatory'],org:'University of Botswana',load:1},
+  {name:'Lesego Mothibi',skills:['Agritech','Supply chain'],org:'Agri Futures Africa',load:3},
+  {name:'Tebogo Kwape',skills:['Product','Engineering'],org:'Fintech CTO',load:1},
+  {name:'Seabe Rantsho',skills:['Sales','B2B'],org:'Debswana (retired)',load:0},
+  {name:'Gaone Sello',skills:['Marketing','Consumer'],org:'Brand strategist',load:2}
+];
+
+const COHORT = [
+  {name:'Sedibeng Solar',stage:'Pre-seed',mentor:'Lesego Mothibi',progress:78,rev:41,jobs:9,female:false,milestone:'Pilot 200 homes'},
+  {name:'Kalahari Health',stage:'Seed',mentor:'Dr. Mmoloki Ntsabane',progress:85,rev:96,jobs:14,female:true,milestone:'MoH partnership'},
+  {name:'Thuto Labs',stage:'Seed',mentor:'Tebogo Kwape',progress:61,rev:58,jobs:7,female:true,milestone:'10 schools live'},
+  {name:'Mophane Foods',stage:'Pre-seed',mentor:'Gaone Sello',progress:54,rev:22,jobs:11,female:true,milestone:'Retail listing'},
+  {name:'Okavango Trails',stage:'Seed',mentor:'Seabe Rantsho',progress:70,rev:88,jobs:6,female:true,milestone:'30 camps onboarded'},
+  {name:'Kgotla Civic',stage:'Pre-seed',mentor:'Kagiso Molefhe',progress:42,rev:12,jobs:4,female:false,milestone:'First council contract'}
+];
+
+const USERS = [
+  {name:'Thabo Sebego',email:'thabo@mosa.africa',org:'Mosa Agritech',role:'Founder',status:'Active',last:'2 min ago'},
+  {name:'Boitumelo Ramotswa',email:'boitumelo@lesedi.vc',org:'Lesedi Ventures',role:'Investor',status:'Active',last:'14 min ago'},
+  {name:'Neo Dintwa',email:'neo@pulseaccelerator.org',org:'Pulse Accelerator',role:'Programme',status:'Active',last:'1 h ago'},
+  {name:'Kefilwe Moremi',email:'kefilwe@pulapay.co.bw',org:'Pula Pay',role:'Founder',status:'Active',last:'3 h ago'},
+  {name:'Pako Lekgowa',email:'pako@okavango.capital',org:'Okavango Capital',role:'Investor',status:'Invited',last:'—'},
+  {name:'Wame Kgosi',email:'wame@okavangotrails.com',org:'Okavango Trails',role:'Founder',status:'Active',last:'Yesterday'},
+  {name:'Refilwe Molapo',email:'refilwe@sadcimpact.org',org:'SADC Impact Fund',role:'Investor',status:'Suspended',last:'12 days ago'}
+];
+
+const DEMO_ACCOUNTS = {
+  founder:{name:'Thabo Sebego',email:'thabo@mosa.africa',pass:'demo123',org:'Mosa Agritech',role:'Founder'},
+  investor:{name:'Boitumelo Ramotswa',email:'boitumelo@lesedi.vc',pass:'demo123',org:'Lesedi Ventures',role:'Investor'},
+  programme:{name:'Neo Dintwa',email:'neo@pulseaccelerator.org',pass:'demo123',org:'Pulse Accelerator',role:'Programme'},
+  admin:{name:'Platform Admin',email:'admin@venturepulseos.com',pass:'admin123',org:'VenturePulse OS',role:'Admin'}
+};
+
+const ROLE_CONFIG = {
+  founder:{
+    box:{name:'Mosa Agritech',plan:'Founder · Seed'},
+    groups:[
+      {label:'Company',items:[{id:'f-dash',icon:'🏠',label:'Dashboard'},{id:'f-metrics',icon:'📈',label:'Metrics'},{id:'f-cap',icon:'🧮',label:'Cap table'}]},
+      {label:'Fundraising',items:[{id:'f-pipeline',icon:'🤝',label:'Investor pipeline'},{id:'f-dataroom',icon:'🗂️',label:'Data room'},{id:'f-update',icon:'✉️',label:'Investor update'}]},
+      {label:'Ecosystem',items:[{id:'f-opps',icon:'🎯',label:'Opportunities',badge:3}]}
+    ]
+  },
+  investor:{
+    box:{name:'Lesedi Ventures',plan:'Investor · Fund I (BWP 120M)'},
+    groups:[
+      {label:'Pipeline',items:[{id:'i-deals',icon:'🎯',label:'Deal flow'},{id:'i-discover',icon:'🔭',label:'Discover startups'}]},
+      {label:'Portfolio',items:[{id:'i-portfolio',icon:'💼',label:'Portfolio'},{id:'i-lp',icon:'📄',label:'LP reporting'}]}
+    ]
+  },
+  programme:{
+    box:{name:'Pulse Accelerator',plan:'Programme · Cohort 6'},
+    groups:[
+      {label:'Cohort',items:[{id:'p-cohort',icon:'🌱',label:'Cohort overview'},{id:'p-apps',icon:'📥',label:'Applications',badge:4},{id:'p-mentors',icon:'🧭',label:'Mentor matching'}]},
+      {label:'Reporting',items:[{id:'p-impact',icon:'🌍',label:'Impact report'}]}
+    ]
+  },
+  admin:{
+    box:{name:'VenturePulse OS',plan:'Platform admin'},
+    groups:[
+      {label:'Platform',items:[{id:'a-health',icon:'💚',label:'Platform health'},{id:'a-users',icon:'👥',label:'Users & orgs'},{id:'a-config',icon:'🛠️',label:'Configuration'}]}
+    ]
+  }
+};
+const ROLE_ORDER = ['founder','investor','programme','admin'];
+const PAGE_LABELS = {}, ROLE_PAGES = {};
+ROLE_ORDER.forEach(function(r){
+  ROLE_PAGES[r] = [];
+  ROLE_CONFIG[r].groups.forEach(function(g){ g.items.forEach(function(it){ PAGE_LABELS[it.id] = it.icon+' '+it.label; ROLE_PAGES[r].push(it.id); }); });
+});
+
+/* =====================================================================
+   STATE & UTILITIES
+===================================================================== */
+let state = { role:'founder', apiKey:null, welcomeShown:{}, discoverFilter:'All', discoverQuery:'', newRound:{raise:6.5,pre:26,pool:5} };
+let chartInst = {};
+let cmdkSel = 0;
+
+function el(id){ return document.getElementById(id); }
+function esc(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function fmt(n){ return n.toLocaleString('en-US'); }
+function initials(n){ return n.replace(/^Dr\. /,'').split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase(); }
+function colorFor(name){ let h=0; for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0; return COLORS[h%COLORS.length]; }
+function avatar(name,size){ size=size||30; return '<div class="avsm" style="width:'+size+'px;height:'+size+'px;font-size:'+Math.round(size*.36)+'px;letter-spacing:0;background:'+colorFor(name)+'">'+initials(name)+'</div>'; }
+function pill(text,color){ color=color||'var(--teal)'; return '<span class="pill" style="background:color-mix(in srgb, '+color+' 15%, transparent);color:'+color+'">'+esc(text)+'</span>'; }
+function statCard(label,val,delta,cls){ return '<div class="card stat-card"><div class="lbl">'+label+'</div><div class="val num">'+val+'</div>'+(delta?'<div class="delta '+(cls||'up')+'">'+delta+'</div>':'')+'</div>'; }
+function pageHead(title,sub,actions){ return '<div class="page-head"><div><h2>'+title+'</h2><div class="sub">'+sub+'</div></div><div style="display:flex;gap:8px;flex-wrap:wrap">'+(actions||'')+'</div></div>'; }
+function healthColor(h){ return {Strong:'var(--green)',Stable:'var(--teal)',Watch:'var(--yellow)','At risk':'var(--red)',Hot:'var(--red)',Warm:'var(--yellow)',Cold:'#38BDF8'}[h]||'var(--mu)'; }
+
+function toast(msg, type){
+  const t = document.createElement('div');
+  t.className = 'toast '+(type||'info');
+  t.innerHTML = '<div class="dot"></div><div>'+esc(msg)+'</div>';
+  el('toast-stack').appendChild(t);
+  requestAnimationFrame(function(){ t.classList.add('show'); });
+  setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ t.remove(); }, 350); }, 3400);
+}
+function mdFormat(text){
+  let h = esc(text);
+  h = h.replace(/^#{1,3} (.+)$/gm,'<strong>$1</strong>');
+  h = h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  h = h.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+  return h;
+}
+
+/* =====================================================================
+   SCREENS
+===================================================================== */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  el(id).classList.add('active');
+}
+function showLanding(){ showScreen('screen-landing'); window.scrollTo(0,0); initLanding(); }
+function showLogin(){ showScreen('screen-login'); renderDemoCards(); }
+function showApp(){
+  showScreen('screen-app');
+  renderShell();
+  showPage(ROLE_PAGES[state.role][0]);
+  if(!state.welcomeShown[state.role]) showWelcome();
+}
+
+let landingInit = false;
+function initLanding(){
+  const tick = [
+    '<b>Pula Pay</b> moved to Term sheet with Lesedi Ventures',
+    '<b>Kalahari Health</b> reported MRR +14% MoM',
+    '<b>Pulse Accelerator</b> opened Cohort 7 applications',
+    '<b>Diamond Data</b> data room reached 100% readiness',
+    '<b>Sedibeng Solar</b> created 3 new jobs in Maun',
+    '<b>Okavango Capital</b> added 4 deals to screening'
+  ];
+  el('hero-ticker').innerHTML = tick.concat(tick).map(function(t){ return '<div class="ticker-item">'+t+'</div>'; }).join('');
+  const mq = ['Fintech','Agritech','Healthtech','Cleantech','Edtech','Logistics','Insurtech','AI / Data','Proptech','Traveltech','Govtech','Creative economy'];
+  el('marquee').innerHTML = mq.concat(mq).map(function(m){ return '<span>◆ '+m+'</span>'; }).join('');
+  if(landingInit) return;
+  landingInit = true;
+  const io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      e.target.classList.add('in');
+      e.target.querySelectorAll('[data-count]').forEach(animateCount);
+      io.unobserve(e.target);
+    });
+  },{threshold:.15});
+  document.querySelectorAll('.reveal').forEach(function(n){ io.observe(n); });
+}
+function animateCount(node){
+  const target = +node.dataset.count, pre = node.dataset.prefix||'', suf = node.dataset.suffix||'';
+  const start = performance.now();
+  (function step(now){
+    const p = Math.min(1,(now-start)/1200), v = Math.round(target*(1-Math.pow(1-p,3)));
+    node.textContent = pre+fmt(v)+suf;
+    if(p<1) requestAnimationFrame(step);
+  })(start);
+}
+
+/* =====================================================================
+   LOGIN
+===================================================================== */
+function renderDemoCards(){
+  el('demo-cards').innerHTML = ROLE_ORDER.map(function(k){
+    const a = DEMO_ACCOUNTS[k];
+    return '<button class="demo-card" onclick="fillDemo(\''+k+'\')"><div class="demo-role">'+a.role+'</div><div class="demo-name">'+a.name+'</div><div class="demo-org">'+a.org+'</div></button>';
+  }).join('');
+}
+function fillDemo(k){
+  el('login-email').value = DEMO_ACCOUNTS[k].email;
+  el('login-pass').value = DEMO_ACCOUNTS[k].pass;
+  state.pendingRole = k;
+  document.querySelectorAll('.demo-card').forEach(function(c,i){ c.style.borderColor = ROLE_ORDER[i]===k ? 'var(--or)' : ''; });
+}
+function doLogin(){
+  const email = el('login-email').value.trim().toLowerCase();
+  let match = null;
+  ROLE_ORDER.forEach(function(k){ if(DEMO_ACCOUNTS[k].email === email) match = k; });
+  state.role = match || state.pendingRole || 'founder';
+  showApp();
+}
+
+/* =====================================================================
+   APP SHELL
+===================================================================== */
+function renderShell(){
+  el('role-tabs').innerHTML = ROLE_ORDER.map(function(r){
+    return '<div class="role-tab'+(r===state.role?' on':'')+'" style="cursor:pointer" onclick="switchRole(\''+r+'\')">'+DEMO_ACCOUNTS[r].role+'</div>';
+  }).join('');
+  const a = DEMO_ACCOUNTS[state.role];
+  el('userchip').innerHTML = '<div class="av">'+initials(a.name)+'</div><div><div style="font-weight:600">'+a.name+'</div><div class="muted" style="font-size:10.5px">'+a.role+' · '+a.org+'</div></div>';
+  const cfg = ROLE_CONFIG[state.role];
+  let html = '<div class="client-box"><div class="cb-name">'+cfg.box.name+'</div><div class="cb-plan">'+cfg.box.plan+'</div></div>';
+  html += '<div class="qsearch-btn" style="cursor:pointer" onclick="openCmdk()"><span>🔍 Quick search</span><kbd>⌘K</kbd></div>';
+  cfg.groups.forEach(function(g){
+    html += '<div class="navgroup"><div class="navgroup-lbl">'+g.label+'</div>';
+    g.items.forEach(function(it){
+      html += '<div class="navitem" style="cursor:pointer" id="nav-'+it.id+'" onclick="showPage(\''+it.id+'\')"><span>'+it.icon+'</span><span>'+it.label+'</span>'+(it.badge?'<span class="nbadge">'+it.badge+'</span>':'')+'</div>';
+    });
+    html += '</div>';
+  });
+  el('sidebar').innerHTML = html;
+  el('mobile-nav').innerHTML = ROLE_ORDER.map(function(r){ return '<span class="chip'+(r===state.role?' on':'')+'" onclick="switchRole(\''+r+'\')">'+DEMO_ACCOUNTS[r].role+'</span>'; }).join('')
+    + ROLE_PAGES[state.role].map(function(id){ return '<span class="chip" id="mnav-'+id+'" onclick="showPage(\''+id+'\')">'+PAGE_LABELS[id]+'</span>'; }).join('');
+}
+function switchRole(r){
+  if(r === state.role) return;
+  state.role = r;
+  renderShell();
+  showPage(ROLE_PAGES[r][0]);
+  toast('Now viewing as '+DEMO_ACCOUNTS[r].name+' — '+DEMO_ACCOUNTS[r].role,'info');
+  if(!state.welcomeShown[r]) showWelcome();
+}
+function destroyCharts(){ Object.keys(chartInst).forEach(function(k){ chartInst[k].destroy(); }); chartInst = {}; }
+function showPage(id){
+  if(!PAGES[id]) return;
+  destroyCharts();
+  state.currentPage = id;
+  document.querySelectorAll('.navitem').forEach(function(n){ n.classList.remove('on'); });
+  document.querySelectorAll('#mobile-nav .chip').forEach(function(n){ if(n.id) n.classList.remove('on'); });
+  if(el('nav-'+id)) el('nav-'+id).classList.add('on');
+  if(el('mnav-'+id)) el('mnav-'+id).classList.add('on');
+  const c = el('content');
+  c.scrollTop = 0;
+  PAGES[id](c);
+}
+
+/* =====================================================================
+   CHARTS
+===================================================================== */
+const CHART_BASE = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{legend:{labels:{color:'rgba(245,242,236,0.6)',font:{size:11},boxWidth:10}}},
+  scales:{
+    x:{grid:{display:false},ticks:{color:'rgba(245,242,236,0.45)',font:{size:10}}},
+    y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(245,242,236,0.45)',font:{size:10}}}
+  }
+};
+function makeChart(id, type, data, merge){
+  const ctx = el(id);
+  if(!ctx || typeof Chart === 'undefined') return;
+  const opts = JSON.parse(JSON.stringify(CHART_BASE));
+  if(type === 'doughnut' || type === 'pie'){ delete opts.scales; opts.cutout = '62%'; opts.plugins.legend.position = 'right'; }
+  if(merge) deepMerge(opts, merge);
+  chartInst[id] = new Chart(ctx, {type:type, data:data, options:opts});
+}
+function deepMerge(a,b){ Object.keys(b).forEach(function(k){ if(b[k] && typeof b[k]==='object' && !Array.isArray(b[k])){ a[k]=a[k]||{}; deepMerge(a[k],b[k]); } else a[k]=b[k]; }); }
+
+/* =====================================================================
+   AI (optional live Claude calls; falls back to a built-in draft)
+===================================================================== */
+function ensureApiKey(){
+  if(state.apiKey !== null) return state.apiKey;
+  const k = prompt('Optional: paste an Anthropic API key to generate live AI drafts (kept in memory for this session only).\nLeave empty to use the built-in sample draft.');
+  state.apiKey = k ? k.trim() : '';
+  return state.apiKey;
+}
+async function aiCall(promptText, targetId, label, fallback){
+  const target = el(targetId);
+  if(!target) return;
+  const key = ensureApiKey();
+  target.innerHTML = '<div class="ai-result"><span class="loading-dots">'+(label||'Drafting')+'</span></div>';
+  if(!key){
+    setTimeout(function(){
+      target.innerHTML = '<div class="ai-result">'+mdFormat(fallback)+'<div class="muted" style="font-size:10.5px;margin-top:10px">Sample draft · add an API key for live generation</div></div>';
+      toast('Draft ready','success');
+    }, 900);
+    return;
+  }
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:900,messages:[{role:'user',content:promptText}]})
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error.message||'Request failed');
+    const text = (data.content||[]).filter(function(b){ return b.type==='text'; }).map(function(b){ return b.text; }).join('\n') || 'No response.';
+    target.innerHTML = '<div class="ai-result">'+mdFormat(text)+'</div>';
+    toast('AI draft generated','success');
+  }catch(err){
+    target.innerHTML = '<div class="ai-result">AI request failed: '+esc(err.message)+'<br><br>'+mdFormat(fallback)+'</div>';
+    toast('AI request failed — showing sample draft','warn');
+  }
+}
+
+/* =====================================================================
+   MODAL / CMDK / WELCOME
+===================================================================== */
+function openModal(html){ el('modal-box').innerHTML = '<button class="modal-close" onclick="closeModal()">✕</button>'+html; el('modal-overlay').classList.add('active'); }
+function closeModal(){ el('modal-overlay').classList.remove('active'); }
+
+function openCmdk(){ el('cmdk-overlay').classList.add('active'); el('cmdk-input').value=''; cmdkSel=0; renderCmdkResults(); setTimeout(function(){ el('cmdk-input').focus(); },30); }
+function closeCmdk(){ el('cmdk-overlay').classList.remove('active'); }
+function cmdkItems(){
+  const q = el('cmdk-input').value.trim().toLowerCase();
+  const items = [];
+  ROLE_PAGES[state.role].forEach(function(id){ items.push({group:'Pages',label:PAGE_LABELS[id],go:function(){ showPage(id); }}); });
+  STARTUPS.forEach(function(s){ items.push({group:'Startups',label:'🚀 '+s.name+' · '+s.sector,go:function(){ openStartup(s.id); }}); });
+  INVESTORS.forEach(function(i){ items.push({group:'Investors',label:'💼 '+i.name+' · '+i.type,go:function(){ if(state.role!=='founder') switchRole('founder'); showPage('f-pipeline'); }}); });
+  return items.filter(function(it){ return !q || it.label.toLowerCase().indexOf(q) > -1; }).slice(0,14);
+}
+function renderCmdkResults(){
+  const items = cmdkItems();
+  let html = '', last = '';
+  items.forEach(function(it,i){
+    if(it.group !== last){ html += '<div class="cmdk-group-lbl">'+it.group+'</div>'; last = it.group; }
+    html += '<div class="cmdk-item'+(i===cmdkSel?' sel':'')+'" style="cursor:pointer" onclick="cmdkGo('+i+')">'+esc(it.label)+'</div>';
+  });
+  el('cmdk-results').innerHTML = html || '<div class="cmdk-item muted">No results</div>';
+}
+function cmdkGo(i){ const it = cmdkItems()[i]; if(!it) return; closeCmdk(); it.go(); }
+document.addEventListener('keydown', function(e){
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ if(el('screen-app').classList.contains('active')){ e.preventDefault(); openCmdk(); } return; }
+  if(el('cmdk-overlay').classList.contains('active')){
+    const n = cmdkItems().length;
+    if(e.key==='ArrowDown'){ e.preventDefault(); cmdkSel=Math.min(n-1,cmdkSel+1); renderCmdkResults(); }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); cmdkSel=Math.max(0,cmdkSel-1); renderCmdkResults(); }
+    else if(e.key==='Enter'){ e.preventDefault(); cmdkGo(cmdkSel); }
+    else if(e.key==='Escape'){ closeCmdk(); }
+    return;
+  }
+  if(e.key==='Escape'){ closeModal(); }
+});
+
+function showWelcome(){
+  const a = DEMO_ACCOUNTS[state.role];
+  const info = {
+    founder:{stat:'MRR BWP '+M.mrr[5]+'k · '+runway().toFixed(1)+' months runway · raising BWP 6.5M', steps:['Check your traction dashboard','Drag investors through your fundraising pipeline','Draft this month\'s investor update with AI']},
+    investor:{stat:''+STARTUPS.length+' deals in pipeline · 7 portfolio companies', steps:['Drag deals between stages on the deal board','Open a startup and draft an investment memo','Review portfolio health and LP reporting']},
+    programme:{stat:'Cohort 6 · 6 ventures · 4 new applications', steps:['Score and shortlist new applications','Match mentors to cohort ventures','Generate the quarterly impact report']},
+    admin:{stat:'99.97% uptime · '+USERS.length+' recent users', steps:['Review platform health','Manage users and organisations','Adjust platform configuration']}
+  }[state.role];
+  el('welcome-box').innerHTML =
+    '<div class="logo" style="justify-content:center;margin-bottom:10px"><div class="logo-mark">VP</div> VenturePulse OS</div>'+
+    '<h2 style="font-size:20px">Welcome, '+a.name.split(' ')[0]+'</h2>'+
+    '<p class="muted" style="font-size:12.5px;margin-top:6px">'+info.stat+'</p>'+
+    '<div class="welcome-steps">'+info.steps.map(function(s,i){ return '<div class="welcome-step"><b>'+(i+1)+'.</b><span>'+s+'</span></div>'; }).join('')+'</div>'+
+    '<button class="btn btn-primary" style="width:100%;justify-content:center" onclick="closeWelcome()">Let\'s go →</button>';
+  el('welcome-overlay').classList.add('active');
+}
+function closeWelcome(){
+  state.welcomeShown[state.role] = true;
+  el('welcome-overlay').classList.remove('active');
+  setTimeout(function(){ toast('Tip: press ⌘K / Ctrl+K to jump anywhere.','info'); }, 300);
+}
+function bellClick(){
+  showPage({founder:'f-opps',investor:'i-deals',programme:'p-apps',admin:'a-health'}[state.role]);
+  toast('Showing items that need your attention','info');
+}
+
+/* =====================================================================
+   SHARED: KANBAN WITH DRAG & DROP
+===================================================================== */
+function kanbanHtml(stages, items, stageKey, cardFn, listName){
+  return '<div class="kanban">'+stages.map(function(st){
+    const col = items.filter(function(x){ return x[stageKey]===st; });
+    return '<div class="kcol" data-stage="'+st+'" ondragover="event.preventDefault();this.classList.add(\'drag-over\')" ondragleave="this.classList.remove(\'drag-over\')" ondrop="dropCard(event,\''+listName+'\',\''+stageKey+'\',this)">'+
+      '<div class="kcol-head"><span>'+st+'</span><span class="cnt">'+col.length+'</span></div>'+
+      col.map(function(x){ return '<div class="kcard" draggable="true" ondragstart="dragCard(event,'+items.indexOf(x)+')" ondragend="this.classList.remove(\'dragging\')">'+cardFn(x)+'</div>'; }).join('')+
+    '</div>';
+  }).join('')+'</div>';
+}
+function dragCard(e,idx){ e.dataTransfer.setData('text/plain', String(idx)); e.target.classList.add('dragging'); }
+function dropCard(e, listName, key, colEl){
+  e.preventDefault();
+  colEl.classList.remove('drag-over');
+  const list = listName==='INVESTORS' ? INVESTORS : STARTUPS;
+  const item = list[+e.dataTransfer.getData('text/plain')];
+  const st = colEl.dataset.stage;
+  if(!item || item[key]===st) return;
+  item[key] = st;
+  toast(item.name+' → '+st, 'success');
+  showPage(state.currentPage);
+}
+function moveStage(listName,idx,key,stages,dir){
+  const list = listName==='INVESTORS' ? INVESTORS : STARTUPS;
+  const item = list[idx];
+  const i = stages.indexOf(item[key]) + dir;
+  if(i<0 || i>=stages.length) return;
+  item[key] = stages[i];
+  toast(item.name+' → '+stages[i],'success');
+  showPage(state.currentPage);
+}
+
+/* =====================================================================
+   PAGES
+===================================================================== */
+const PAGES = {};
+const M = FOUNDER_METRICS;
+function burnDelta(){ const a = M.burn[4]-M.mrr[4], b = M.burn[5]-M.mrr[5], d = (b/a-1)*100; return (d<=0?'▼ ':'▲ ')+Math.abs(d).toFixed(1)+'% MoM'; }
+function runway(){ const net = M.burn[5]-M.mrr[5]; return net>0 ? (M.cash/net) : 99; }
+
+/* ---------- FOUNDER ---------- */
+PAGES['f-dash'] = function(c){
+  const g = ((M.mrr[5]/M.mrr[4]-1)*100).toFixed(1);
+  const committed = INVESTORS.filter(function(i){ return i.stage==='Term sheet'; }).length;
+  c.innerHTML = pageHead('Good morning, Thabo','Mosa Agritech · '+M.months[5]+' close · numbers shared with 3 investors','<button class="btn btn-ghost btn-sm" onclick="logMetrics()">+ Log '+nextMonth()+' metrics</button><button class="btn btn-primary btn-sm" onclick="showPage(\'f-update\')">✨ Draft investor update</button>')+
+    '<div class="stat-grid">'+
+      statCard('MRR','BWP '+M.mrr[5]+'k','▲ '+g+'% MoM')+
+      statCard('Net burn','BWP '+(M.burn[5]-M.mrr[5])+'k',burnDelta(),'up')+
+      statCard('Runway',runway().toFixed(1)+' mo','Cash BWP '+(M.cash/1000).toFixed(2)+'M','up')+
+      statCard('Customers',fmt(M.customers[5]),'▲ '+((M.customers[5]/M.customers[4]-1)*100).toFixed(1)+'% MoM')+
+    '</div>'+
+    '<div class="split mb">'+
+      '<div class="card chart-box"><div class="section-title">Revenue vs. burn (BWP k)</div><canvas id="ch-mrr"></canvas></div>'+
+      '<div class="card p18"><div class="section-title">Seed round · BWP 6.5M</div>'+
+        '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span class="muted">Soft-committed</span><b>BWP 3.9M (60%)</b></div>'+
+        '<div class="progress mb"><div style="width:60%"></div></div>'+
+        PIPE_STAGES.map(function(s){ const n = INVESTORS.filter(function(i){ return i.stage===s; }).length; return '<div class="list-row" style="padding:8px 0"><span style="flex:1;font-size:12.5px">'+s+'</span><b>'+n+'</b></div>'; }).join('')+
+        '<button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="showPage(\'f-pipeline\')">Open pipeline →</button>'+
+        (committed?'<div class="muted" style="font-size:11.5px;margin-top:10px">🎉 '+committed+' investor(s) at term sheet</div>':'')+
+      '</div>'+
+    '</div>'+
+    '<div class="grid2">'+
+      '<div class="card p18"><div class="section-title">Data room readiness</div>'+readinessRing()+'</div>'+
+      '<div class="card p18"><div class="section-title">Matched opportunities</div>'+
+        OPPS.slice(0,3).map(function(o){ return '<div class="list-row"><div style="flex:1"><div style="font-size:13px;font-weight:600">'+o.name+'</div><div class="muted" style="font-size:11px">'+o.amt+' · closes '+o.deadline+'</div></div>'+pill(o.fit+'% fit')+'</div>'; }).join('')+
+      '</div>'+
+    '</div>';
+  makeChart('ch-mrr','line',{labels:M.months,datasets:[
+    {label:'MRR',data:M.mrr,borderColor:'#B6F23A',backgroundColor:'rgba(182,242,58,.12)',fill:true,tension:.35},
+    {label:'Gross burn',data:M.burn,borderColor:'#7C5CFF',borderDash:[5,4],tension:.35}
+  ]});
+};
+function readinessPct(){ return Math.round(DATAROOM.filter(function(d){ return d.done; }).length/DATAROOM.length*100); }
+function readinessRing(){
+  const p = readinessPct();
+  return '<div style="display:flex;gap:20px;align-items:center"><div class="ring" style="background:conic-gradient(var(--teal) '+p*3.6+'deg, var(--s3) 0)"><div class="ring-inner"><div class="num">'+p+'%</div><div class="muted" style="font-size:10px">ready</div></div></div>'+
+    '<div style="font-size:12.5px;line-height:1.7"><div class="muted">'+DATAROOM.filter(function(d){ return !d.done; }).length+' items missing before due diligence.</div><button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="showPage(\'f-dataroom\')">Complete data room →</button></div></div>';
+}
+
+PAGES['f-metrics'] = function(c){
+  c.innerHTML = pageHead('Metrics','Monthly KPIs · source of truth for investor dashboards','<button class="btn btn-primary btn-sm" onclick="logMetrics()">+ Log month</button>')+
+    '<div class="grid2 mb">'+
+      '<div class="card chart-box"><div class="section-title">Customers</div><canvas id="ch-cust"></canvas></div>'+
+      '<div class="card chart-box"><div class="section-title">Unit economics (BWP)</div><canvas id="ch-unit"></canvas></div>'+
+    '</div>'+
+    '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Month</th><th>MRR (k)</th><th>Burn (k)</th><th>Customers</th><th>Churn</th><th>CAC</th><th>LTV</th><th>LTV:CAC</th></tr></thead><tbody>'+
+      M.months.map(function(m,i){ return '<tr><td>'+m+' 2026</td><td>'+M.mrr[i]+'</td><td>'+M.burn[i]+'</td><td>'+fmt(M.customers[i])+'</td><td>'+M.churn[i]+'%</td><td>'+M.cac[i]+'</td><td>'+fmt(M.ltv[i])+'</td><td><b>'+(M.ltv[i]/M.cac[i]).toFixed(1)+'x</b></td></tr>'; }).reverse().join('')+
+    '</tbody></table></div></div>';
+  makeChart('ch-cust','bar',{labels:M.months,datasets:[{label:'Customers',data:M.customers,backgroundColor:'#7C5CFF',borderRadius:6}]},{plugins:{legend:{display:false}}});
+  makeChart('ch-unit','line',{labels:M.months,datasets:[
+    {label:'LTV',data:M.ltv,borderColor:'#B6F23A',tension:.35},
+    {label:'CAC',data:M.cac,borderColor:'#F59E0B',tension:.35}
+  ]});
+};
+function nextMonth(){ const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return names[(names.indexOf(M.months[M.months.length-1])+1)%12]; }
+function logMetrics(){
+  const next = nextMonth();
+  openModal('<h3 style="font-size:18px;margin-bottom:4px">Log '+next+' metrics</h3><p class="muted" style="font-size:12px;margin-bottom:16px">Values in BWP thousands unless noted.</p>'+
+    '<div class="form-row"><div class="form-field"><label>MRR (k)</label><input id="lm-mrr" type="number" value="'+Math.round(M.mrr[5]*1.08)+'"></div><div class="form-field"><label>Gross burn (k)</label><input id="lm-burn" type="number" value="'+(M.burn[5]+4)+'"></div></div>'+
+    '<div class="form-row"><div class="form-field"><label>Customers</label><input id="lm-cust" type="number" value="'+Math.round(M.customers[5]*1.09)+'"></div><div class="form-field"><label>Churn %</label><input id="lm-churn" type="number" step="0.1" value="2.3"></div></div>'+
+    '<button class="btn btn-primary" onclick="saveMetrics(\''+next+'\')">Save & share with investors</button>');
+}
+function saveMetrics(month){
+  const mrr = +el('lm-mrr').value, burn = +el('lm-burn').value, cust = +el('lm-cust').value, churn = +el('lm-churn').value;
+  if(!mrr || !burn || !cust){ toast('Please fill in MRR, burn and customers','warn'); return; }
+  M.cash = M.cash - (M.burn[5]-M.mrr[5]);
+  M.months.push(month); M.mrr.push(mrr); M.burn.push(burn); M.customers.push(cust); M.churn.push(churn||M.churn[5]);
+  M.cac.push(M.cac[5]-6); M.ltv.push(M.ltv[5]+120);
+  Object.keys(M).forEach(function(k){ if(Array.isArray(M[k])) M[k].shift(); });
+  closeModal();
+  toast(month+' metrics saved and shared','success');
+  showPage(state.currentPage);
+}
+
+PAGES['f-pipeline'] = function(c){
+  c.innerHTML = pageHead('Investor pipeline','Seed round · BWP 6.5M target · drag cards between stages','<button class="btn btn-primary btn-sm" onclick="addInvestorModal()">+ Add investor</button>')+
+    kanbanHtml(PIPE_STAGES, INVESTORS, 'stage', function(i){
+      return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">'+avatar(i.name,26)+'<div class="kt" style="margin:0">'+esc(i.name)+'</div></div>'+
+        '<div class="ks">'+esc(i.type)+' · '+esc(i.cheque)+'</div>'+
+        '<div class="kf"><span class="muted">'+esc(i.contact)+'</span>'+pill(i.warm,healthColor(i.warm))+'</div>'+
+        '<div style="display:flex;gap:4px;margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="moveStage(\'INVESTORS\','+INVESTORS.indexOf(i)+',\'stage\',PIPE_STAGES,-1)">←</button><button class="btn btn-ghost btn-sm" onclick="moveStage(\'INVESTORS\','+INVESTORS.indexOf(i)+',\'stage\',PIPE_STAGES,1)">→</button></div>';
+    }, 'INVESTORS');
+};
+function addInvestorModal(){
+  openModal('<h3 style="font-size:18px;margin-bottom:16px">Add investor</h3>'+
+    '<div class="form-field"><label>Name</label><input id="ai-name" placeholder="e.g. Chobe Ventures"></div>'+
+    '<div class="form-row"><div class="form-field"><label>Type</label><select id="ai-type"><option>VC fund</option><option>Angel</option><option>Angel network</option><option>DFI</option><option>Corporate VC</option><option>Family office</option></select></div><div class="form-field"><label>Cheque size</label><input id="ai-cheque" placeholder="BWP 1–3M"></div></div>'+
+    '<div class="form-row"><div class="form-field"><label>Contact</label><input id="ai-contact" placeholder="Partner name"></div><div class="form-field"><label>Warmth</label><select id="ai-warm"><option>Warm</option><option>Hot</option><option>Cold</option></select></div></div>'+
+    '<button class="btn btn-primary" onclick="addInvestor()">Add to pipeline</button>');
+}
+function addInvestor(){
+  const name = el('ai-name').value.trim();
+  if(!name){ toast('Investor name is required','warn'); return; }
+  if(INVESTORS.some(function(i){ return i.name.toLowerCase()===name.toLowerCase(); })){ toast('That investor is already in your pipeline','warn'); return; }
+  INVESTORS.push({name:name,type:el('ai-type').value,cheque:el('ai-cheque').value||'—',contact:el('ai-contact').value||'—',warm:el('ai-warm').value,stage:'Prospect'});
+  closeModal(); toast(name+' added to Prospect','success'); showPage('f-pipeline');
+}
+
+PAGES['f-dataroom'] = function(c){
+  const secs = [];
+  DATAROOM.forEach(function(d){ if(secs.indexOf(d.sec)<0) secs.push(d.sec); });
+  c.innerHTML = pageHead('Data room','Due-diligence checklist · shared with Lesedi Ventures & BW Angels Network','<button class="btn btn-ghost btn-sm" onclick="toast(\'Share link copied (demo)\',\'success\')">🔗 Share link</button>')+
+    '<div class="split"><div class="card p18">'+
+      secs.map(function(s){
+        return '<div class="section-title" style="margin-top:8px">'+s+'</div>'+DATAROOM.map(function(d,i){
+          if(d.sec!==s) return '';
+          return '<div class="list-row"><div class="check'+(d.done?' on':'')+'" onclick="toggleDoc('+i+')">'+(d.done?'✓':'')+'</div><span style="flex:1;font-size:13px">'+d.item+'</span>'+(d.done?'<span class="muted" style="font-size:11px">📄 uploaded</span>':'<button class="btn btn-ghost btn-sm" onclick="toggleDoc('+i+')">Upload</button>')+'</div>';
+        }).join('');
+      }).join('')+
+    '</div><div><div class="card p18 mb"><div class="section-title">Readiness</div>'+readinessRing()+'</div>'+
+    '<div class="card p18"><div class="section-title">Recent investor activity</div>'+
+      [['Boitumelo R.','viewed Audited financials FY2025','12 min ago'],['Mpho S.','downloaded Cap table','2 h ago'],['Boitumelo R.','viewed Customer contracts','Yesterday']].map(function(a){ return '<div class="list-row">'+avatar(a[0],26)+'<div style="flex:1;font-size:12.5px"><b>'+a[0]+'</b> '+a[1]+'<div class="muted" style="font-size:11px">'+a[2]+'</div></div></div>'; }).join('')+
+    '</div></div></div>';
+};
+function toggleDoc(i){ DATAROOM[i].done = !DATAROOM[i].done; toast(DATAROOM[i].done?'Document uploaded':'Document removed', DATAROOM[i].done?'success':'info'); showPage('f-dataroom'); }
+
+PAGES['f-update'] = function(c){
+  c.innerHTML = pageHead('Investor update','Draft your monthly update from live metrics','')+
+    '<div class="split"><div class="card p18">'+
+      '<div class="form-field"><label>Highlights this month</label><textarea id="up-wins">Signed Botswana Agricultural Marketing Board pilot (400 farmers). Launched input-financing product with First Capital.</textarea></div>'+
+      '<div class="form-field"><label>Challenges / lowlights</label><textarea id="up-lows">Sensor shipment delayed 3 weeks at Kazungula border. Senior hardware engineer role still open.</textarea></div>'+
+      '<div class="form-field"><label>Asks for investors</label><textarea id="up-asks">Intros to agri-input distributors in Zambia; referrals for an embedded systems engineer.</textarea></div>'+
+      '<button class="btn btn-primary" onclick="genUpdate()">✨ Generate update</button>'+
+      '<div id="up-out"></div>'+
+    '</div><div class="card p18"><div class="section-title">Metrics auto-included</div>'+
+      [['MRR','BWP '+M.mrr[5]+'k'],['MoM growth',((M.mrr[5]/M.mrr[4]-1)*100).toFixed(1)+'%'],['Net burn','BWP '+(M.burn[5]-M.mrr[5])+'k'],['Runway',runway().toFixed(1)+' months'],['Customers',fmt(M.customers[5])],['Churn',M.churn[5]+'%']].map(function(r){ return '<div class="list-row" style="padding:9px 0"><span class="muted" style="flex:1;font-size:12.5px">'+r[0]+'</span><b>'+r[1]+'</b></div>'; }).join('')+
+      '<div class="section-title" style="margin-top:18px">Recipients</div>'+
+      INVESTORS.filter(function(i){ return i.stage==='Term sheet'||i.stage==='Due diligence'; }).concat([{name:'Existing angels (6)'}]).map(function(i){ return '<div class="check-row">✓ '+esc(i.name)+'</div>'; }).join('')+
+    '</div></div>';
+};
+function genUpdate(){
+  const wins = el('up-wins').value, lows = el('up-lows').value, asks = el('up-asks').value;
+  const g = ((M.mrr[5]/M.mrr[4]-1)*100).toFixed(1);
+  const p = 'You are the CEO of Mosa Agritech, a Botswana agritech startup. Write a concise monthly investor update email (max 250 words) with sections: TL;DR, Metrics, Highlights, Lowlights, Asks. Use **bold** for section headers. Metrics: MRR BWP '+M.mrr[5]+'k ('+g+'% MoM), net burn BWP '+(M.burn[5]-M.mrr[5])+'k, runway '+runway().toFixed(1)+' months, customers '+M.customers[5]+', churn '+M.churn[5]+'%. Highlights: '+wins+' Lowlights: '+lows+' Asks: '+asks;
+  const fb = '**Subject: Mosa Agritech — '+M.months[5]+' update**\n\n**TL;DR** MRR grew '+g+'% to BWP '+M.mrr[5]+'k with '+runway().toFixed(1)+' months of runway. Seed round is 60% soft-committed.\n\n**Metrics**\nMRR BWP '+M.mrr[5]+'k · Net burn BWP '+(M.burn[5]-M.mrr[5])+'k · Customers '+fmt(M.customers[5])+' · Churn '+M.churn[5]+'%\n\n**Highlights**\n'+wins+'\n\n**Lowlights**\n'+lows+'\n\n**Asks**\n'+asks+'\n\nThank you for your continued support,\nThabo';
+  aiCall(p,'up-out','Drafting update',fb);
+}
+
+PAGES['f-cap'] = function(c){
+  const total = CAP.reduce(function(s,x){ return s+x.shares; },0);
+  const r = state.newRound;
+  c.innerHTML = pageHead('Cap table','Fully diluted · '+fmt(total)+' shares','')+
+    '<div class="grid2 mb"><div class="card chart-box"><div class="section-title">Current ownership</div><canvas id="ch-cap"></canvas></div>'+
+    '<div class="card p18"><div class="section-title">Model your seed round</div>'+
+      '<div class="form-field"><label>Raise amount: <b id="rv-raise"></b></label><input class="range" type="range" min="1" max="20" step="0.5" value="'+r.raise+'" oninput="state.newRound.raise=+this.value;calcRound()"></div>'+
+      '<div class="form-field"><label>Pre-money valuation: <b id="rv-pre"></b></label><input class="range" type="range" min="10" max="80" step="1" value="'+r.pre+'" oninput="state.newRound.pre=+this.value;calcRound()"></div>'+
+      '<div class="form-field"><label>ESOP top-up (post-money): <b id="rv-pool"></b></label><input class="range" type="range" min="0" max="15" step="1" value="'+r.pool+'" oninput="state.newRound.pool=+this.value;calcRound()"></div>'+
+      '<div id="round-out"></div>'+
+    '</div></div>'+
+    '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Holder</th><th>Class</th><th>Shares</th><th>Ownership</th></tr></thead><tbody>'+
+      CAP.map(function(x){ return '<tr><td>'+x.holder+'</td><td>'+pill(x.cls, x.cls==='Preferred'?'var(--or2)':'var(--teal)')+'</td><td>'+fmt(x.shares)+'</td><td><b>'+(x.shares/total*100).toFixed(1)+'%</b></td></tr>'; }).join('')+
+    '</tbody></table></div></div>';
+  makeChart('ch-cap','doughnut',{labels:CAP.map(function(x){ return x.holder; }),datasets:[{data:CAP.map(function(x){ return x.shares; }),backgroundColor:COLORS,borderWidth:0}]});
+  calcRound();
+};
+function calcRound(){
+  const r = state.newRound;
+  const post = r.pre + r.raise;
+  const inv = r.raise/post*100;
+  const pool = r.pool;
+  const existing = 100 - inv - pool;
+  const total = CAP.reduce(function(s,x){ return s+x.shares; },0);
+  const founders = (CAP[0].shares+CAP[1].shares)/total*existing;
+  el('rv-raise').textContent = 'BWP '+r.raise+'M';
+  el('rv-pre').textContent = 'BWP '+r.pre+'M';
+  el('rv-pool').textContent = r.pool+'%';
+  el('round-out').innerHTML = existing<=0 ? '<div class="ai-result">That combination leaves existing holders with no equity — lower the raise or ESOP.</div>' :
+    '<div class="stat-grid" style="grid-template-columns:1fr 1fr;margin:6px 0 0">'+
+      statCard('Post-money','BWP '+post.toFixed(1)+'M')+statCard('New investors',inv.toFixed(1)+'%')+
+      statCard('Founders after',founders.toFixed(1)+'%', '▼ '+((CAP[0].shares+CAP[1].shares)/total*100-founders).toFixed(1)+' pts','down')+statCard('Price / share','BWP '+(r.pre*1e6/total).toFixed(2))+
+    '</div>';
+}
+
+PAGES['f-opps'] = function(c){
+  c.innerHTML = pageHead('Opportunities','Grants, programmes and competitions matched to Mosa Agritech','')+
+    '<div class="grid3">'+OPPS.map(function(o,i){
+      return '<div class="card opp-card"><div style="display:flex;justify-content:space-between;align-items:center">'+pill(o.type,'var(--or2)')+'<span class="score" style="color:'+(o.fit>80?'var(--green)':o.fit>60?'var(--yellow)':'var(--mu)')+'">'+o.fit+'%</span></div>'+
+        '<div style="font-size:15px;font-weight:700;font-family:Syne,sans-serif">'+o.name+'</div>'+
+        '<div class="muted" style="font-size:12px">'+o.amt+'</div><div class="muted" style="font-size:11.5px">⏰ Closes '+o.deadline+'</div>'+
+        '<div class="progress"><div style="width:'+o.fit+'%"></div></div>'+
+        '<div style="display:flex;gap:8px;margin-top:6px"><button class="btn btn-primary btn-sm" id="opp-'+i+'" onclick="this.textContent=\'✓ Applied\';this.disabled=true;toast(\'Application started with your profile pre-filled\',\'success\')">Apply with profile</button><button class="btn btn-ghost btn-sm" onclick="toast(\'Saved to shortlist\',\'info\')">Save</button></div></div>';
+    }).join('')+'</div>';
+};
+
+/* ---------- INVESTOR ---------- */
+PAGES['i-deals'] = function(c){
+  const active = STARTUPS.length, ts = STARTUPS.filter(function(s){ return s.deal==='Term sheet'; }).length;
+  c.innerHTML = pageHead('Deal flow','Fund I · '+active+' active deals · drag to advance','<button class="btn btn-ghost btn-sm" onclick="showPage(\'i-discover\')">🔭 Discover</button>')+
+    '<div class="stat-grid">'+statCard('Active deals',active)+statCard('At term sheet',ts)+statCard('Avg. score',Math.round(STARTUPS.reduce(function(s,x){ return s+x.score; },0)/active))+statCard('Women-led',Math.round(STARTUPS.filter(function(s){ return s.female; }).length/active*100)+'%','2X Challenge eligible')+'</div>'+
+    kanbanHtml(DEAL_STAGES, STARTUPS, 'deal', function(s){
+      return '<div onclick="openStartup('+s.id+')"><div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">'+avatar(s.name,26)+'<div class="kt" style="margin:0">'+s.name+'</div></div>'+
+        '<div class="ks">'+s.sector+' · '+s.stage+' · BWP '+s.ask+'M</div>'+
+        '<div class="kf"><span class="muted">MRR '+s.mrr+'k · ▲'+s.growth+'%</span><span class="score" style="color:'+(s.score>=80?'var(--green)':s.score>=65?'var(--yellow)':'var(--mu)')+'">'+s.score+'</span></div></div>';
+    }, 'STARTUPS');
+};
+function openStartup(id){
+  const s = STARTUPS[id];
+  openModal('<div class="breadcrumb">Startups / '+s.sector+'</div>'+
+    '<div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">'+avatar(s.name,44)+'<div><h3 style="font-size:20px">'+s.name+'</h3><div class="muted" style="font-size:12px">'+s.city+' · '+s.founder+(s.female?' · 👩🏾 women-led':'')+'</div></div></div>'+
+    '<p style="font-size:13.5px;line-height:1.6;margin-bottom:14px">'+s.blurb+'</p>'+
+    '<div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">'+statCard('Stage',s.stage)+statCard('Raising','BWP '+s.ask+'M')+statCard('MRR',s.mrr+'k','▲ '+s.growth+'% MoM')+statCard('Score',s.score)+'</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="muted" style="font-size:12px">Deal stage:</span>'+DEAL_STAGES.map(function(st){ return '<span class="chip'+(st===s.deal?' on':'')+'" style="cursor:pointer" onclick="setDeal('+id+',\''+st+'\')">'+st+'</span>'; }).join('')+'</div>'+
+    '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-primary btn-sm" onclick="genMemo('+id+')">✨ Draft investment memo</button><button class="btn btn-ghost btn-sm" onclick="toast(\'Data room access requested from '+esc(s.founder)+'\',\'success\')">Request data room</button></div>'+
+    '<div id="memo-out"></div>');
+}
+function setDeal(id,st){ STARTUPS[id].deal = st; toast(STARTUPS[id].name+' → '+st,'success'); openStartup(id); if(state.currentPage==='i-deals') showPage('i-deals'); }
+function genMemo(id){
+  const s = STARTUPS[id];
+  const p = 'You are an associate at Lesedi Ventures, a Botswana VC fund. Write a concise investment memo (max 250 words) with **bold** headers: Summary, Market, Traction, Team, Risks, Recommendation. Company: '+s.name+' ('+s.sector+', '+s.stage+', '+s.city+'). '+s.blurb+' Raising BWP '+s.ask+'M. MRR BWP '+s.mrr+'k growing '+s.growth+'% MoM. Founder: '+s.founder+'. Internal score '+s.score+'/100.';
+  const fb = '**Summary**\n'+s.name+' is raising BWP '+s.ask+'M ('+s.stage+'). '+s.blurb+'\n\n**Traction**\nMRR of BWP '+s.mrr+'k growing '+s.growth+'% month-on-month.\n\n**Team**\nLed by '+s.founder+'.\n\n**Risks**\nExecution risk in regional expansion; FX exposure; key-person dependency.\n\n**Recommendation**\n'+(s.score>=80?'Proceed to full due diligence and prepare term sheet.':s.score>=65?'Schedule partner meeting; request detailed financial model.':'Keep warm; revisit at next milestone.');
+  aiCall(p,'memo-out','Drafting memo',fb);
+}
+
+PAGES['i-discover'] = function(c){
+  const sectors = ['All'].concat(STARTUPS.map(function(s){ return s.sector; }).filter(function(v,i,a){ return a.indexOf(v)===i; }));
+  c.innerHTML = pageHead('Discover startups','Browse ventures that share their data on VenturePulse OS','')+
+    '<input id="disc-q" placeholder="Search by name, founder or keyword..." style="width:100%;margin-bottom:14px" value="'+esc(state.discoverQuery)+'" oninput="state.discoverQuery=this.value;renderDiscover()">'+
+    '<div class="chips">'+sectors.map(function(s){ return '<span class="chip'+(s===state.discoverFilter?' on':'')+'" style="cursor:pointer" onclick="state.discoverFilter=\''+s+'\';showPage(\'i-discover\')">'+s+'</span>'; }).join('')+'</div>'+
+    '<div class="grid3" id="disc-grid"></div>';
+  renderDiscover();
+};
+function renderDiscover(){
+  const q = state.discoverQuery.toLowerCase();
+  const list = STARTUPS.filter(function(s){
+    return (state.discoverFilter==='All' || s.sector===state.discoverFilter) && (!q || (s.name+' '+s.founder+' '+s.blurb+' '+s.city).toLowerCase().indexOf(q)>-1);
+  });
+  el('disc-grid').innerHTML = list.map(function(s){
+    return '<div class="card opp-card" style="cursor:pointer" onclick="openStartup('+s.id+')"><div style="display:flex;gap:10px;align-items:center">'+avatar(s.name,36)+'<div style="flex:1"><div style="font-weight:700;font-family:Syne,sans-serif">'+s.name+'</div><div class="muted" style="font-size:11px">'+s.city+' · '+s.stage+'</div></div><span class="score">'+s.score+'</span></div>'+
+      '<div style="font-size:12.5px;color:var(--mu);line-height:1.5">'+s.blurb+'</div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+pill(s.sector)+pill('BWP '+s.ask+'M','var(--or2)')+(s.female?pill('Women-led','#F472B6'):'')+'</div></div>';
+  }).join('') || '<div class="card p18 muted">No startups match your filters.</div>';
+}
+
+PAGES['i-portfolio'] = function(c){
+  const inv = PORTFOLIO.reduce(function(s,x){ return s+x.invested; },0), val = PORTFOLIO.reduce(function(s,x){ return s+x.value; },0);
+  c.innerHTML = pageHead('Portfolio','Fund I · '+PORTFOLIO.length+' companies · values in BWP M','')+
+    '<div class="stat-grid">'+statCard('Invested','BWP '+inv.toFixed(1)+'M')+statCard('Fair value','BWP '+val.toFixed(1)+'M','▲ '+((val/inv-1)*100).toFixed(0)+'% unrealised')+statCard('TVPI',(val/inv).toFixed(2)+'x')+statCard('Needs attention',PORTFOLIO.filter(function(p){ return p.health==='Watch'||p.health==='At risk'; }).length,'Runway < 10 months','down')+'</div>'+
+    '<div class="grid2 mb"><div class="card chart-box"><div class="section-title">Invested vs. fair value</div><canvas id="ch-port"></canvas></div><div class="card chart-box"><div class="section-title">Sector exposure (cost)</div><canvas id="ch-sector"></canvas></div></div>'+
+    '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Company</th><th>Sector</th><th>Invested</th><th>Fair value</th><th>MOIC</th><th>Ownership</th><th>Runway</th><th>Health</th></tr></thead><tbody>'+
+      PORTFOLIO.map(function(p){ return '<tr><td><div style="display:flex;gap:8px;align-items:center">'+avatar(p.name,24)+p.name+'</div></td><td>'+p.sector+'</td><td>'+p.invested+'</td><td>'+p.value+'</td><td><b>'+(p.value/p.invested).toFixed(2)+'x</b></td><td>'+p.own+'%</td><td>'+p.runway+' mo</td><td>'+pill(p.health,healthColor(p.health))+'</td></tr>'; }).join('')+
+    '</tbody></table></div></div>';
+  makeChart('ch-port','bar',{labels:PORTFOLIO.map(function(p){ return p.name; }),datasets:[{label:'Invested',data:PORTFOLIO.map(function(p){ return p.invested; }),backgroundColor:'#7C5CFF',borderRadius:5},{label:'Fair value',data:PORTFOLIO.map(function(p){ return p.value; }),backgroundColor:'#B6F23A',borderRadius:5}]});
+  makeChart('ch-sector','doughnut',{labels:PORTFOLIO.map(function(p){ return p.sector; }),datasets:[{data:PORTFOLIO.map(function(p){ return p.invested; }),backgroundColor:COLORS,borderWidth:0}]});
+};
+
+PAGES['i-lp'] = function(c){
+  c.innerHTML = pageHead('LP reporting','Quarterly letter to limited partners · Q3 2026','')+
+    '<div class="split"><div class="card p18">'+
+      '<div class="form-field"><label>Quarter</label><select id="lp-q"><option>Q3 2026</option><option>Q2 2026</option></select></div>'+
+      '<div class="form-field"><label>Partner commentary (optional)</label><textarea id="lp-note">Strong quarter for fintech; Pula Pay closed a BWP 28M Series A led by a regional fund. Sedibeng Solar is bridging while it renegotiates its hardware supplier terms.</textarea></div>'+
+      '<button class="btn btn-primary" onclick="genLP()">✨ Draft LP letter</button><div id="lp-out"></div>'+
+    '</div><div class="card p18"><div class="section-title">Included automatically</div>'+
+      ['Portfolio valuation table','TVPI / DPI / IRR','Capital calls & distributions','New investments & follow-ons','ESG & impact KPIs (2X, jobs)'].map(function(x){ return '<div class="check-row">✓ '+x+'</div>'; }).join('')+
+      '<button class="btn btn-ghost btn-sm" style="margin-top:14px" onclick="toast(\'PDF export started (demo)\',\'success\')">⬇ Export PDF</button></div></div>';
+};
+function genLP(){
+  const inv = PORTFOLIO.reduce(function(s,x){ return s+x.invested; },0), val = PORTFOLIO.reduce(function(s,x){ return s+x.value; },0);
+  const note = el('lp-note').value, q = el('lp-q').value;
+  const p = 'Write a concise quarterly LP letter (max 280 words) for Lesedi Ventures Fund I, a Botswana VC fund, for '+q+'. Use **bold** headers. Portfolio: '+PORTFOLIO.map(function(x){ return x.name+' ('+x.sector+', invested BWP '+x.invested+'M, FV '+x.value+'M, health '+x.health+')'; }).join('; ')+'. Total invested BWP '+inv.toFixed(1)+'M, fair value BWP '+val.toFixed(1)+'M, TVPI '+(val/inv).toFixed(2)+'x. Partner notes: '+note;
+  const fb = '**Dear Limited Partners,**\n\n**Fund performance**\nAs of '+q+', Fund I has invested BWP '+inv.toFixed(1)+'M across '+PORTFOLIO.length+' companies with a fair value of BWP '+val.toFixed(1)+'M — a TVPI of '+(val/inv).toFixed(2)+'x.\n\n**Portfolio highlights**\n'+note+'\n\n**Outlook**\nWe expect to complete two new seed investments next quarter from a pipeline of '+STARTUPS.length+' active deals.\n\nWarm regards,\nBoitumelo Ramotswa, Managing Partner';
+  aiCall(p,'lp-out','Drafting LP letter',fb);
+}
+
+/* ---------- PROGRAMME ---------- */
+PAGES['p-cohort'] = function(c){
+  const jobs = COHORT.reduce(function(s,x){ return s+x.jobs; },0);
+  c.innerHTML = pageHead('Cohort 6 overview','Pulse Accelerator · week 9 of 16 · Demo Day 28 Nov 2026','<button class="btn btn-primary btn-sm" onclick="showPage(\'p-impact\')">🌍 Impact report</button>')+
+    '<div class="stat-grid">'+statCard('Ventures',COHORT.length)+statCard('Avg. milestone progress',Math.round(COHORT.reduce(function(s,x){ return s+x.progress; },0)/COHORT.length)+'%','▲ 8 pts this month')+statCard('Jobs created',jobs,'▲ 11 since intake')+statCard('Women-led',Math.round(COHORT.filter(function(x){ return x.female; }).length/COHORT.length*100)+'%')+'</div>'+
+    '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Venture</th><th>Stage</th><th>Mentor</th><th>Next milestone</th><th style="width:180px">Progress</th><th>Jobs</th></tr></thead><tbody>'+
+      COHORT.map(function(x){ return '<tr><td><div style="display:flex;gap:8px;align-items:center">'+avatar(x.name,24)+x.name+'</div></td><td>'+x.stage+'</td><td>'+x.mentor+'</td><td class="muted">'+x.milestone+'</td><td><div style="display:flex;gap:8px;align-items:center"><div class="progress" style="flex:1"><div style="width:'+x.progress+'%"></div></div><span style="font-size:11px">'+x.progress+'%</span></div></td><td>'+x.jobs+'</td></tr>'; }).join('')+
+    '</tbody></table></div></div>';
+};
+
+PAGES['p-apps'] = function(c){
+  function total(a){ return a.team+a.traction+a.market; }
+  const statusColor = {New:'var(--teal)',Shortlisted:'var(--yellow)',Accepted:'var(--green)',Declined:'var(--red)'};
+  const sorted = APPLICATIONS.slice().sort(function(a,b){ return total(b)-total(a); });
+  c.innerHTML = pageHead('Applications','Cohort 7 intake · '+APPLICATIONS.length+' applications · scored 1–5 on team, traction, market','')+
+    '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Venture</th><th>Sector</th><th>Team</th><th>Traction</th><th>Market</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+
+      sorted.map(function(a){
+        const i = APPLICATIONS.indexOf(a);
+        function sel(k){ return '<select style="width:60px;padding:5px" onchange="APPLICATIONS['+i+'].'+k+'=+this.value;showPage(\'p-apps\')">'+[1,2,3,4,5].map(function(v){ return '<option'+(v===a[k]?' selected':'')+'>'+v+'</option>'; }).join('')+'</select>'; }
+        return '<tr><td><b>'+a.name+'</b>'+(a.female?' <span title="Women-led">👩🏾</span>':'')+'</td><td>'+a.sector+'</td><td>'+sel('team')+'</td><td>'+sel('traction')+'</td><td>'+sel('market')+'</td><td><span class="score">'+total(a)+'</span>/15</td><td>'+pill(a.status,statusColor[a.status])+'</td>'+
+          '<td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" onclick="setApp('+i+',\'Shortlisted\')">Shortlist</button> <button class="btn btn-ghost btn-sm" onclick="setApp('+i+',\'Accepted\')">✓</button> <button class="btn btn-ghost btn-sm" onclick="setApp('+i+',\'Declined\')">✕</button></td></tr>';
+      }).join('')+
+    '</tbody></table></div></div>';
+};
+function setApp(i,s){ APPLICATIONS[i].status = s; toast(APPLICATIONS[i].name+' marked '+s, s==='Declined'?'warn':'success'); showPage('p-apps'); }
+
+PAGES['p-mentors'] = function(c){
+  const need = {'Sedibeng Solar':['Supply chain','Agritech'],'Kalahari Health':['Healthtech','Regulatory'],'Thuto Labs':['Product','Engineering'],'Mophane Foods':['Marketing','Consumer'],'Okavango Trails':['Sales','B2B'],'Kgotla Civic':['Sales','Fundraising']};
+  c.innerHTML = pageHead('Mentor matching','Suggested matches based on skills overlap and mentor capacity','')+
+    '<div class="split"><div class="card p18"><div class="section-title">Suggested matches</div>'+
+      COHORT.map(function(v){
+        const ranked = MENTORS.map(function(m){ const o = m.skills.filter(function(s){ return need[v.name].indexOf(s)>-1; }).length; return {m:m,score:o*40+(3-m.load)*10}; }).sort(function(a,b){ return b.score-a.score; });
+        const best = ranked[0];
+        return '<div class="list-row">'+avatar(v.name,28)+'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+v.name+'</div><div class="muted" style="font-size:11px">Needs: '+need[v.name].join(', ')+'</div></div><div style="text-align:right"><div style="font-size:12.5px">→ <b>'+best.m.name+'</b></div><div class="muted" style="font-size:10.5px">'+Math.min(99,best.score)+'% match</div></div><button class="btn btn-ghost btn-sm" onclick="toast(\'Intro email sent to '+esc(best.m.name)+' & '+esc(v.name)+'\',\'success\')">Intro</button></div>';
+      }).join('')+
+    '</div><div class="card p18"><div class="section-title">Mentor bench</div>'+
+      MENTORS.map(function(m){ return '<div class="list-row">'+avatar(m.name,28)+'<div style="flex:1"><div style="font-size:12.5px;font-weight:600">'+m.name+'</div><div class="muted" style="font-size:10.5px">'+m.org+'</div><div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">'+m.skills.map(function(s){ return pill(s); }).join('')+'</div></div><span class="muted" style="font-size:11px">'+m.load+'/3</span></div>'; }).join('')+
+    '</div></div>';
+};
+
+PAGES['p-impact'] = function(c){
+  const jobs = COHORT.reduce(function(s,x){ return s+x.jobs; },0), rev = COHORT.reduce(function(s,x){ return s+x.rev; },0);
+  c.innerHTML = pageHead('Impact report','Cohort 6 · for funders and DFI partners','<button class="btn btn-ghost btn-sm" onclick="toast(\'CSV exported (demo)\',\'success\')">⬇ CSV</button><button class="btn btn-primary btn-sm" onclick="genImpact()">✨ Draft narrative</button>')+
+    '<div class="stat-grid">'+statCard('Jobs created',jobs)+statCard('Combined MRR','BWP '+rev+'k','▲ 34% since intake')+statCard('Women-led ventures',COHORT.filter(function(x){ return x.female; }).length+' / '+COHORT.length)+statCard('Follow-on capital','BWP 12.4M','3 ventures')+'</div>'+
+    '<div class="grid2 mb"><div class="card chart-box"><div class="section-title">Jobs by venture</div><canvas id="ch-jobs"></canvas></div><div class="card chart-box"><div class="section-title">Cohort MRR growth (BWP k)</div><canvas id="ch-crev"></canvas></div></div>'+
+    '<div id="impact-out"></div>';
+  makeChart('ch-jobs','bar',{labels:COHORT.map(function(x){ return x.name; }),datasets:[{label:'Jobs',data:COHORT.map(function(x){ return x.jobs; }),backgroundColor:COHORT.map(function(x){ return x.female?'#F472B6':'#7C5CFF'; }),borderRadius:5}]},{plugins:{legend:{display:false}},indexAxis:'y'});
+  makeChart('ch-crev','line',{labels:['Intake','W2','W4','W6','W8','W9'],datasets:[{label:'Cohort MRR',data:[237,251,268,284,301,317],borderColor:'#B6F23A',backgroundColor:'rgba(182,242,58,.12)',fill:true,tension:.35}]});
+};
+function genImpact(){
+  const jobs = COHORT.reduce(function(s,x){ return s+x.jobs; },0), rev = COHORT.reduce(function(s,x){ return s+x.rev; },0);
+  const p = 'Write a short impact report narrative (max 220 words) for funders of Pulse Accelerator Cohort 6 in Botswana. Use **bold** headers: Overview, Economic impact, Inclusion, Spotlight, Next steps. Data: '+COHORT.map(function(x){ return x.name+' ('+x.jobs+' jobs, MRR BWP '+x.rev+'k, '+(x.female?'women-led':'male-led')+', milestone: '+x.milestone+')'; }).join('; ')+'. Total jobs '+jobs+', combined MRR BWP '+rev+'k (up 34% since intake), BWP 12.4M follow-on capital raised.';
+  const fb = '**Overview**\nCohort 6 brought together '+COHORT.length+' ventures across cleantech, health, education, food, tourism and govtech.\n\n**Economic impact**\nThe cohort has created '+jobs+' jobs and grown combined MRR 34% to BWP '+rev+'k, with BWP 12.4M in follow-on capital.\n\n**Inclusion**\n'+COHORT.filter(function(x){ return x.female; }).length+' of '+COHORT.length+' ventures are women-led.\n\n**Spotlight**\nKalahari Health is finalising a Ministry of Health partnership to extend tele-pharmacy to rural clinics.\n\n**Next steps**\nDemo Day on 28 November 2026, followed by investor office hours.';
+  aiCall(p,'impact-out','Drafting impact narrative',fb);
+}
+
+/* ---------- ADMIN ---------- */
+PAGES['a-health'] = function(c){
+  c.innerHTML = pageHead('Platform health','All systems operational','')+
+    '<div class="stat-grid">'+statCard('Uptime (30d)','99.97%')+statCard('Active orgs','275','▲ 12 this month')+statCard('Weekly active users','1,940','▲ 6.1%')+statCard('AI drafts (7d)','3,412','▲ 18%')+'</div>'+
+    '<div class="split"><div class="card chart-box"><div class="section-title">API latency p95 (ms)</div><canvas id="ch-lat"></canvas></div>'+
+    '<div class="card p18"><div class="section-title">Services</div>'+
+      [['Web app','Operational'],['Metrics API','Operational'],['Data room storage','Operational'],['AI drafting','Degraded'],['Email delivery','Operational'],['Accounting sync','Operational']].map(function(s){ return '<div class="list-row" style="padding:9px 0"><span style="flex:1;font-size:12.5px">'+s[0]+'</span>'+pill(s[1],s[1]==='Operational'?'var(--green)':'var(--yellow)')+'</div>'; }).join('')+
+    '</div></div>';
+  makeChart('ch-lat','line',{labels:['00:00','04:00','08:00','12:00','16:00','20:00','Now'],datasets:[{label:'p95',data:[142,128,188,231,204,176,161],borderColor:'#7C5CFF',backgroundColor:'rgba(124,92,255,.12)',fill:true,tension:.35}]},{plugins:{legend:{display:false}}});
+};
+PAGES['a-users'] = function(c){
+  const sc = {Active:'var(--green)',Invited:'var(--teal)',Suspended:'var(--red)'};
+  c.innerHTML = pageHead('Users & organisations',USERS.length+' recent users','<button class="btn btn-primary btn-sm" onclick="toast(\'Invite sent (demo)\',\'success\')">+ Invite user</button>')+
+    '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>User</th><th>Organisation</th><th>Role</th><th>Status</th><th>Last active</th><th></th></tr></thead><tbody>'+
+      USERS.map(function(u,i){ return '<tr><td><div style="display:flex;gap:8px;align-items:center">'+avatar(u.name,26)+'<div><div>'+u.name+'</div><div class="muted" style="font-size:11px">'+u.email+'</div></div></div></td><td>'+u.org+'</td><td>'+u.role+'</td><td>'+pill(u.status,sc[u.status])+'</td><td class="muted">'+u.last+'</td><td><button class="btn btn-ghost btn-sm" onclick="toggleUser('+i+')">'+(u.status==='Suspended'?'Reactivate':'Suspend')+'</button></td></tr>'; }).join('')+
+    '</tbody></table></div></div>';
+};
+function toggleUser(i){ USERS[i].status = USERS[i].status==='Suspended'?'Active':'Suspended'; toast(USERS[i].name+' '+USERS[i].status.toLowerCase(), 'info'); showPage('a-users'); }
+PAGES['a-config'] = function(c){
+  const opts = [['Allow founders to self-register',true],['Require 2FA for investor accounts',true],['Enable AI drafting',true],['Public startup directory',false],['Accounting integrations (beta)',false]];
+  c.innerHTML = pageHead('Configuration','Platform-wide settings','')+
+    '<div class="grid2"><div class="card p18"><div class="section-title">Features</div>'+
+      opts.map(function(o){ return '<div class="list-row"><span style="flex:1;font-size:13px">'+o[0]+'</span><div class="toggle'+(o[1]?' on':'')+'" style="cursor:pointer" onclick="this.classList.toggle(\'on\');toast(\'Setting updated\',\'success\')"><div class="kn"></div></div></div>'; }).join('')+
+    '</div><div class="card p18"><div class="section-title">Defaults</div>'+
+      '<div class="form-field"><label>Default currency</label><select><option>BWP — Botswana Pula</option><option>ZAR — South African Rand</option><option>USD — US Dollar</option></select></div>'+
+      '<div class="form-field"><label>Metrics reporting deadline</label><select><option>5th of each month</option><option>10th of each month</option></select></div>'+
+      '<div class="form-field"><label>Support email</label><input value="support@venturepulseos.com" style="width:100%"></div>'+
+      '<button class="btn btn-primary btn-sm" onclick="toast(\'Defaults saved\',\'success\')">Save</button>'+
+    '</div></div>';
+};
+
+/* =====================================================================
+   INIT
+===================================================================== */
+initLanding();
+</script>
+</body>
+</html>
