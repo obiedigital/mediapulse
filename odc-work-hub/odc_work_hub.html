@@ -1,0 +1,694 @@
+<title>ODC Work Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky header with tab bar; one working column per tab; cards only for objects (tasks, objectives, people). */
+:root{
+  --bg:#F2F4F7; --panel:#FFFFFF; --sunk:#E9EDF2; --ink:#142033; --ink2:#4B586B; --line:#D9E0E8;
+  --accent:#1F62A3; --accent-ink:#FFFFFF; --accent-soft:#E2ECF6;
+  --ok:#1E7F4F; --ok-soft:#E1F2E9; --warn:#9A5B00; --warn-soft:#FBEFD9; --bad:#B8322A; --bad-soft:#F9E3E1; --idle:#5F6C7E; --idle-soft:#E8ECF1;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C1219; --panel:#141C26; --sunk:#101720; --ink:#E6ECF3; --ink2:#9AA8B9; --line:#263243;
+  --accent:#7DB3E3; --accent-ink:#0C1219; --accent-soft:#16273A;
+  --ok:#4CC38A; --ok-soft:#12291F; --warn:#E0A548; --warn-soft:#2E2312; --bad:#F0776C; --bad-soft:#331A18; --idle:#8C99A9; --idle-soft:#1B2430;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C1219; --panel:#141C26; --sunk:#101720; --ink:#E6ECF3; --ink2:#9AA8B9; --line:#263243;
+  --accent:#7DB3E3; --accent-ink:#0C1219; --accent-soft:#16273A;
+  --ok:#4CC38A; --ok-soft:#12291F; --warn:#E0A548; --warn-soft:#2E2312; --bad:#F0776C; --bad-soft:#331A18; --idle:#8C99A9; --idle-soft:#1B2430;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:20px}h3{font-size:15px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.brand h1{font-size:22px}
+.brand .sub{color:var(--ink2);font-size:12.5px}
+.mode{font-family:var(--f-mono);font-size:11px;color:var(--ink2);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px 10px;cursor:pointer;color:var(--ink2);font-weight:500;white-space:nowrap}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+main{padding-block:22px 60px}
+section.view{display:grid;gap:22px}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--ink2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:4px 10px;font-size:12.5px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.muted{color:var(--ink2)}
+.small{font-size:12.5px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);font-weight:600}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.banner{border:1px dashed var(--line);border-radius:var(--r);padding:10px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--sunk)}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:4px}
+.tile .num{font-family:var(--f-display);font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile .lbl{font-size:12.5px;color:var(--ink2)}
+.tile.alert .num{color:var(--bad)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.score{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.score .big{font-family:var(--f-display);font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
+.objrows{display:grid;gap:10px;margin-top:14px}
+.objrow{display:grid;grid-template-columns:52px minmax(0,1fr) 54px;gap:10px;align-items:center}
+.objrow .code{font-family:var(--f-mono);font-size:12px;color:var(--ink2)}
+.objrow .name{font-size:13px;min-width:0}
+.objrow .pct{font-family:var(--f-mono);font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+.meter{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden;margin-top:4px}
+.meter > i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.meter.none > i{background:transparent}
+.list{display:grid;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.st-todo{background:var(--idle-soft);color:var(--idle)}
+.st-doing{background:var(--accent-soft);color:var(--accent)}
+.st-blocked{background:var(--bad-soft);color:var(--bad)}
+.st-done{background:var(--ok-soft);color:var(--ok)}
+.tag{font-family:var(--f-mono);font-size:11.5px;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--ink2);white-space:nowrap}
+.tag.ex{border-style:dashed}
+.pri-high{color:var(--bad);font-weight:600}
+.pri-medium{color:var(--warn);font-weight:600}
+.pri-low{color:var(--ink2)}
+.task{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 12px;align-items:start;cursor:pointer}
+.task:hover{border-color:var(--ink2)}
+.task .t{font-weight:600;overflow-wrap:anywhere}
+.task.done .t{color:var(--ink2);text-decoration:line-through;text-decoration-color:var(--line)}
+.task .meta{grid-column:2/4;display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--ink2)}
+.task .due{font-family:var(--f-mono);font-size:12px;white-space:nowrap}
+.due.over{color:var(--bad);font-weight:600}
+.task select{font-size:12px;border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:2px 4px}
+.toolbar{display:grid;grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(0,1fr)) auto;gap:8px;align-items:center}
+@media (max-width:900px){.toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar .search{grid-column:1/-1}}
+input[type=text],input[type=search],input[type=date],input[type=number],select,textarea{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0}
+textarea{resize:vertical;min-height:64px}
+label.f{display:grid;gap:4px;font-size:12.5px;color:var(--ink2);font-weight:500}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.form .full{grid-column:1/-1}
+@media (max-width:560px){.form{grid-template-columns:minmax(0,1fr)}}
+.check{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink2);white-space:nowrap}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;align-content:start}
+.kv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;text-align:left}
+.kv div{display:grid}
+.kv b{font-family:var(--f-display);font-size:20px;font-variant-numeric:tabular-nums;font-weight:600}
+.kv span{font-size:11.5px;color:var(--ink2)}
+.kv .alert b{color:var(--bad)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);font-weight:600}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+.report{white-space:pre-wrap;font-family:var(--f-mono);font-size:13px;line-height:1.65;background:var(--sunk);border:1px solid var(--line);border-radius:var(--r);padding:16px;overflow-wrap:anywhere;min-height:180px}
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:26px;text-align:center;color:var(--ink2);display:grid;gap:10px;justify-items:center}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:0;width:min(640px,calc(100vw - 32px));max-height:calc(100vh - 40px)}
+dialog::backdrop{background:rgba(8,12,18,.45)}
+dialog form{display:grid;gap:16px;padding:20px}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:13px;z-index:20;max-width:calc(100vw - 32px)}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+@media (prefers-reduced-motion:no-preference){.task,.btn{transition:border-color .12s, filter .12s}}
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="hrow">
+      <div class="brand"><h1>ODC Work Hub</h1><span class="sub">Tasks, team and KPIs across the nine ODC objectives</span></div>
+      <span class="mode" id="mode">Loading…</span>
+    </div>
+    <nav role="tablist" id="tabs">
+      <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
+      <button role="tab" data-tab="tasks" aria-selected="false">Tasks</button>
+      <button role="tab" data-tab="kpis" aria-selected="false">KPIs</button>
+      <button role="tab" data-tab="team" aria-selected="false">Team</button>
+      <button role="tab" data-tab="report" aria-selected="false">Report</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<dialog id="dlg"><form id="dlgForm" method="dialog"></form></dialog>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+"use strict";
+
+// ---------- Reference data ----------
+const OBJECTIVES = [
+  ["o1",1,"Strategy & Governance"],["o2",2,"Trainings"],["o3",3,"Partnerships"],
+  ["o4",4,"Projects"],["o5",5,"Reporting"],["o6",6,"Visibility"],
+  ["o7",7,"Digitalisation"],["o8",8,"Team Management"],["o9",9,"Transformation"]
+].map(([id,num,name]) => ({id,num,name,weight:null,target:"",targetValue:null,actualValue:null,unit:""}));
+const STATUS = {todo:"Not started",doing:"In progress",blocked:"Blocked",done:"Done"};
+const PRI = {high:"High",medium:"Medium",low:"Low"};
+const PRI_RANK = {high:0,medium:1,low:2};
+const LS_KEY = "odc-work-hub-v1";
+
+// ---------- Dates ----------
+const pad = n => String(n).padStart(2,"0");
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const addDays = (s,n) => { const d = parse(s); d.setDate(d.getDate()+n); return iso(d); };
+const today = () => iso(new Date());
+const weekStart = s => { const d = parse(s); const dow = (d.getDay()+6)%7; d.setDate(d.getDate()-dow); return iso(d); };
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fmt = s => { if(!s) return ""; const d = parse(s); return `${d.getDate()} ${MONTHS[d.getMonth()]}`; };
+const fmtY = s => { const d = parse(s); return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`; };
+const dayOf = ts => ts ? String(ts).slice(0,10) : "";
+
+// ---------- Helpers ----------
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+let toastTimer;
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.hidden=true,2600); }
+
+// ---------- State ----------
+const S = {
+  tab:"overview", mode:"loading", canWrite:true,
+  data:{tasks:{},team:{},objectives:{}},
+  f:{q:"",obj:"",owner:"",status:"open",pri:""},
+  rep:{period:"thisweek",from:"",to:"",owner:"",text:"",polished:false},
+  db:null, downloads:null, sample:null
+};
+try { const t = localStorage.getItem("odc-hub-tab"); if (t) S.tab = t; } catch {}
+
+// ---------- Storage: shared db when hosted, browser storage otherwise ----------
+function exampleData(){
+  const t = today(), now = new Date().toISOString();
+  const me = "m_lead";
+  const mk = (id,title,objective,status,priority,due,extra={}) => ({id,title,objective,owner:me,status,priority,due,notes:"",outcome:"",waitingOn:"",impact:"",createdAt:now,updatedAt:now,completedAt:status==="done"?now:"",example:true,...extra});
+  const tasks = [
+    mk("ex1","Finalise Q4 governance framework","o1","doing","high",addDays(t,6)),
+    mk("ex2","Run digital skills training cohort","o2","done","high",addDays(t,-2),{outcome:"24 participants trained, feedback avg 4.6/5"}),
+    mk("ex3","Sign MoU with partner institution","o3","blocked","high",addDays(t,3),{waitingOn:"Partner legal review",impact:"Joint programme launch slips to next quarter"}),
+    mk("ex4","Submit monthly project progress report","o5","todo","medium",addDays(t,4)),
+    mk("ex5","Publish ODC newsletter and social posts","o6","done","medium",addDays(t,-1),{outcome:"Newsletter sent to 1,200 subscribers"}),
+    mk("ex6","Scope task tracking rollout for the team","o7","doing","medium",addDays(t,10)),
+    mk("ex7","Hold 1:1 check-ins with team","o8","todo","low",addDays(t,-1)),
+    mk("ex8","Draft change roadmap for transformation office","o9","todo","medium",addDays(t,14))
+  ];
+  return {
+    tasks:Object.fromEntries(tasks.map(x=>[x.id,x])),
+    team:{[me]:{id:me,name:"Obakeng",role:"Lead",email:"",createdAt:now}},
+    objectives:Object.fromEntries(OBJECTIVES.map(o=>[o.id,o]))
+  };
+}
+function loadLocal(){
+  try { const raw = localStorage.getItem(LS_KEY); if (raw) return JSON.parse(raw); } catch {}
+  return exampleData();
+}
+function saveLocal(){ try { localStorage.setItem(LS_KEY, JSON.stringify(S.data)); } catch {} }
+
+async function put(col, id, body){
+  if (!S.canWrite) { toast("You have view-only access."); return false; }
+  const clean = JSON.parse(JSON.stringify({...body,id}));
+  if (S.mode === "db") {
+    try { await S.db.collection(col).doc(id).set(clean); return true; }
+    catch(e){ return dbFail(e); }
+  }
+  S.data[col][id] = clean; saveLocal(); render(); return true;
+}
+async function del(col, id){
+  if (!S.canWrite) { toast("You have view-only access."); return false; }
+  if (S.mode === "db") {
+    try { await S.db.collection(col).doc(id).delete(); return true; }
+    catch(e){ return dbFail(e); }
+  }
+  delete S.data[col][id]; saveLocal(); render(); return true;
+}
+function dbFail(e){
+  if (e && e.code === "invalid_argument") { S.canWrite = false; render(); toast("Your access is view-only, so changes are not saved."); }
+  else if (e && e.code === "quota_exceeded") toast("Storage is full. Delete old tasks to add new ones.");
+  else toast("Could not save. Check your connection and try again.");
+  return false;
+}
+
+async function connect(){
+  const c = window.claude;
+  if (!c || typeof c.use !== "function") { startLocal(); return; }
+  const [db, user, downloads, sample] = await Promise.all(["db","user","downloads","sample"].map(n => c.use(n).catch(()=>null)));
+  S.downloads = downloads; S.sample = sample;
+  if (!db) { startLocal(); return; }
+  S.db = db; S.mode = "db";
+  if (user && typeof user.can === "function") { try { const w = await user.can("data.write"); if (w === false) S.canWrite = false; } catch {} }
+  const loaded = new Set();
+  for (const col of ["tasks","team","objectives"]) {
+    db.collection(col).onSnapshot(snap => {
+      S.data[col] = Object.fromEntries(snap.docs.map(d => [d.id, {...d.data(), id:d.id}]));
+      loaded.add(col); if (loaded.size === 3) S.ready = true;
+      render();
+    }, () => { toast("Lost the live connection. Reload to reconnect."); });
+  }
+  render();
+}
+function startLocal(){ S.mode = "local"; S.data = loadLocal(); S.ready = true; render(); }
+
+// ---------- Derived data ----------
+const tasks = () => Object.values(S.data.tasks);
+const members = () => Object.values(S.data.team).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+function objectives(){
+  const have = S.data.objectives;
+  return OBJECTIVES.map(o => ({...o, ...(have[o.id]||{})}));
+}
+const objById = id => objectives().find(o=>o.id===id);
+const objTag = id => { const o = objById(id); return o ? `[Obj ${o.num} – ${o.name}]` : "[Unweighted / off-KPI]"; };
+const objShort = id => { const o = objById(id); return o ? `Obj ${o.num}` : "Off-KPI"; };
+const memberName = id => (S.data.team[id] && S.data.team[id].name) || "Unassigned";
+const isOver = t => t.status!=="done" && t.due && t.due < today();
+function progress(o){
+  const ts = tasks().filter(t=>t.objective===o.id);
+  const done = ts.filter(t=>t.status==="done").length;
+  if (o.targetValue > 0 && o.actualValue != null && o.actualValue !== "") return {p:Math.min(1,Number(o.actualValue)/Number(o.targetValue)), src:"target", done, total:ts.length};
+  if (ts.length) return {p:done/ts.length, src:"tasks", done, total:ts.length};
+  return {p:null, src:"none", done, total:0};
+}
+function kpiScore(){
+  const os = objectives();
+  const anyW = os.some(o=>Number(o.weight)>0);
+  let w=0, s=0;
+  for (const o of os){ const pr = progress(o); if (pr.p==null) continue; const wt = anyW ? Number(o.weight)||0 : 1; w+=wt; s+=wt*pr.p; }
+  return {score: w ? s/w : null, weighted:anyW, weightSum: os.reduce((a,o)=>a+(Number(o.weight)||0),0)};
+}
+function sortTasks(arr){
+  const ord = {blocked:0,doing:1,todo:2,done:3};
+  return arr.sort((a,b)=> (ord[a.status]-ord[b.status]) || ((a.due||"9999")<(b.due||"9999")?-1:(a.due||"9999")>(b.due||"9999")?1:0) || (PRI_RANK[a.priority]-PRI_RANK[b.priority]));
+}
+
+// ---------- Render ----------
+function render(){
+  $("#mode").textContent = S.mode==="db" ? (S.canWrite ? "Shared · live" : "Shared · view only") : S.mode==="local" ? "Saved in this browser" : "Loading…";
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.tab===S.tab)));
+  const main = $("#main");
+  const focusId = document.activeElement && document.activeElement.id;
+  const caret = document.activeElement && document.activeElement.selectionStart;
+  if (S.mode==="loading" || (S.mode==="db" && !S.ready)) { main.innerHTML = `<div class="empty">Loading your workspace…</div>`; return; }
+  main.innerHTML = ({overview:vOverview,tasks:vTasks,kpis:vKpis,team:vTeam,report:vReport}[S.tab]||vOverview)();
+  if (focusId) { const el = document.getElementById(focusId); if (el) { el.focus(); try { if (caret!=null) el.setSelectionRange(caret,caret); } catch {} } }
+}
+
+function exampleBanner(){
+  const n = tasks().filter(t=>t.example).length;
+  if (!n) return "";
+  return `<div class="banner"><span class="small">${n} example task${n>1?"s":""} are loaded to show how the hub works. They are marked <span class="tag ex">Example</span>.</span>
+    ${S.canWrite?`<button class="btn sm" data-act="clear-examples">Remove examples</button>`:""}</div>`;
+}
+
+function taskCard(t){
+  const over = isOver(t);
+  return `<div class="task ${t.status==="done"?"done":""}" data-act="edit-task" data-id="${esc(t.id)}" tabindex="0" role="button" aria-label="Edit ${esc(t.title)}">
+    <span class="chip st-${esc(t.status)}">${STATUS[t.status]||"Not started"}</span>
+    <span class="t">${esc(t.title)}</span>
+    ${t.due?`<span class="due ${over?"over":""}">${over?"Overdue · ":""}${fmt(t.due)}</span>`:`<span class="due muted">No date</span>`}
+    <div class="meta">
+      <span class="tag" title="${esc(objTag(t.objective))}">${esc(objShort(t.objective))}</span>
+      <span>${esc(memberName(t.owner))}</span>
+      <span class="pri-${esc(t.priority)}">${PRI[t.priority]||""}</span>
+      ${t.status==="blocked"&&t.waitingOn?`<span>Waiting on ${esc(t.waitingOn)}</span>`:""}
+      ${t.example?`<span class="tag ex">Example</span>`:""}
+    </div></div>`;
+}
+
+function vOverview(){
+  const ts = tasks(), t = today(), ws = weekStart(t), we = addDays(ws,6), mStart = t.slice(0,8)+"01";
+  const open = ts.filter(x=>x.status!=="done");
+  const dueWeek = open.filter(x=>x.due && x.due<=we).length;
+  const blocked = ts.filter(x=>x.status==="blocked").length;
+  const over = ts.filter(isOver).length;
+  const doneMonth = ts.filter(x=>x.status==="done" && dayOf(x.completedAt)>=mStart).length;
+  const k = kpiScore();
+  const attention = sortTasks(ts.filter(x=>x.status==="blocked"||isOver(x))).slice(0,6);
+  const objs = objectives();
+  const ms = members();
+  if (!ts.length && !ms.length) return `<section class="view">${welcome()}</section>`;
+  return `<section class="view">
+    ${exampleBanner()}
+    <div class="tiles">
+      <div class="tile"><span class="num">${open.length}</span><span class="lbl">Open tasks</span></div>
+      <div class="tile"><span class="num">${dueWeek}</span><span class="lbl">Due by ${fmt(we)} (incl. overdue)</span></div>
+      <div class="tile ${blocked+over?"alert":""}"><span class="num">${blocked} / ${over}</span><span class="lbl">Blocked / overdue</span></div>
+      <div class="tile"><span class="num">${doneMonth}</span><span class="lbl">Completed in ${MONTHS[parse(t).getMonth()]}</span></div>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <div class="row between"><div><div class="eyebrow">KPI scorecard</div><h2>Annual objectives</h2></div>
+        <button class="btn sm" data-tab-go="kpis">Edit targets</button></div>
+        <div class="score" style="margin-top:12px"><span class="big">${k.score==null?"–":Math.round(k.score*100)+"%"}</span>
+          <span class="muted small">${k.score==null?"Add targets or tasks to see a score":k.weighted?"weighted by your objective weights":"equal weights until you set objective weights"}</span></div>
+        <div class="objrows">${objs.map(o=>{ const pr = progress(o); const pct = pr.p==null?null:Math.round(pr.p*100);
+          return `<div class="objrow" title="${esc(pr.src==="target"?`${o.actualValue} of ${o.targetValue} ${o.unit||""}`:pr.src==="tasks"?`${pr.done} of ${pr.total} tasks done`:"No target or tasks yet")}">
+            <span class="code">Obj ${o.num}</span>
+            <div class="name">${esc(o.name)}<div class="meter ${pct==null?"none":""}"><i style="width:${pct||0}%"></i></div></div>
+            <span class="pct">${pct==null?"–":pct+"%"}</span></div>`;}).join("")}</div>
+        <p class="small muted" style="margin:12px 0 0">Progress uses the objective's target when one is set, otherwise the share of its tasks that are done.</p>
+      </div>
+      <div style="display:grid;gap:18px">
+        <div class="panel"><div class="row between"><h3>Needs attention</h3><button class="btn sm" data-tab-go="tasks">All tasks</button></div>
+          <div class="list" style="margin-top:12px">${attention.length?attention.map(taskCard).join(""):`<p class="muted small" style="margin:0">Nothing blocked or overdue.</p>`}</div></div>
+        <div class="panel"><div class="row between"><h3>Team load</h3><button class="btn sm" data-tab-go="team">Team</button></div>
+          <div class="scroll" style="margin-top:8px"><table><thead><tr><th>Person</th><th class="n">Open</th><th class="n">Blocked</th><th class="n">Overdue</th></tr></thead><tbody>
+          ${ms.map(m=>{const mt=ts.filter(x=>x.owner===m.id); return `<tr><td>${esc(m.name)}</td><td class="n">${mt.filter(x=>x.status!=="done").length}</td><td class="n">${mt.filter(x=>x.status==="blocked").length}</td><td class="n">${mt.filter(isOver).length}</td></tr>`;}).join("")||`<tr><td colspan="4" class="muted">No team members yet.</td></tr>`}
+          </tbody></table></div></div>
+      </div>
+    </div>
+    ${dataPanel()}
+  </section>`;
+}
+
+function welcome(){
+  return `<div class="empty"><h2>Start tracking ODC work</h2>
+    <p style="margin:0;max-width:52ch">Add your team, then log tasks against the nine ODC objectives. The hub totals progress per objective and drafts your weekly Wins, Blockers and Next Steps.</p>
+    ${S.canWrite?`<div class="row" style="justify-content:center"><button class="btn primary" data-act="new-task">Add the first task</button><button class="btn" data-act="new-member">Add a team member</button><button class="btn" data-act="import">Import a backup</button></div>`:`<p class="small" style="margin:0">You have view-only access.</p>`}</div>`;
+}
+
+function dataPanel(){
+  return `<div class="panel"><div class="row between"><div><h3>Backup and export</h3><p class="small muted" style="margin:4px 0 0">${S.mode==="db"?"Data is shared live with everyone who can open this page.":"Data is saved in this browser only. Export a backup regularly."}</p></div>
+    <div class="row"><button class="btn sm" data-act="export-json">Export backup (.json)</button><button class="btn sm" data-act="export-csv">Export tasks (.csv)</button>${S.canWrite?`<button class="btn sm" data-act="import">Import backup</button>`:""}</div></div></div>`;
+}
+
+function opts(map, sel, blank){ return (blank!=null?`<option value="">${esc(blank)}</option>`:"") + Object.entries(map).map(([v,l])=>`<option value="${esc(v)}" ${v===sel?"selected":""}>${esc(l)}</option>`).join(""); }
+const objOpts = () => Object.fromEntries(objectives().map(o=>[o.id,`Obj ${o.num} – ${o.name}`]));
+const memOpts = () => Object.fromEntries(members().map(m=>[m.id,m.name]));
+
+function vTasks(){
+  const f = S.f, q = f.q.trim().toLowerCase();
+  let ts = tasks().filter(t =>
+    (!q || (t.title+" "+(t.notes||"")).toLowerCase().includes(q)) &&
+    (!f.obj || (f.obj==="none" ? !objById(t.objective) : t.objective===f.obj)) &&
+    (!f.owner || t.owner===f.owner) &&
+    (!f.pri || t.priority===f.pri) &&
+    (f.status==="all" || (f.status==="open" ? t.status!=="done" : f.status==="overdue" ? isOver(t) : t.status===f.status)));
+  ts = sortTasks(ts);
+  return `<section class="view">
+    <div class="row between"><div><h2>Tasks</h2><p class="muted small" style="margin:2px 0 0">${ts.length} shown of ${tasks().length}</p></div>
+      ${S.canWrite?`<button class="btn primary" data-act="new-task">New task</button>`:""}</div>
+    ${exampleBanner()}
+    <div class="toolbar">
+      <input class="search" type="search" id="fq" placeholder="Search tasks and notes" value="${esc(f.q)}" aria-label="Search tasks">
+      <select id="fstatus" aria-label="Status">${opts({open:"Open (not done)",all:"All statuses",overdue:"Overdue",...STATUS},f.status)}</select>
+      <select id="fobj" aria-label="Objective">${opts({...objOpts(),none:"Off-KPI"},f.obj,"All objectives")}</select>
+      <select id="fowner" aria-label="Owner">${opts(memOpts(),f.owner,"Everyone")}</select>
+      <select id="fpri" aria-label="Priority">${opts(PRI,f.pri,"Any priority")}</select>
+      <button class="btn sm" data-act="reset-filters">Reset</button>
+    </div>
+    <div class="list">${ts.length?ts.map(taskCard).join(""):`<div class="empty">No tasks match these filters.${S.canWrite&&!tasks().length?` <button class="btn primary" data-act="new-task">Add a task</button>`:""}</div>`}</div>
+  </section>`;
+}
+
+function vKpis(){
+  const k = kpiScore(), ts = tasks();
+  return `<section class="view">
+    <div class="row between"><div><h2>KPIs</h2><p class="muted small" style="margin:2px 0 0">Set a weight and a measurable target for each objective, then update the actual figure as you go.</p></div>
+      <div class="score"><span class="big">${k.score==null?"–":Math.round(k.score*100)+"%"}</span><span class="muted small">overall${k.weighted?` · weights total ${k.weightSum}%`:""}</span></div></div>
+    ${k.weighted && k.weightSum!==100?`<div class="banner"><span class="small">Objective weights add up to ${k.weightSum}%. Adjust them to total 100%.</span></div>`:""}
+    <div class="cards">${objectives().map(o=>{ const pr = progress(o); const pct = pr.p==null?null:Math.round(pr.p*100); const ot = ts.filter(t=>t.objective===o.id);
+      return `<div class="card">
+        <div class="row between"><span class="eyebrow">Obj ${o.num}${o.weight?` · ${esc(o.weight)}%`:""}</span>${S.canWrite?`<button class="btn sm" data-act="edit-obj" data-id="${o.id}">Edit</button>`:""}</div>
+        <h3>${esc(o.name)}</h3>
+        <div><div class="row between small"><span class="muted">${o.target?esc(o.target):"No target set"}</span><span class="mono">${pct==null?"–":pct+"%"}</span></div>
+          <div class="meter ${pct==null?"none":""}"><i style="width:${pct||0}%"></i></div>
+          <div class="small muted" style="margin-top:4px">${pr.src==="target"?`${esc(o.actualValue)} of ${esc(o.targetValue)} ${esc(o.unit)}`:pr.src==="tasks"?"From task completion":"Add a target or tasks"}</div></div>
+        <div class="kv"><div><b>${ot.filter(t=>t.status!=="done").length}</b><span>Open</span></div><div><b>${ot.filter(t=>t.status==="done").length}</b><span>Done</span></div><div class="${ot.some(t=>t.status==="blocked")?"alert":""}"><b>${ot.filter(t=>t.status==="blocked").length}</b><span>Blocked</span></div><div class="${ot.some(isOver)?"alert":""}"><b>${ot.filter(isOver).length}</b><span>Overdue</span></div></div>
+        <button class="btn sm" data-act="filter-obj" data-id="${o.id}">View tasks</button>
+      </div>`;}).join("")}</div>
+  </section>`;
+}
+
+function vTeam(){
+  const ts = tasks(), since = addDays(today(),-30), ms = members();
+  return `<section class="view">
+    <div class="row between"><div><h2>Team</h2><p class="muted small" style="margin:2px 0 0">Workload and delivery per person. Done counts cover the last 30 days.</p></div>
+      ${S.canWrite?`<button class="btn primary" data-act="new-member">Add person</button>`:""}</div>
+    ${ms.length?`<div class="cards">${ms.map(m=>{ const mt = ts.filter(t=>t.owner===m.id);
+      const byObj = {}; mt.filter(t=>t.status!=="done").forEach(t=>{ const k=objShort(t.objective); byObj[k]=(byObj[k]||0)+1; });
+      return `<div class="card">
+        <div class="row between"><div><h3>${esc(m.name)}</h3><div class="small muted">${esc(m.role||"No role set")}</div></div>${S.canWrite?`<button class="btn sm" data-act="edit-member" data-id="${esc(m.id)}">Edit</button>`:""}</div>
+        <div class="kv"><div><b>${mt.filter(t=>t.status!=="done").length}</b><span>Open</span></div><div class="${mt.some(t=>t.status==="blocked")?"alert":""}"><b>${mt.filter(t=>t.status==="blocked").length}</b><span>Blocked</span></div><div class="${mt.some(isOver)?"alert":""}"><b>${mt.filter(isOver).length}</b><span>Overdue</span></div><div><b>${mt.filter(t=>t.status==="done"&&dayOf(t.completedAt)>=since).length}</b><span>Done 30d</span></div></div>
+        <div class="row small">${Object.entries(byObj).map(([k,v])=>`<span class="tag">${esc(k)} · ${v}</span>`).join("")||`<span class="muted">No open tasks</span>`}</div>
+        <div class="row"><button class="btn sm" data-act="filter-owner" data-id="${esc(m.id)}">View tasks</button><button class="btn sm" data-act="report-owner" data-id="${esc(m.id)}">Report</button></div>
+      </div>`;}).join("")}</div>`:`<div class="empty">No team members yet. Add the people you assign ODC work to.${S.canWrite?` <button class="btn primary" data-act="new-member">Add person</button>`:""}</div>`}
+    ${(()=>{ const un = ts.filter(t=>!S.data.team[t.owner] && t.status!=="done").length; return un?`<div class="banner"><span class="small">${un} open task${un>1?"s have":" has"} no owner.</span><button class="btn sm" data-act="filter-owner" data-id="">View tasks</button></div>`:""; })()}
+  </section>`;
+}
+
+// ---------- Report (Wins / Blockers / Next Steps, tagged to ODC objectives) ----------
+function periodRange(){
+  const t = today(), r = S.rep;
+  if (r.period==="thisweek"){ const s = weekStart(t); return [s, addDays(s,6), "This week"]; }
+  if (r.period==="lastweek"){ const s = addDays(weekStart(t),-7); return [s, addDays(s,6), "Last week"]; }
+  if (r.period==="month"){ const s = t.slice(0,8)+"01"; const e = parse(s); e.setMonth(e.getMonth()+1); e.setDate(0); return [s, iso(e), "This month"]; }
+  if (r.period==="30"){ return [addDays(t,-29), t, "Last 30 days"]; }
+  return [r.from||addDays(t,-6), r.to||t, "Custom"];
+}
+function reportItems(){
+  const [from,to] = periodRange(), who = S.rep.owner;
+  const ts = tasks().filter(t => !who || t.owner===who);
+  const byPri = (a,b)=>(PRI_RANK[a.priority]-PRI_RANK[b.priority]) || ((a.due||"9999")<(b.due||"9999")?-1:1);
+  const wins = ts.filter(t=>t.status==="done" && dayOf(t.completedAt)>=from && dayOf(t.completedAt)<=to).sort(byPri);
+  const blockers = ts.filter(t=>t.status==="blocked" || isOver(t)).sort((a,b)=>(a.status==="blocked"?0:1)-(b.status==="blocked"?0:1) || byPri(a,b));
+  const horizon = addDays(to,14);
+  const next = ts.filter(t=>t.status!=="done" && t.status!=="blocked" && (!t.due || t.due<=horizon)).sort((a,b)=>((a.due||"9999")<(b.due||"9999")?-1:(a.due||"9999")>(b.due||"9999")?1:0) || byPri(a,b));
+  return {from,to,wins,blockers,next};
+}
+const clean = s => String(s||"").replace(/\s*[—]\s*/g,", ").trim().replace(/[.\s]+$/,"");
+function buildReport(){
+  const {from,to,wins,blockers,next} = reportItems(), who = S.rep.owner;
+  const cap = (arr, line) => { const out = arr.slice(0,5).map(line); if (arr.length>5) out.push(`- +${arr.length-5} more, available on request.`); return out.length?out.join("\n"):"- None this period."; };
+  const winLine = t => `- ${clean(t.title)}: ${t.outcome?clean(t.outcome)+".":"completed (add the outcome)."} ${objTag(t.objective)}`;
+  const blkLine = t => t.status==="blocked"
+    ? `- ${clean(t.title)}. Waiting on ${t.waitingOn?clean(t.waitingOn):"an unnamed dependency"}.${t.impact?` Impact if unresolved: ${clean(t.impact)}.`:""} ${objTag(t.objective)}`
+    : `- ${clean(t.title)} is overdue (due ${fmt(t.due)}) and still ${STATUS[t.status].toLowerCase()}. Owner: ${memberName(t.owner)}. ${objTag(t.objective)}`;
+  const nextLine = t => `- ${clean(t.title)}. Owner: ${memberName(t.owner)}${t.due?`, by ${fmt(t.due)}`:""}.`;
+  return `ODC work summary: ${fmtY(from)} to ${fmtY(to)}${who?` (${memberName(who)})`:""}\n\nWins\n${cap(wins,winLine)}\n\nBlockers\n${cap(blockers,blkLine)}\n\nNext Steps\n${cap(next,nextLine)}`;
+}
+
+function vReport(){
+  const r = S.rep, [from,to] = periodRange();
+  if (!r.polished) r.text = buildReport();
+  return `<section class="view">
+    <div><h2>Report</h2><p class="muted small" style="margin:2px 0 0">Wins, Blockers and Next Steps for a period, with every Win and Blocker tagged to its ODC objective. Wins are tasks marked done in the period; add an outcome to each so the report shows results.</p></div>
+    <div class="row">
+      <label class="f" style="min-width:160px">Period<select id="rperiod">${opts({thisweek:"This week",lastweek:"Last week",month:"This month","30":"Last 30 days",custom:"Custom range"},r.period)}</select></label>
+      ${r.period==="custom"?`<label class="f">From<input type="date" id="rfrom" value="${esc(from)}"></label><label class="f">To<input type="date" id="rto" value="${esc(to)}"></label>`:""}
+      <label class="f" style="min-width:160px">Person<select id="rowner">${opts(memOpts(),r.owner,"Whole team")}</select></label>
+    </div>
+    <div class="report" id="reportText" tabindex="0" aria-label="Report text">${esc(r.text)}</div>
+    <div class="row">
+      <button class="btn primary" data-act="copy-report">Copy</button>
+      <button class="btn" data-act="dl-report">Download (.md)</button>
+      ${S.sample?`<button class="btn" data-act="polish" id="polishBtn">Polish wording with Claude</button>`:""}
+      ${r.polished?`<button class="btn" data-act="unpolish">Back to generated version</button>`:""}
+    </div>
+  </section>`;
+}
+
+// ---------- Dialogs ----------
+function openDialog(html, onSubmit){
+  const d = $("#dlg"), f = $("#dlgForm");
+  f.innerHTML = html;
+  f.onsubmit = async e => { e.preventDefault(); const sub = e.submitter && e.submitter.value; if (sub==="cancel") { d.close(); return; } const ok = await onSubmit(new FormData(f), sub); if (ok!==false) d.close(); };
+  d.showModal();
+  const first = f.querySelector("input,select,textarea"); if (first) first.focus();
+}
+function delConfirm(label){
+  return `<span class="confirm" id="delWrap"><button type="button" class="btn danger" data-act="ask-del">${label}</button></span>`;
+}
+$("#dlgForm").addEventListener("click", e => {
+  const b = e.target.closest("[data-act=ask-del]"); if (!b) return;
+  $("#delWrap").innerHTML = `<span class="small">Delete for everyone?</span><button class="btn danger" value="delete">Yes, delete</button><button type="button" class="btn" data-act="keep">Keep</button>`;
+});
+$("#dlgForm").addEventListener("click", e => { if (e.target.closest("[data-act=keep]")) $("#delWrap").innerHTML = `<button type="button" class="btn danger" data-act="ask-del">Delete</button>`; });
+
+function editTask(id){
+  const t = id ? S.data.tasks[id] : null;
+  const v = t || {title:"",objective:"",owner:"",status:"todo",priority:"medium",due:"",notes:"",outcome:"",waitingOn:"",impact:""};
+  if (!S.canWrite) return;
+  openDialog(`<h2>${t?"Edit task":"New task"}</h2>
+    <div class="form">
+      <label class="f full">Task<input type="text" name="title" id="t_title" required maxlength="200" value="${esc(v.title)}" placeholder="What needs to happen"></label>
+      <label class="f full">ODC objective<select name="objective" id="t_obj">${opts(objOpts(),v.objective,"Off-KPI (unweighted)")}</select></label>
+      <label class="f">Owner<select name="owner" id="t_owner">${opts(memOpts(),v.owner,"Unassigned")}</select></label>
+      <label class="f">Due date<input type="date" name="due" id="t_due" value="${esc(v.due)}"></label>
+      <label class="f">Status<select name="status" id="t_status">${opts(STATUS,v.status)}</select></label>
+      <label class="f">Priority<select name="priority" id="t_pri">${opts(PRI,v.priority)}</select></label>
+      <label class="f full" data-show="done">Outcome (shown under Wins)<input type="text" name="outcome" id="t_outcome" value="${esc(v.outcome)}" placeholder="The result, e.g. 24 staff trained"></label>
+      <label class="f" data-show="blocked">Waiting on<input type="text" name="waitingOn" id="t_wait" value="${esc(v.waitingOn)}" placeholder="Person, team or decision"></label>
+      <label class="f" data-show="blocked">Impact if unresolved<input type="text" name="impact" id="t_impact" value="${esc(v.impact)}"></label>
+      <label class="f full">Notes<textarea name="notes" id="t_notes">${esc(v.notes)}</textarea></label>
+    </div>
+    <div class="row between">${t?delConfirm("Delete"):"<span></span>"}<div class="row"><button class="btn" value="cancel" formnovalidate>Cancel</button><button class="btn primary" value="save">Save task</button></div></div>`,
+  async (fd, sub) => {
+    if (sub==="delete") { await del("tasks", id); toast("Task deleted"); return; }
+    const now = new Date().toISOString(), body = Object.fromEntries(fd.entries());
+    body.title = body.title.trim(); if (!body.title) return false;
+    const was = t ? t.status : "";
+    const out = {...(t||{}), ...body, updatedAt:now, createdAt:(t&&t.createdAt)||now};
+    if (body.status==="done" && was!=="done") out.completedAt = now;
+    if (body.status!=="done") out.completedAt = "";
+    if (t && t.example) out.example = true;
+    const ok = await put("tasks", id || uid("t_"), out);
+    if (ok) toast(t?"Task saved":"Task added");
+  });
+  const sync = () => { const s = $("#t_status").value; document.querySelectorAll("[data-show]").forEach(el => el.hidden = el.dataset.show!==s); };
+  $("#t_status").addEventListener("change", sync); sync();
+}
+
+function editMember(id){
+  const m = id ? S.data.team[id] : null, v = m || {name:"",role:"",email:""};
+  openDialog(`<h2>${m?"Edit person":"Add person"}</h2>
+    <div class="form">
+      <label class="f full">Name<input type="text" name="name" id="m_name" required maxlength="80" value="${esc(v.name)}"></label>
+      <label class="f">Role<input type="text" name="role" id="m_role" value="${esc(v.role)}" placeholder="e.g. Training Coordinator"></label>
+      <label class="f">Email<input type="text" name="email" id="m_email" value="${esc(v.email)}"></label>
+    </div>
+    <div class="row between">${m?delConfirm("Remove"):"<span></span>"}<div class="row"><button class="btn" value="cancel" formnovalidate>Cancel</button><button class="btn primary" value="save">Save</button></div></div>`,
+  async (fd, sub) => {
+    if (sub==="delete") { await del("team", id); toast("Person removed. Their tasks are now unassigned."); return; }
+    const body = Object.fromEntries(fd.entries()); body.name = body.name.trim(); if (!body.name) return false;
+    const ok = await put("team", id || uid("m_"), {...(m||{createdAt:new Date().toISOString()}), ...body});
+    if (ok) toast(m?"Saved":"Person added");
+  });
+}
+
+function editObj(id){
+  const o = objById(id);
+  openDialog(`<h2>Obj ${o.num}: ${esc(o.name)}</h2>
+    <div class="form">
+      <label class="f">Weight (% of annual KPI)<input type="number" min="0" max="100" step="0.5" name="weight" id="o_weight" value="${esc(o.weight??"")}"></label>
+      <label class="f">Unit<input type="text" name="unit" id="o_unit" value="${esc(o.unit)}" placeholder="e.g. trainings, reports"></label>
+      <label class="f full">Target description<input type="text" name="target" id="o_target" value="${esc(o.target)}" placeholder="e.g. Deliver 12 trainings by year end"></label>
+      <label class="f">Target value<input type="number" step="any" name="targetValue" id="o_tv" value="${esc(o.targetValue??"")}"></label>
+      <label class="f">Actual to date<input type="number" step="any" name="actualValue" id="o_av" value="${esc(o.actualValue??"")}"></label>
+    </div>
+    <p class="small muted" style="margin:0">Leave the target value empty to measure this objective by task completion.</p>
+    <div class="row" style="justify-content:flex-end"><button class="btn" value="cancel" formnovalidate>Cancel</button><button class="btn primary" value="save">Save</button></div>`,
+  async fd => {
+    const b = Object.fromEntries(fd.entries()), num = x => x===""?null:Number(x);
+    const ok = await put("objectives", id, {id, num:o.num, name:o.name, weight:num(b.weight), unit:b.unit.trim(), target:b.target.trim(), targetValue:num(b.targetValue), actualValue:num(b.actualValue)});
+    if (ok) toast("Objective saved");
+  });
+}
+
+// ---------- Export / import ----------
+async function offerFile(filename, text, type){
+  if (S.downloads) {
+    try { await S.downloads.save({filename, data:text}); } catch { toast("Download cancelled."); }
+    return;
+  }
+  if (S.mode==="db") { toast("Downloads are not available here. Use Copy instead."); return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text],{type})); a.download = filename; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function csv(){
+  const head = ["Title","Objective","Owner","Status","Priority","Due","Completed","Outcome","Waiting on","Impact","Notes"];
+  const q = s => `"${String(s??"").replace(/"/g,'""')}"`;
+  const rows = sortTasks(tasks()).map(t=>[t.title,objTag(t.objective).slice(1,-1),memberName(t.owner),STATUS[t.status],PRI[t.priority],t.due,dayOf(t.completedAt),t.outcome,t.waitingOn,t.impact,t.notes].map(q).join(","));
+  return [head.map(q).join(","), ...rows].join("\n");
+}
+async function importJson(file){
+  let data; try { data = JSON.parse(await file.text()); } catch { toast("That file is not a valid backup."); return; }
+  if (!data || typeof data!=="object" || !data.tasks) { toast("That file is not an ODC Work Hub backup."); return; }
+  let n = 0;
+  for (const col of ["objectives","team","tasks"]) for (const [id,body] of Object.entries(data[col]||{})) {
+    if (!/^[A-Za-z0-9_.~:@+-]+$/.test(id)) continue;
+    if (S.mode==="db") { if (await put(col,id,body)) n++; } else { S.data[col][id] = {...body,id}; n++; }
+  }
+  if (S.mode!=="db") { saveLocal(); render(); }
+  toast(`Imported ${n} records.`);
+}
+
+// ---------- Claude polish ----------
+async function polish(){
+  const btn = $("#polishBtn"); if (btn) { btn.disabled = true; btn.textContent = "Polishing…"; }
+  const prompt = `Rewrite this ODC work summary. Keep exactly three sections in this order: Wins, Blockers, Next Steps. Rules:
+- Wins: what happened plus the outcome, one line each. Drop activity-only items with no result.
+- Blockers: the blocker, who or what it waits on, and the impact if unresolved.
+- Next Steps: concrete actions with owner and date where known.
+- Keep every bracketed objective tag on Wins and Blockers exactly as written.
+- Max 5 bullets per section; keep any "+N more, available on request." line.
+- Tone: professional, direct, confident, plain declarative sentences. No em dashes. No "it's not X, it's Y" framing.
+- Do not invent facts, numbers or names that are not in the draft.
+Return only the rewritten summary as plain text with "- " bullets and the same title line.
+
+Draft:
+${buildReport()}`;
+  try {
+    const res = await S.sample(prompt, {modelTier:"default"});
+    S.rep.text = String(res.text||"").trim() || buildReport(); S.rep.polished = true; render();
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = "Polish wording with Claude"; }
+    toast(e && e.code==="rate_limited" ? "Too many requests. Try again in a minute." : e && e.code==="not_granted" ? "Claude access was not allowed for this page." : "Could not reach Claude. The generated report is unchanged.");
+  }
+}
+
+// ---------- Events ----------
+$("#tabs").addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) go(b.dataset.tab); });
+function go(tab){ S.tab = tab; try { localStorage.setItem("odc-hub-tab", tab); } catch {} render(); window.scrollTo(0,0); }
+
+$("#main").addEventListener("click", async e => {
+  const g = e.target.closest("[data-tab-go]"); if (g) return go(g.dataset.tabGo);
+  const a = e.target.closest("[data-act]"); if (!a) return;
+  const id = a.dataset.id, act = a.dataset.act;
+  if (act==="edit-task") return S.canWrite ? editTask(id) : null;
+  if (act==="new-task") return editTask(null);
+  if (act==="new-member") return editMember(null);
+  if (act==="edit-member") return editMember(id);
+  if (act==="edit-obj") return editObj(id);
+  if (act==="reset-filters") { S.f = {q:"",obj:"",owner:"",status:"open",pri:""}; return render(); }
+  if (act==="filter-obj") { S.f = {q:"",obj:id,owner:"",status:"all",pri:""}; return go("tasks"); }
+  if (act==="filter-owner") { S.f = {q:"",obj:"",owner:id,status:"open",pri:""}; return go("tasks"); }
+  if (act==="report-owner") { S.rep.owner = id; S.rep.polished = false; return go("report"); }
+  if (act==="clear-examples") {
+    if (a.dataset.confirm!=="1") { a.dataset.confirm="1"; a.textContent="Click again to remove"; return; }
+    for (const t of tasks().filter(t=>t.example)) await del("tasks", t.id);
+    return toast("Examples removed");
+  }
+  if (act==="export-json") return offerFile(`odc-work-hub-backup-${today()}.json`, JSON.stringify(S.data,null,2), "application/json");
+  if (act==="export-csv") return offerFile(`odc-tasks-${today()}.csv`, csv(), "text/csv");
+  if (act==="import") return $("#importFile").click();
+  if (act==="copy-report") {
+    try { await navigator.clipboard.writeText(S.rep.text); toast("Report copied"); }
+    catch { const r = document.createRange(); r.selectNodeContents($("#reportText")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Text selected. Press Ctrl+C or Cmd+C to copy."); }
+    return;
+  }
+  if (act==="dl-report") { const [f,t] = periodRange(); return offerFile(`odc-summary-${f}-to-${t}.md`, S.rep.text, "text/markdown"); }
+  if (act==="polish") return polish();
+  if (act==="unpolish") { S.rep.polished = false; return render(); }
+});
+$("#main").addEventListener("keydown", e => { if ((e.key==="Enter"||e.key===" ") && e.target.matches(".task")) { e.preventDefault(); e.target.click(); } });
+$("#main").addEventListener("input", e => { if (e.target.id==="fq") { S.f.q = e.target.value; render(); } });
+$("#main").addEventListener("change", e => {
+  const id = e.target.id, v = e.target.value;
+  const map = {fstatus:"status",fobj:"obj",fowner:"owner",fpri:"pri"};
+  if (map[id]) { S.f[map[id]] = v; return render(); }
+  if (id==="rperiod") { S.rep.period = v; S.rep.polished = false; return render(); }
+  if (id==="rfrom") { S.rep.from = v; S.rep.polished = false; return render(); }
+  if (id==="rto") { S.rep.to = v; S.rep.polished = false; return render(); }
+  if (id==="rowner") { S.rep.owner = v; S.rep.polished = false; return render(); }
+});
+$("#importFile").addEventListener("change", e => { const f = e.target.files[0]; e.target.value = ""; if (f) importJson(f); });
+
+render();
+connect();
+})();
+</script>
